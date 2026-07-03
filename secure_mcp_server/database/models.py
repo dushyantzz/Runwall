@@ -375,3 +375,26 @@ class Tenant(Base):
     __table_args__ = (
         Index("idx_tenant_active", "is_active"),
     )
+
+class ReversibleExecutionLog(Base):
+    """Log of actions that can be reversed using compensating controls."""
+    __tablename__ = "reversible_executions"
+    
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
+    execution_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("tool_executions.id"), index=True)
+    
+    tool_name: Mapped[str] = mapped_column(String(100), index=True)
+    compensation_handler: Mapped[str] = mapped_column(String(100))
+    compensation_arguments: Mapped[dict] = mapped_column(JSON)
+    
+    status: Mapped[str] = mapped_column(String(50), default="committed", index=True) # committed, rolled_back, failed_rollback
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    rolled_back_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    rolled_back_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"))
+    
+    __table_args__ = (
+        Index("idx_reversible_status", "status"),
+        Index("idx_reversible_tenant_status", "tenant_id", "status"),
+    )

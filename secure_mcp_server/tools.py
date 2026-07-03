@@ -24,7 +24,8 @@ from secure_mcp_server.governance import (
     PolicyDecisionType,
     QuotaManager,
     QuotaExceededError,
-    TaintManager
+    TaintManager,
+    compensation_registry
 )
 
 logger = structlog.get_logger()
@@ -57,6 +58,7 @@ class ToolRegistry:
         self.policy_evaluator = policy_evaluator or PolicyEvaluator()
         self.quota_manager = quota_manager
         self.taint_manager = taint_manager or TaintManager()
+        self.compensation_registry = compensation_registry
         self.enable_governance = enable_governance
         
         # Tool implementations
@@ -382,9 +384,28 @@ class ToolRegistry:
             
             # Post-execution Taint tracking: check if tool is a taint source
             if self.enable_governance:
-                taint_label = self.taint_manager.check_tool_taint_source(tool_name, tool_meta if 'tool_meta' in locals() else {})
+                t_meta = tool_meta if 'tool_meta' in locals() else self.tool_metadata.get(tool_name, {})
+                taint_label = self.taint_manager.check_tool_taint_source(tool_name, t_meta)
                 if taint_label and user_context.get("session_id"):
                     await self.taint_manager.add_taint(user_context["session_id"], taint_label)
+                    
+                # Post-execution Reversibility tracking: log compensation details
+                if t_meta.get("is_reversible") and "compensation_handler" in t_meta:
+                    # In a real system, the tool result and arguments would be transformed 
+                    # by a compensation argument builder to supply the inverse arguments.
+                    # For simplicity, we just pass the original arguments and the result if it's a dict.
+                    comp_args = {"original_args": clean_arguments}
+                    if isinstance(result, dict):
+                        comp_args["result_data"] = result
+                        
+                    log_id = await self.compensation_registry.log_reversible_execution(
+                        tenant_id=tenant_id,
+                        tool_name=tool_name,
+                        compensation_handler=t_meta["compensation_handler"],
+                        compensation_arguments=comp_args
+                    )
+                    if log_id:
+                        logger.info("Tool execution is reversible", log_id=log_id)
             
             logger.info(
                 "Tool executed successfully",

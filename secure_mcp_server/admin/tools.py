@@ -10,6 +10,7 @@ from fastmcp import FastMCP
 from sqlalchemy.future import select
 
 from secure_mcp_server.database import get_db_manager, PolicyRule, PolicyDecisionLog, AuditLog
+from secure_mcp_server.governance import compensation_registry
 
 logger = structlog.get_logger(__name__)
 
@@ -197,3 +198,14 @@ def register_admin_tools(mcp: FastMCP):
             "total_tools": len(tools_info),
             "tools": tools_info
         }
+
+    @mcp.tool()
+    async def rollback_action(execution_id: str) -> Dict[str, Any]:
+        """
+        Rollback a previously executed action using its ReversibleExecutionLog ID.
+        """
+        user_ctx = _require_admin(mcp.current_request)
+        user_id = user_ctx.get("user_id")
+        
+        result = await compensation_registry.rollback_execution(execution_id, user_id=user_id)
+        return result
