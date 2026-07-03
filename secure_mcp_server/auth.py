@@ -15,7 +15,7 @@ import hashlib
 import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 import bcrypt
 import jwt
 import structlog
@@ -307,8 +307,20 @@ class AuthManager:
     # API Keys
     # ------------------------------------------------------------------
     
-    async def create_api_key(self, user_id: int, name: str) -> str:
-        """Create a new API key for a user with hashed storage."""
+    async def create_api_key(
+        self, 
+        name: str,
+        user_id: Optional[int] = None, 
+        service_account_id: Optional[int] = None,
+        tenant_id: str = "default",
+        permissions: Optional[List[str]] = None,
+        allowed_ips: Optional[List[str]] = None,
+        environment: str = "production"
+    ) -> str:
+        """Create a new API key for a user or service account with hashed storage."""
+        if not user_id and not service_account_id:
+            raise ValueError("Must provide either user_id or service_account_id")
+            
         raw_secret = secrets.token_urlsafe(32)
         api_key = f"mcp_{raw_secret}"
         key_hash = hashlib.sha256(raw_secret.encode()).hexdigest()
@@ -317,19 +329,29 @@ class AuthManager:
         db_manager = get_db_manager()
         async with db_manager.get_session_context() as db_session:
             new_key = APIKey(
+                tenant_id=tenant_id,
                 user_id=user_id,
+                service_account_id=service_account_id,
                 name=name,
                 key_hash=key_hash,
                 prefix=prefix,
+                permissions=permissions or [],
+                allowed_ips=allowed_ips or [],
+                environment=environment,
                 is_active=True
             )
             db_session.add(new_key)
             
-        logger.info("API key created", user_id=user_id, name=name)
+        logger.info("API key created", user_id=user_id, service_account_id=service_account_id, name=name)
         return api_key
     
-    async def validate_api_key(self, api_key: str) -> Optional[User]:
-        """Validate an API key and return the associated User."""
+    async def validate_api_key(
+        self, 
+        api_key: str,
+        request_ip: Optional[str] = None,
+        environment: str = "production"
+    ) -> Optional[Dict[str, Any]]:
+        """Validate an API key and return a unified identity context."""
         if not api_key.startswith("mcp_"):
             return None
             
@@ -345,14 +367,107 @@ class AuthManager:
             if not key_record:
                 return None
                 
+            # Validate Environment
+            if key_record.environment != environment and key_record.environment != "*":
+                logger.warning("API Key environment mismatch", expected=key_record.environment, actual=environment)
+                return None
+                
+            # Validate IP Allowlist
+            if key_record.allowed_ips and request_ip:
+                import ipaddress
+                ip_obj = ipaddress.ip_address(request_ip)
+                allowed = False
+                for cidr in key_record.allowed_ips:
+                    try:
+                        if ip_obj in ipaddress.ip_network(cidr):
+                            allowed = True
+                            break
+                    except ValueError:
+                        continue
+                if not allowed:
+                    logger.warning("API Key IP not allowed", ip=request_ip)
+                    return None
+                    
             key_record.last_used = datetime.now(timezone.utc)
             db_session.add(key_record)
             
-            stmt = select(User).where(User.id == key_record.user_id, User.is_active == True)
-            result = await db_session.execute(stmt)
-            user = result.scalar_one_or_none()
+            # Resolve identity
+            if key_record.user_id:
+                from .database.models import User
+                stmt = select(User).where(User.id == key_record.user_id, User.is_active == True)
+                result = await db_session.execute(stmt)
+                user = result.scalar_one_or_none()
+                if user:
+                    ctx = self._build_context(user)
+                    ctx["api_key_permissions"] = key_record.permissions
+                    return ctx
+            elif key_record.service_account_id:
+                from .database.models import ServiceAccount
+                stmt = select(ServiceAccount).where(ServiceAccount.id == key_record.service_account_id, ServiceAccount.is_active == True)
+                result = await db_session.execute(stmt)
+                sa = result.scalar_one_or_none()
+                if sa:
+                    return {
+                        "user_id": f"sa_{sa.id}",
+                        "username": sa.name,
+                        "is_admin": False,
+                        "tenant_id": sa.tenant_id,
+                        "role": "service_account",
+                        "permissions": key_record.permissions,
+                        "api_key_permissions": key_record.permissions
+                    }
             
-            return user
+            return None
+
+    async def revoke_api_key(self, key_id: int) -> bool:
+        """Emergency revoke an API key."""
+        db_manager = get_db_manager()
+        async with db_manager.get_session_context() as db_session:
+            stmt = select(APIKey).where(APIKey.id == key_id)
+            result = await db_session.execute(stmt)
+            key_record = result.scalar_one_or_none()
+            if key_record:
+                key_record.is_active = False
+                db_session.add(key_record)
+                logger.warning("API key revoked", key_id=key_id)
+                return True
+        return False
+        
+    async def rotate_api_key(self, key_id: int) -> Optional[str]:
+        """Rotate an API key: generate new secret, disable old one."""
+        db_manager = get_db_manager()
+        async with db_manager.get_session_context() as db_session:
+            stmt = select(APIKey).where(APIKey.id == key_id)
+            result = await db_session.execute(stmt)
+            old_key = result.scalar_one_or_none()
+            
+            if not old_key or not old_key.is_active:
+                return None
+                
+            old_key.is_active = False
+            db_session.add(old_key)
+            
+            raw_secret = secrets.token_urlsafe(32)
+            api_key = f"mcp_{raw_secret}"
+            key_hash = hashlib.sha256(raw_secret.encode()).hexdigest()
+            prefix = raw_secret[:8]
+            
+            new_key = APIKey(
+                tenant_id=old_key.tenant_id,
+                user_id=old_key.user_id,
+                service_account_id=old_key.service_account_id,
+                name=old_key.name + " (Rotated)",
+                key_hash=key_hash,
+                prefix=prefix,
+                permissions=old_key.permissions,
+                allowed_ips=old_key.allowed_ips,
+                environment=old_key.environment,
+                is_active=True
+            )
+            db_session.add(new_key)
+            logger.info("API key rotated", old_key_id=key_id, user_id=old_key.user_id)
+            
+        return api_key
     
     # ------------------------------------------------------------------
     # Context & Permissions
@@ -373,9 +488,21 @@ class AuthManager:
             
             # Check if it's an API key
             if token.startswith("mcp_"):
-                user = await self.validate_api_key(token)
-                if user:
-                    return self._build_context(user)
+                # FastMCP doesn't give us client IP easily in middleware without underlying ASGI scope, 
+                # but we can try to extract from headers (e.g., X-Forwarded-For)
+                request_ip = getattr(request, "client", [None])[0] if hasattr(request, "client") else None
+                if not request_ip:
+                    forwarded = getattr(request, "headers", {}).get("x-forwarded-for")
+                    if forwarded:
+                        request_ip = forwarded.split(",")[0].strip()
+                        
+                context = await self.validate_api_key(
+                    api_key=token, 
+                    request_ip=request_ip, 
+                    environment=self.settings.environment if hasattr(self.settings, 'environment') else "production"
+                )
+                if context:
+                    return context
                     
             # Check if it's a JWT access token
             else:

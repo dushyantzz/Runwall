@@ -172,17 +172,43 @@ class ToolExecution(Base):
     )
 
 
+class ServiceAccount(Base):
+    """Machine-to-machine service account identity."""
+    __tablename__ = "service_accounts"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    api_keys: Mapped[List["APIKey"]] = relationship("APIKey", back_populates="service_account")
+    
+    __table_args__ = (
+        Index("idx_service_account_tenant_active", "tenant_id", "is_active"),
+    )
+
 class APIKey(Base):
     """API key model."""
     __tablename__ = "api_keys"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    service_account_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("service_accounts.id"), index=True)
+    
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     key_hash: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     prefix: Mapped[str] = mapped_column(String(20), index=True)  # For identification
     
     permissions: Mapped[List[str]] = mapped_column(JSON, default=list)
+    allowed_ips: Mapped[List[str]] = mapped_column(JSON, default=list)
+    environment: Mapped[str] = mapped_column(String(50), default="production")
+    
     rate_limit: Mapped[int] = mapped_column(Integer, default=1000)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
@@ -191,10 +217,12 @@ class APIKey(Base):
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="api_keys")
+    user: Mapped[Optional["User"]] = relationship("User", back_populates="api_keys")
+    service_account: Mapped[Optional["ServiceAccount"]] = relationship("ServiceAccount", back_populates="api_keys")
     
     __table_args__ = (
         Index("idx_apikey_user_active", "user_id", "is_active"),
+        Index("idx_apikey_sa_active", "service_account_id", "is_active"),
     )
 
 

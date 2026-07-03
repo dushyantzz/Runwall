@@ -103,6 +103,15 @@ class SecureMCPServer:
             # Extract user context from request if available
             user_context = await self.auth_manager.get_user_context(request)
             
+            # Anomaly detection for API keys
+            auth_header = getattr(request, "headers", {}).get("Authorization", "")
+            if auth_header.startswith("Bearer mcp_"):
+                token = auth_header[7:]
+                request_ip = getattr(request, "client", [None])[0] if hasattr(request, "client") else None
+                if not request_ip:
+                    request_ip = getattr(request, "headers", {}).get("x-forwarded-for", "").split(",")[0].strip() or None
+                await self.security_manager.check_key_anomaly(token, request_ip)
+            
             # Add user context to request
             request.user_context = user_context
             

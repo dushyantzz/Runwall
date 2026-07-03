@@ -21,6 +21,7 @@ class SecurityManager:
         self.rate_limits: Dict[str, List[float]] = defaultdict(list)
         self.blocked_ips: set = set()
         self.audit_events: List[Dict[str, Any]] = []
+        self.request_counts: Dict[str, Tuple[int, float]] = {}
         
         # Security patterns for input validation
         self.dangerous_patterns = [
@@ -179,6 +180,41 @@ class SecurityManager:
         
         logger.warning("Security event recorded", **event)
     
+    async def check_key_anomaly(self, api_key: str, request_ip: Optional[str] = None) -> bool:
+        """Detect anomalies in API key usage (e.g., burst usage, unusual IPs)."""
+        # For Phase 1, we use a simple sliding window threshold via Redis if available, 
+        # or just fallback to basic rate limiting logic tracking.
+        key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+        
+        # In a real system, we would query an IP geolocation database or maintain an active Redis set of known IPs
+        # Here we just track usage in-memory for the demo.
+        current_time = time.time()
+        
+        # Clean up old tracking data (1 hour window)
+        self.request_counts = {k: v for k, v in self.request_counts.items() if current_time - v[1] < 3600}
+        
+        # Check high velocity bursts (e.g. > 100 requests in 1 minute)
+        burst_key = f"burst_{key_hash}"
+        count, first_seen = self.request_counts.get(burst_key, (0, current_time))
+        
+        if current_time - first_seen > 60:
+            count = 1
+            first_seen = current_time
+        else:
+            count += 1
+            
+        self.request_counts[burst_key] = (count, first_seen)
+        
+        if count > 100:
+            self._record_security_event(
+                "key_usage_anomaly",
+                key_hash,
+                {"reason": "High velocity burst", "count": count, "ip": request_ip}
+            )
+            return True
+            
+        return False
+
     async def get_audit_events(
         self, 
         time_range: str = "24h", 
