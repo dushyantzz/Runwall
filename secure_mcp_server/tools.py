@@ -22,9 +22,9 @@ from secure_mcp_server.governance import (
     IntentCategory,
     RiskLevel,
     PolicyDecisionType,
-    PolicyEvaluationResult,
     QuotaManager,
-    QuotaExceededError
+    QuotaExceededError,
+    TaintManager
 )
 
 logger = structlog.get_logger()
@@ -43,6 +43,7 @@ class ToolRegistry:
         risk_scorer: Optional[RiskScorer] = None,
         policy_evaluator: Optional[PolicyEvaluator] = None,
         quota_manager: Optional[QuotaManager] = None,
+        taint_manager: Optional[TaintManager] = None,
         enable_governance: bool = True,
     ):
         self.auth_manager = auth_manager
@@ -55,6 +56,7 @@ class ToolRegistry:
         self.risk_scorer = risk_scorer or RiskScorer()
         self.policy_evaluator = policy_evaluator or PolicyEvaluator()
         self.quota_manager = quota_manager
+        self.taint_manager = taint_manager or TaintManager()
         self.enable_governance = enable_governance
         
         # Tool implementations
@@ -246,6 +248,10 @@ class ToolRegistry:
             # GOVERNANCE PIPELINE — Intent → Risk → Policy
             # ========================================================
             if self.enable_governance:
+                # Fetch session taints
+                session_id = user_context.get("session_id")
+                session_taints = await self.taint_manager.get_session_taints(session_id) if session_id else []
+                
                 tool_meta = self.tool_metadata.get(tool_name, {})
                 
                 # Step 1: Classify intent
@@ -254,6 +260,7 @@ class ToolRegistry:
                     parameters=clean_arguments,
                     tool_metadata=tool_meta,
                 )
+                intent.taint_labels = session_taints
                 
                 # Step 2: Score risk
                 risk = self.risk_scorer.score(
@@ -372,6 +379,12 @@ class ToolRegistry:
             self.metrics_collector.record_tool_execution(
                 tool_name, "success", execution_time
             )
+            
+            # Post-execution Taint tracking: check if tool is a taint source
+            if self.enable_governance:
+                taint_label = self.taint_manager.check_tool_taint_source(tool_name, tool_meta if 'tool_meta' in locals() else {})
+                if taint_label and user_context.get("session_id"):
+                    await self.taint_manager.add_taint(user_context["session_id"], taint_label)
             
             logger.info(
                 "Tool executed successfully",

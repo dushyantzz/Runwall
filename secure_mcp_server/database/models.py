@@ -58,6 +58,9 @@ class Session(Base):
     
     # Device and Network Metadata
     ip_address: Mapped[Optional[str]] = mapped_column(String(45))
+    
+    # Governance & Context
+    taint_labels: Mapped[list] = mapped_column(JSON, default=list, comment="List of taint labels (e.g., EXTERNAL_WEB) influencing this session")
     user_agent: Mapped[Optional[str]] = mapped_column(Text)
     device_metadata: Mapped[Optional[dict]] = mapped_column(JSON)
     
@@ -325,6 +328,7 @@ class PolicyDecisionLog(Base):
     risk_score: Mapped[float] = mapped_column(Float, index=True)
     risk_level: Mapped[str] = mapped_column(String(20), index=True)
     decision: Mapped[str] = mapped_column(String(50), index=True)
+    taint_labels: Mapped[list] = mapped_column(JSON, default=list, comment="Taint labels present during evaluation")
 
     matched_rule_id: Mapped[Optional[str]] = mapped_column(
         String(255), ForeignKey("policy_rules.id"), index=True,

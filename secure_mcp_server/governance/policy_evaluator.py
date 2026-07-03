@@ -473,7 +473,8 @@ class PolicyEvaluator:
                         decision=decision.value,
                         matched_rule_id=matched_rule.rule_id if matched_rule else None,
                         evaluation_chain=[rm.to_audit_dict() for rm in evaluation_chain],
-                        explanation=explanation
+                        explanation=explanation,
+                        taint_labels=intent.taint_labels
                     )
                     db_session.add(log)
                     await db_session.commit()
@@ -515,6 +516,16 @@ class PolicyEvaluator:
                 return (
                     False,
                     f"Intent '{intent.intent_category.value}' not in {allowed}",
+                )
+
+        # --- taint_labels --------------------------------------------------
+        if "taint_labels" in conditions:
+            required_taints = {t.lower() for t in conditions["taint_labels"]}
+            actual_taints = {t.lower() for t in intent.taint_labels}
+            if not required_taints.intersection(actual_taints):
+                return (
+                    False,
+                    f"No matching taint labels from {required_taints}",
                 )
 
         # --- risk_levels ---------------------------------------------------

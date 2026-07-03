@@ -36,21 +36,25 @@ from .intent_types import (
 )
 from .intent_classifier import IntentClassifier
 from .risk_scorer import RiskScorer
-from .policy_evaluator import PolicyEvaluator
+from .policy_evaluator import PolicyEvaluator, PolicyRule
 from .quota_manager import QuotaManager, QuotaExceededError
+from .taint import TaintManager, TaintLabel
 
 __all__ = [
     # Services
     "IntentClassifier",
     "RiskScorer",
     "PolicyEvaluator",
+    "PolicyRule",
     "QuotaManager",
+    "TaintManager",
     # Enums
     "IntentCategory",
     "BlastRadius",
     "ResourceSensitivity",
     "RiskLevel",
     "PolicyDecisionType",
+    "TaintLabel",
     # Value objects
     "IntentClassification",
     "RiskFactors",
