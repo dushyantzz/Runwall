@@ -226,5 +226,4 @@ See [`.env.example`](.env.example) for the full list.
 - It adds a professional security guard, not just an open gateway
 - Perfect for anyone who wants to run real workflows or tools with AI, safely
 
-#   E x e c u t i o n - G o v e r n a n c e - P l a t f o r m - f o r - A I - A g e n t s  
- 
+#
