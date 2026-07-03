@@ -9,8 +9,8 @@ import structlog
 from fastmcp import FastMCP
 from sqlalchemy.future import select
 
-from secure_mcp_server.database import get_db_manager, PolicyRule, PolicyDecisionLog, AuditLog
-from secure_mcp_server.governance import compensation_registry
+from secure_mcp_server.database import get_db_manager, PolicyRule, PolicyDecisionLog, AuditLog, ToolManifest
+from secure_mcp_server.governance import compensation_registry, ToolTrustManager
 
 logger = structlog.get_logger(__name__)
 
@@ -209,3 +209,42 @@ def register_admin_tools(mcp: FastMCP):
         
         result = await compensation_registry.rollback_execution(execution_id, user_id=user_id)
         return result
+
+    @mcp.tool()
+    async def approve_tool_trust_state(tool_name: str) -> Dict[str, Any]:
+        """
+        Approve a quarantined tool by resetting its trust status and bumping its version.
+        This acknowledges that the detected code/description drift is intentional and safe.
+        """
+        user_ctx = _require_admin(mcp.current_request)
+        
+        async with get_db_manager().get_session_context() as db:
+            stmt = select(ToolManifest).where(ToolManifest.tool_name == tool_name)
+            result = await db.execute(stmt)
+            manifest = result.scalars().first()
+            
+            if not manifest:
+                return {"success": False, "error": f"Tool '{tool_name}' not found in registry."}
+                
+            if manifest.trust_status == "TRUSTED":
+                return {"success": False, "error": f"Tool '{tool_name}' is already TRUSTED."}
+                
+            # Recompute current hashes
+            tool = mcp._tools.get(tool_name)
+            if not tool:
+                return {"success": False, "error": f"Tool '{tool_name}' is not currently loaded in the active server."}
+                
+            code_content = ToolTrustManager.get_function_source(tool.fn)
+            manifest.code_hash = ToolTrustManager.compute_hash(code_content)
+            manifest.description_hash = ToolTrustManager.compute_hash(tool.description or "")
+            
+            manifest.trust_status = "TRUSTED"
+            manifest.version += 1
+            
+            await db.commit()
+            logger.info("Admin approved tool trust state", tool_name=tool_name, new_version=manifest.version, admin_id=user_ctx.get("user_id"))
+            
+            return {
+                "success": True, 
+                "message": f"Tool '{tool_name}' is now TRUSTED at version {manifest.version}."
+            }

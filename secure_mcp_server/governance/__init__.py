@@ -40,6 +40,7 @@ from .policy_evaluator import PolicyEvaluator, PolicyRule
 from .quota_manager import QuotaManager, QuotaExceededError
 from .taint import TaintManager, TaintLabel
 from .compensation import CompensationRegistry, compensation_registry
+from .trust import ToolTrustManager
 
 __all__ = [
     # Services
@@ -51,6 +52,7 @@ __all__ = [
     "TaintManager",
     "CompensationRegistry",
     "compensation_registry",
+    "ToolTrustManager",
     # Enums
     "IntentCategory",
     "BlastRadius",

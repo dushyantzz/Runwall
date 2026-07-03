@@ -25,7 +25,8 @@ from secure_mcp_server.governance import (
     QuotaManager,
     QuotaExceededError,
     TaintManager,
-    compensation_registry
+    compensation_registry,
+    ToolTrustManager
 )
 
 logger = structlog.get_logger()
@@ -45,6 +46,7 @@ class ToolRegistry:
         policy_evaluator: Optional[PolicyEvaluator] = None,
         quota_manager: Optional[QuotaManager] = None,
         taint_manager: Optional[TaintManager] = None,
+        tool_trust_manager: Optional[ToolTrustManager] = None,
         enable_governance: bool = True,
     ):
         self.auth_manager = auth_manager
@@ -58,6 +60,7 @@ class ToolRegistry:
         self.policy_evaluator = policy_evaluator or PolicyEvaluator()
         self.quota_manager = quota_manager
         self.taint_manager = taint_manager or TaintManager()
+        self.tool_trust_manager = tool_trust_manager or ToolTrustManager()
         self.compensation_registry = compensation_registry
         self.enable_governance = enable_governance
         
@@ -247,9 +250,28 @@ class ToolRegistry:
             clean_arguments = self.security_manager.sanitize_input(arguments)
             
             # ========================================================
-            # GOVERNANCE PIPELINE — Intent → Risk → Policy
+            # GOVERNANCE PIPELINE — Trust → Intent → Risk → Policy
             # ========================================================
             if self.enable_governance:
+                tool_func = self.tools[tool_name]
+                tool_meta = self.tool_metadata.get(tool_name, {})
+                
+                # Step 0: Verify Tool Trust & Provenance
+                trust_result = await self.tool_trust_manager.verify_tool(
+                    tool_name=tool_name,
+                    func=tool_func,
+                    description=tool_meta.get("description", "")
+                )
+                if trust_result.get("status") == "QUARANTINED":
+                    logger.critical("Execution blocked due to tool quarantine", tool=tool_name, reason=trust_result.get("reason"))
+                    return {
+                        "success": False,
+                        "error": f"Tool '{tool_name}' is QUARANTINED. {trust_result.get('reason')}",
+                        "quarantined": True,
+                        "execution_time": time.time() - start_time,
+                        "tool_name": tool_name
+                    }
+                
                 # Fetch session taints
                 session_id = user_context.get("session_id")
                 session_taints = await self.taint_manager.get_session_taints(session_id) if session_id else []

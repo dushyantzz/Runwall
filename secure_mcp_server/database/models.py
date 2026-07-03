@@ -398,3 +398,18 @@ class ReversibleExecutionLog(Base):
         Index("idx_reversible_status", "status"),
         Index("idx_reversible_tenant_status", "tenant_id", "status"),
     )
+
+class ToolManifest(Base):
+    """Stores cryptographic hashes of tools to detect poisoning and drift."""
+    __tablename__ = "tool_manifests"
+    
+    tool_name: Mapped[str] = mapped_column(String(255), primary_key=True)
+    description_hash: Mapped[str] = mapped_column(String(64)) # SHA-256
+    code_hash: Mapped[str] = mapped_column(String(64)) # SHA-256
+    
+    trust_status: Mapped[str] = mapped_column(String(50), default="TRUSTED") # TRUSTED, QUARANTINED, UNTRUSTED
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    
+    last_verified_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
