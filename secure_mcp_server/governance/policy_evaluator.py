@@ -22,7 +22,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+import json
 
+from sqlalchemy.future import select
 import structlog
 
 from .intent_types import (
@@ -36,6 +38,8 @@ from .intent_types import (
     RiskLevel,
     RiskScore,
 )
+
+from secure_mcp_server.database import get_db_manager, PolicyRule as DBPolicyRule, PolicyDecisionLog
 
 logger = structlog.get_logger()
 
@@ -298,12 +302,9 @@ class PolicyEvaluator:
 
     def __init__(
         self,
-        rules: Optional[List[PolicyRule]] = None,
         default_action: PolicyDecisionType = PolicyDecisionType.DENY,
     ) -> None:
         self._default_action = default_action
-        self._rules: List[PolicyRule] = []
-        self.load_rules(rules or get_default_policy_rules())
 
     # ------------------------------------------------------------------
     # Rule management
@@ -337,7 +338,7 @@ class PolicyEvaluator:
     # Evaluation
     # ------------------------------------------------------------------
 
-    def evaluate(
+    async def evaluate(
         self,
         intent: IntentClassification,
         risk: RiskScore,
@@ -345,27 +346,55 @@ class PolicyEvaluator:
     ) -> PolicyEvaluationResult:
         """
         Evaluate all rules in priority order and return the first match.
-
-        Parameters
-        ----------
-        intent : IntentClassification
-            Classified intent from :class:`IntentClassifier`.
-        risk : RiskScore
-            Risk assessment from :class:`RiskScorer`.
-        user_context : dict
-            Current user context (``user_id``, ``is_admin``, ``role``,
-            ``tenant_id``, ``permissions``, etc.).
-
-        Returns
-        -------
-        PolicyEvaluationResult
-            Full decision with explainability chain.
+        Queries the database for live rules and records the decision.
         """
         evaluation_chain: List[PolicyRuleMatch] = []
         matched_rule: Optional[PolicyRule] = None
         matched_rm: Optional[PolicyRuleMatch] = None
+        
+        tenant_id = user_context.get("tenant_id", "default")
+        
+        # Load rules from DB
+        db_rules = []
+        try:
+            async with get_db_manager().get_session_context() as db_session:
+                stmt = (
+                    select(DBPolicyRule)
+                    .where(DBPolicyRule.is_active == True)
+                    .where(
+                        (DBPolicyRule.tenant_id == tenant_id) | 
+                        (DBPolicyRule.tenant_id == None) | 
+                        (DBPolicyRule.tenant_id == "default")
+                    )
+                    .order_by(DBPolicyRule.priority.asc())
+                )
+                result = await db_session.execute(stmt)
+                db_rules = result.scalars().all()
+        except RuntimeError:
+            # Fallback if DB manager isn't initialized yet
+            pass
+            
+            # Convert to domain objects
+            rules = []
+            for dbr in db_rules:
+                action_type = PolicyDecisionType.DENY
+                try:
+                    action_type = PolicyDecisionType(dbr.action.lower())
+                except ValueError:
+                    pass
+                    
+                rules.append(PolicyRule(
+                    rule_id=dbr.id,
+                    name=dbr.name,
+                    description=dbr.description or "",
+                    priority=dbr.priority,
+                    conditions=dbr.conditions or {},
+                    action=action_type,
+                    action_params=dbr.action_params or {},
+                    tenant_id=dbr.tenant_id
+                ))
 
-        for rule in self._rules:
+        for rule in rules:
             # Skip rules scoped to a different tenant
             if rule.tenant_id and rule.tenant_id != user_context.get("tenant_id"):
                 rm = PolicyRuleMatch(
@@ -428,6 +457,31 @@ class PolicyEvaluator:
             matched_rule=matched_rule.rule_id if matched_rule else None,
             rules_evaluated=len(evaluation_chain),
         )
+        
+        # Save decision log to DB
+        try:
+            async with get_db_manager().get_session_context() as db_session:
+                try:
+                    log = PolicyDecisionLog(
+                        session_id=user_context.get("session_id"),
+                        user_id=user_context.get("user_id") if user_context.get("role") != "service_account" else None,
+                        tenant_id=user_context.get("tenant_id", "default"),
+                        tool_name=intent.tool_name,
+                        intent_category=intent.intent_category.value,
+                        risk_score=risk.score,
+                        risk_level=risk.level.value,
+                        decision=decision.value,
+                        matched_rule_id=matched_rule.rule_id if matched_rule else None,
+                        evaluation_chain=[rm.to_audit_dict() for rm in evaluation_chain],
+                        explanation=explanation
+                    )
+                    db_session.add(log)
+                    await db_session.commit()
+                except Exception as e:
+                    logger.error("Failed to save policy decision log", error=str(e))
+                    await db_session.rollback()
+        except RuntimeError:
+            pass # DB manager not initialized
 
         return result
 

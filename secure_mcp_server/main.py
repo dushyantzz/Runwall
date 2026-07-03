@@ -164,6 +164,8 @@ class SecureMCPServer:
     
     def _register_tools(self):
         """Register all available tools."""
+        from secure_mcp_server.admin import register_admin_tools
+        register_admin_tools(self.mcp)
         
         @self.mcp.tool()
         async def echo(text: str) -> Dict[str, Any]:

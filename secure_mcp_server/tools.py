@@ -263,7 +263,7 @@ class ToolRegistry:
                 )
                 
                 # Step 3: Evaluate policy
-                policy_result = self.policy_evaluator.evaluate(
+                policy_result = await self.policy_evaluator.evaluate(
                     intent=intent,
                     risk=risk,
                     user_context=user_context,
