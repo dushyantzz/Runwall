@@ -413,3 +413,29 @@ class ToolManifest(Base):
     last_verified_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+class ApprovalRequest(Base):
+    """Asynchronous staging for actions requiring manual review."""
+    __tablename__ = "approval_requests"
+    
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
+    requester_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    
+    tool_name: Mapped[str] = mapped_column(String(100), index=True)
+    arguments: Mapped[dict] = mapped_column(JSON)
+    context_snapshot: Mapped[dict] = mapped_column(JSON, comment="Rich summary of risk, intent, taint, etc.")
+    
+    status: Mapped[str] = mapped_column(String(50), default="PENDING", index=True) # PENDING, APPROVED, REJECTED, EXECUTED, EXPIRED
+    required_role: Mapped[Optional[str]] = mapped_column(String(50))
+    
+    reviewed_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"))
+    review_reason: Mapped[Optional[str]] = mapped_column(Text)
+    reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (
+        Index("idx_approval_tenant_status", "tenant_id", "status"),
+    )

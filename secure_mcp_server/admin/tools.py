@@ -9,8 +9,8 @@ import structlog
 from fastmcp import FastMCP
 from sqlalchemy.future import select
 
-from secure_mcp_server.database import get_db_manager, PolicyRule, PolicyDecisionLog, AuditLog, ToolManifest
-from secure_mcp_server.governance import compensation_registry, ToolTrustManager
+from secure_mcp_server.database import get_db_manager, PolicyRule, PolicyDecisionLog, AuditLog, ToolManifest, ApprovalRequest
+from secure_mcp_server.governance import compensation_registry, ToolTrustManager, approval_manager
 
 logger = structlog.get_logger(__name__)
 
@@ -248,3 +248,54 @@ def register_admin_tools(mcp: FastMCP):
                 "success": True, 
                 "message": f"Tool '{tool_name}' is now TRUSTED at version {manifest.version}."
             }
+
+    @mcp.tool()
+    async def get_pending_approvals() -> Dict[str, Any]:
+        """
+        List all pending approval requests.
+        """
+        user_ctx = _require_admin(mcp.current_request)
+        tenant_id = user_ctx.get("tenant_id", "default")
+        
+        async with get_db_manager().get_session_context() as db:
+            stmt = select(ApprovalRequest).where(
+                ApprovalRequest.tenant_id == tenant_id,
+                ApprovalRequest.status == "PENDING"
+            )
+            result = await db.execute(stmt)
+            requests = result.scalars().all()
+            
+            return {
+                "success": True,
+                "pending_count": len(requests),
+                "requests": [
+                    {
+                        "id": r.id,
+                        "tool_name": r.tool_name,
+                        "arguments": r.arguments,
+                        "context": r.context_snapshot,
+                        "created_at": str(r.created_at)
+                    } for r in requests
+                ]
+            }
+
+    @mcp.tool()
+    async def review_approval(approval_id: str, decision: str, reason: str) -> Dict[str, Any]:
+        """
+        Review a pending approval request. 
+        decision: MUST be "APPROVED" or "REJECTED".
+        reason: Justification for the decision.
+        """
+        user_ctx = _require_admin(mcp.current_request)
+        user_id = user_ctx.get("user_id")
+        
+        if not user_id:
+            return {"success": False, "error": "User ID missing from context"}
+            
+        result = await approval_manager.review_request(
+            request_id=approval_id,
+            decision=decision,
+            reviewer_id=user_id,
+            reason=reason
+        )
+        return result

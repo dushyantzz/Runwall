@@ -26,7 +26,8 @@ from secure_mcp_server.governance import (
     QuotaExceededError,
     TaintManager,
     compensation_registry,
-    ToolTrustManager
+    ToolTrustManager,
+    approval_manager
 )
 
 logger = structlog.get_logger()
@@ -62,6 +63,7 @@ class ToolRegistry:
         self.taint_manager = taint_manager or TaintManager()
         self.tool_trust_manager = tool_trust_manager or ToolTrustManager()
         self.compensation_registry = compensation_registry
+        self.approval_manager = approval_manager
         self.enable_governance = enable_governance
         
         # Tool implementations
@@ -163,6 +165,21 @@ class ToolRegistry:
             "sensitivity_level": "public",
             "intent_category": "read",
             "resource_types": ["datetime"],
+        }
+        
+        # Execute approved action tool
+        self.tools["execute_approved_action"] = self._execute_approved_action_tool
+        self.tool_metadata["execute_approved_action"] = {
+            "name": "execute_approved_action",
+            "description": "Execute a previously approved action using its Approval ID.",
+            "category": "system",
+            "permissions_required": [],
+            "rate_limit_per_hour": 1000,
+            "timeout_seconds": 30,
+            "sensitivity_level": "public",
+            "intent_category": "execute",
+            "resource_types": ["system"],
+            "is_reversible": False
         }
         
         # System info tool (admin only)
@@ -343,16 +360,38 @@ class ToolRegistry:
                     self.metrics_collector.record_tool_execution(
                         tool_name, "pending_approval", execution_time
                     )
-                    logger.info(
-                        "Tool execution requires approval",
+                    
+                    # Stage the request in the Approval Workflow Engine
+                    context_snapshot = {
+                        "intent": intent.intent_category.value,
+                        "risk_score": risk.score,
+                        "risk_level": risk.level.value,
+                        "taints": intent.taint_labels,
+                        "is_reversible": tool_meta.get("is_reversible", False)
+                    }
+                    
+                    approval_id = await self.approval_manager.create_request(
+                        tenant_id=tenant_id,
+                        requester_id=real_user_id,
                         tool_name=tool_name,
+                        arguments=clean_arguments,
+                        context_snapshot=context_snapshot,
+                        required_approvers=policy_result.requires_approval_from
+                    )
+                    
+                    logger.info(
+                        "Tool execution queued for approval",
+                        tool_name=tool_name,
+                        approval_id=approval_id,
                         user_id=user_id,
                         approvers=policy_result.requires_approval_from,
                     )
+                    
                     return {
                         "success": False,
-                        "error": "Approval required before execution",
+                        "error": f"Execution paused. Approval required (ID: {approval_id})",
                         "requires_approval": True,
+                        "approval_id": approval_id,
                         "required_approvers": policy_result.requires_approval_from,
                         "execution_time": execution_time,
                         "tool_name": tool_name,
@@ -496,6 +535,74 @@ class ToolRegistry:
     
     # Tool implementations
     
+    async def _execute_approved_action_tool(
+        self, arguments: Dict[str, Any], user_context: Dict[str, Any], sandbox_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Tool handler to execute an approved action."""
+        approval_id = arguments.get("approval_id")
+        if not approval_id:
+            return {"success": False, "error": "approval_id is required"}
+            
+        req = await self.approval_manager.get_request_for_execution(approval_id)
+        if not req.get("success"):
+            return req
+            
+        tool_name = req["tool_name"]
+        original_args = req["arguments"]
+        
+        # Execute the tool without going through the governance policy engine again
+        # We temporarily disable governance for this execution
+        old_gov = self.enable_governance
+        self.enable_governance = False
+        try:
+            # We call execute_tool but with governance disabled, it will just execute
+            # Wait, execute_tool doesn't let us pass `user_context` and `sandbox_context` directly,
+            # it takes token string. But here we have context. 
+            # We can directly invoke the tool function!
+            timeout = self.tool_metadata[tool_name].get("timeout_seconds", 30)
+            tool_func = self.tools[tool_name]
+            
+            result = await asyncio.wait_for(
+                tool_func(original_args, user_context, sandbox_context),
+                timeout=timeout
+            )
+            
+            # Record execution
+            self.metrics_collector.record_tool_execution(
+                tool_name, "success_approved", 0.0
+            )
+            
+            # Post-execution Taint and Reversibility tracking (manual since governance was off)
+            if old_gov:
+                t_meta = self.tool_metadata.get(tool_name, {})
+                taint_label = self.taint_manager.check_tool_taint_source(tool_name, t_meta)
+                if taint_label and user_context.get("session_id"):
+                    await self.taint_manager.add_taint(user_context["session_id"], taint_label)
+                    
+                if t_meta.get("is_reversible") and "compensation_handler" in t_meta:
+                    comp_args = {"original_args": original_args}
+                    if isinstance(result, dict):
+                        comp_args["result_data"] = result
+                        
+                    await self.compensation_registry.log_reversible_execution(
+                        tenant_id=user_context.get("tenant_id", "default"),
+                        tool_name=tool_name,
+                        compensation_handler=t_meta["compensation_handler"],
+                        compensation_arguments=comp_args
+                    )
+            
+            return {
+                "success": True,
+                "result": result,
+                "tool_name": tool_name,
+                "note": "Executed via Approval Engine"
+            }
+        except Exception as e:
+            logger.error("Failed to execute approved action", error=str(e), approval_id=approval_id)
+            return {"success": False, "error": str(e)}
+        finally:
+            self.enable_governance = old_gov
+
     async def _echo_tool(
         self, 
         args: Dict[str, Any], 
