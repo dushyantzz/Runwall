@@ -33,6 +33,37 @@ A sliding-window anomaly detector in `SecurityManager` monitors key usage veloci
 
 ## Architecture
 
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   M2M Request (Service/Agent)               │
+│  Headers: Authorization: Bearer mcp_<prefix><secret>        │
+│  Source IP: 192.168.1.1                                     │
+└─────────────┬───────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Auth Middleware + SecurityManager (main.py)                │
+│  ├── Extracts token and client IP (e.g. X-Forwarded-For)    │
+│  ├── Calls SecurityManager.check_key_anomaly(token, ip)     │
+│  └── Calls AuthManager.validate_api_key(token, ip, env)     │
+└─────────────┬───────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  API Key Validation Engine (auth.py)                        │
+│  ├── Cryptographic Hash Check (SHA-256)                     │
+│  ├── Boundary Check: Is IP in allowed_ips CIDR?             │
+│  ├── Boundary Check: Does Environment match?                │
+│  └── Identity Resolution (ServiceAccount or User)           │
+└─────────────┬───────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Governance & Execution Pipeline                            │
+│  (Proceeds with validated ServiceAccount Context)           │
+└─────────────────────────────────────────────────────────────┘
+```
+
 1. **Database Models (`models.py`)**:
    - `ServiceAccount`: Dedicated M2M identity.
    - `APIKey`: Enhanced with `tenant_id`, `service_account_id`, `allowed_ips` (JSON), `environment`, `prefix`, and `key_hash`.

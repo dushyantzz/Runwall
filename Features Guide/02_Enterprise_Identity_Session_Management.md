@@ -33,6 +33,35 @@ The architecture includes stubs for Single Sign-On (SSO) abstractions. It suppor
 
 ## Architecture
 
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   MCP Request (FastMCP)                     │
+│  Headers: Authorization: Bearer <token>                     │
+└─────────────┬───────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Auth Middleware (main.py)                                  │
+│  ├── Intercepts Request                                     │
+│  └── Calls AuthManager.get_user_context()                   │
+└─────────────┬───────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  AuthManager Engine (auth.py)                               │
+│  ├── Validates JWT or API Key                               │
+│  ├── Checks TokenRevocation blacklist                       │
+│  ├── Checks User Lockout (locked_until)                     │
+│  └── Retrieves User Identity Context                        │
+└─────────────┬───────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Governance & Execution Pipeline                            │
+│  (Proceeds with validated User Context)                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
 1. **Database Models**: 
    - `User`: Stores identity data, `auth_provider`, `failed_login_attempts`, and `locked_until`.
    - `Session`: Tracks active sessions, binding them to network metadata (IP, User Agent).
