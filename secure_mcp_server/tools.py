@@ -15,6 +15,7 @@ from .auth import AuthManager
 from .security import SecurityManager
 from .monitoring import MetricsCollector
 from .context import ContextManager
+from secure_mcp_server.connectors import connector_manager, RestAPIConnector, DatabaseConnector, ShellConnector
 from secure_mcp_server.governance import (
     IntentClassifier,
     RiskScorer,
@@ -78,6 +79,15 @@ class ToolRegistry:
         
         # Register built-in tools
         await self._register_builtin_tools()
+        
+        # Register Connectors
+        connector_manager.register_connector("internal_api", RestAPIConnector({"base_url": "https://api.internal.corp"}))
+        connector_manager.register_connector("read_db", DatabaseConnector({"url": "sqlite+aiosqlite:///:memory:"}))
+        connector_manager.register_connector("shell_sandbox", ShellConnector({"sandbox_dir": "/tmp"}))
+        
+        # Initialize and inject connector tools
+        await connector_manager.initialize_all()
+        connector_manager.inject_tools(self)
         
         logger.info(f"Tool registry initialized with {len(self.tools)} tools")
     
