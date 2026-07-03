@@ -1,0 +1,145 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   GLOBAL TOKENS
+   ============================================================ */
+
+:root {
+  --egp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --egp-font-mono: 'Ubuntu Mono', ui-monospace, monospace;
+}
+
+/* ============================================================
+   LIGHT MODE
+   ============================================================ */
+
+:root {
+  --semantic-0: 255 255 255;
+  --semantic-1: 247 247 247;
+  --semantic-2: 240 240 240;
+  --semantic-3: 232 232 232;
+  --semantic-4: 224 224 224;
+  --semantic-5: 217 217 217;
+  --semantic-6: 209 209 209;
+
+  --alpha-4: rgba(0, 0, 0, 0.04);
+  --alpha-8: rgba(0, 0, 0, 0.08);
+  --alpha-12: rgba(0, 0, 0, 0.12);
+  --alpha-16: rgba(0, 0, 0, 0.16);
+
+  --foreground: 0 0 0;
+  --muted-foreground: 82 82 82;
+  --disabled: 163 163 163;
+  --inverse: 255 255 255;
+  --primary: 5 150 105;
+  --success: 22 163 74;
+  --destructive: 220 38 38;
+  --warning: 217 119 6;
+  --info: 2 132 199;
+  --border: var(--alpha-8);
+
+  --card: var(--semantic-0);
+  --toast: var(--semantic-0);
+  --page: var(--semantic-1);
+}
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+
+.dark {
+  --semantic-0: 22 22 22;
+  --semantic-1: 27 27 27;
+  --semantic-2: 31 31 31;
+  --semantic-3: 36 36 36;
+  --semantic-4: 41 41 41;
+  --semantic-5: 45 45 45;
+  --semantic-6: 50 50 50;
+
+  --alpha-4: rgba(255, 255, 255, 0.04);
+  --alpha-8: rgba(255, 255, 255, 0.08);
+  --alpha-12: rgba(255, 255, 255, 0.12);
+  --alpha-16: rgba(255, 255, 255, 0.16);
+
+  --foreground: 255 255 255;
+  --muted-foreground: 163 163 163;
+  --disabled: 82 82 82;
+  --inverse: 0 0 0;
+  --primary: 110 231 183;
+  --success: 34 197 94;
+  --destructive: 239 68 68;
+  --warning: 245 158 11;
+  --info: 14 165 233;
+  --border: var(--alpha-8);
+
+  --card: 36 36 36;
+  --toast: 50 50 50;
+  --page: 22 22 22;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+* {
+  scrollbar-color: var(--alpha-16) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--alpha-16);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--egp-font);
+  font-size: 0.875rem;
+  font-weight: 400;
+  background: rgb(var(--semantic-0));
+  color: rgb(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   UTILITY CLASSES (Tailwind v4 theme)
+   ============================================================ */
+
+@theme {
+  --color-foreground: rgb(var(--foreground));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-primary: rgb(var(--primary));
+  --color-destructive: rgb(var(--destructive));
+  --color-warning: rgb(var(--warning));
+  --color-info: rgb(var(--info));
+  --color-success: rgb(var(--success));
+  --color-card: rgb(var(--card));
+  --color-toast: rgb(var(--toast));
+  --color-inverse: rgb(var(--inverse));
+  --color-semantic-0: rgb(var(--semantic-0));
+  --color-semantic-1: rgb(var(--semantic-1));
+  --color-semantic-2: rgb(var(--semantic-2));
+  --color-semantic-3: rgb(var(--semantic-3));
+  --color-semantic-4: rgb(var(--semantic-4));
+}
