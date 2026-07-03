@@ -18,6 +18,12 @@ from .security import SecurityManager
 from .monitoring import MetricsCollector
 from .database import DatabaseManager
 from .context import ContextManager
+from .governance import (
+    IntentClassifier,
+    RiskScorer,
+    PolicyEvaluator,
+    PolicyDecisionType,
+)
 
 # Configure structured logging
 structlog.configure(
@@ -44,17 +50,41 @@ class SecureMCPServer:
         self.mcp = FastMCP(name="Secure MCP Server Framework")
         self.running = False
         
-        # Initialize components
+        # Initialize core components
         self.auth_manager = AuthManager(self.settings)
         self.security_manager = SecurityManager(self.settings)
         self.metrics_collector = MetricsCollector()
         self.database_manager = DatabaseManager(self.settings.database_url)
         self.context_manager = ContextManager(self.settings)
+        
+        # Initialize governance components
+        self.intent_classifier = IntentClassifier()
+        self.risk_scorer = RiskScorer(
+            weights=self.settings.risk_score_weights,
+            high_risk_threshold=self.settings.high_risk_threshold,
+            critical_risk_threshold=self.settings.critical_risk_threshold,
+        )
+        
+        # Resolve default policy action from settings
+        try:
+            default_action = PolicyDecisionType(self.settings.default_policy_action)
+        except ValueError:
+            default_action = PolicyDecisionType.DENY
+        
+        self.policy_evaluator = PolicyEvaluator(
+            default_action=default_action,
+        )
+        
+        # Initialize tool registry with governance
         self.tool_registry = ToolRegistry(
             auth_manager=self.auth_manager,
             security_manager=self.security_manager,
             metrics_collector=self.metrics_collector,
-            context_manager=self.context_manager
+            context_manager=self.context_manager,
+            intent_classifier=self.intent_classifier,
+            risk_scorer=self.risk_scorer,
+            policy_evaluator=self.policy_evaluator,
+            enable_governance=self.settings.enable_intent_policy,
         )
         
         # Setup MCP server

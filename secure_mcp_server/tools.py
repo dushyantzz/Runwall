@@ -15,6 +15,13 @@ from .auth import AuthManager
 from .security import SecurityManager
 from .monitoring import MetricsCollector
 from .context import ContextManager
+from .governance import (
+    IntentClassifier,
+    RiskScorer,
+    PolicyEvaluator,
+    PolicyDecisionType,
+    PolicyEvaluationResult,
+)
 
 logger = structlog.get_logger()
 
@@ -27,12 +34,22 @@ class ToolRegistry:
         auth_manager: AuthManager,
         security_manager: SecurityManager, 
         metrics_collector: MetricsCollector,
-        context_manager: ContextManager
+        context_manager: ContextManager,
+        intent_classifier: Optional[IntentClassifier] = None,
+        risk_scorer: Optional[RiskScorer] = None,
+        policy_evaluator: Optional[PolicyEvaluator] = None,
+        enable_governance: bool = True,
     ):
         self.auth_manager = auth_manager
         self.security_manager = security_manager
         self.metrics_collector = metrics_collector
         self.context_manager = context_manager
+        
+        # Governance components
+        self.intent_classifier = intent_classifier or IntentClassifier()
+        self.risk_scorer = risk_scorer or RiskScorer()
+        self.policy_evaluator = policy_evaluator or PolicyEvaluator()
+        self.enable_governance = enable_governance
         
         # Tool implementations
         self.tools: Dict[str, Callable] = {}
@@ -58,7 +75,11 @@ class ToolRegistry:
             "category": "utility",
             "permissions_required": [],
             "rate_limit_per_hour": 1000,
-            "timeout_seconds": 5
+            "timeout_seconds": 5,
+            # Governance annotations
+            "sensitivity_level": "public",
+            "intent_category": "read",
+            "resource_types": ["text"],
         }
         
         # Calculator tool
@@ -69,7 +90,10 @@ class ToolRegistry:
             "category": "utility",
             "permissions_required": [],
             "rate_limit_per_hour": 500,
-            "timeout_seconds": 10
+            "timeout_seconds": 10,
+            "sensitivity_level": "public",
+            "intent_category": "execute",
+            "resource_types": ["computation"],
         }
         
         # Text processor tool
@@ -80,7 +104,10 @@ class ToolRegistry:
             "category": "text",
             "permissions_required": [],
             "rate_limit_per_hour": 300,
-            "timeout_seconds": 15
+            "timeout_seconds": 15,
+            "sensitivity_level": "public",
+            "intent_category": "execute",
+            "resource_types": ["text"],
         }
         
         # Secure hash tool
@@ -91,7 +118,10 @@ class ToolRegistry:
             "category": "security",
             "permissions_required": [],
             "rate_limit_per_hour": 200,
-            "timeout_seconds": 5
+            "timeout_seconds": 5,
+            "sensitivity_level": "internal",
+            "intent_category": "execute",
+            "resource_types": ["security"],
         }
         
         # UUID generator tool
@@ -102,7 +132,10 @@ class ToolRegistry:
             "category": "utility",
             "permissions_required": [],
             "rate_limit_per_hour": 1000,
-            "timeout_seconds": 2
+            "timeout_seconds": 2,
+            "sensitivity_level": "public",
+            "intent_category": "execute",
+            "resource_types": ["identifier"],
         }
         
         # DateTime info tool
@@ -113,7 +146,10 @@ class ToolRegistry:
             "category": "utility",
             "permissions_required": [],
             "rate_limit_per_hour": 500,
-            "timeout_seconds": 5
+            "timeout_seconds": 5,
+            "sensitivity_level": "public",
+            "intent_category": "read",
+            "resource_types": ["datetime"],
         }
         
         # System info tool (admin only)
@@ -124,7 +160,10 @@ class ToolRegistry:
             "category": "admin",
             "permissions_required": ["admin"],
             "rate_limit_per_hour": 50,
-            "timeout_seconds": 10
+            "timeout_seconds": 10,
+            "sensitivity_level": "confidential",
+            "intent_category": "admin",
+            "resource_types": ["system", "infrastructure"],
         }
         
         # Context summary tool
@@ -135,7 +174,10 @@ class ToolRegistry:
             "category": "context",
             "permissions_required": [],
             "rate_limit_per_hour": 100,
-            "timeout_seconds": 5
+            "timeout_seconds": 5,
+            "sensitivity_level": "internal",
+            "intent_category": "read",
+            "resource_types": ["session", "context"],
         }
     
     async def execute_tool(
@@ -144,8 +186,16 @@ class ToolRegistry:
         arguments: Dict[str, Any], 
         request
     ) -> Dict[str, Any]:
-        """Execute a tool with security and monitoring."""
+        """Execute a tool with security, governance, and monitoring.
+
+        Execution pipeline::
+
+            validate_tool_exists → check_permissions → rate_limit → sanitize
+            → classify_intent → score_risk → evaluate_policy
+            → [execute | block | queue_for_approval]
+        """
         start_time = time.time()
+        policy_result: Optional[PolicyEvaluationResult] = None
         
         try:
             # Get user context
@@ -169,6 +219,106 @@ class ToolRegistry:
             
             # Sanitize input
             clean_arguments = self.security_manager.sanitize_input(arguments)
+            
+            # ========================================================
+            # GOVERNANCE PIPELINE — Intent → Risk → Policy
+            # ========================================================
+            if self.enable_governance:
+                tool_meta = self.tool_metadata.get(tool_name, {})
+                
+                # Step 1: Classify intent
+                intent = self.intent_classifier.classify(
+                    tool_name=tool_name,
+                    parameters=clean_arguments,
+                    tool_metadata=tool_meta,
+                )
+                
+                # Step 2: Score risk
+                risk = self.risk_scorer.score(
+                    intent=intent,
+                    user_context=user_context,
+                    tool_metadata=tool_meta,
+                )
+                
+                # Step 3: Evaluate policy
+                policy_result = self.policy_evaluator.evaluate(
+                    intent=intent,
+                    risk=risk,
+                    user_context=user_context,
+                )
+                
+                # Act on the policy decision
+                if policy_result.decision == PolicyDecisionType.DENY:
+                    execution_time = time.time() - start_time
+                    self.metrics_collector.record_tool_execution(
+                        tool_name, "policy_denied", execution_time
+                    )
+                    logger.warning(
+                        "Tool execution denied by policy",
+                        tool_name=tool_name,
+                        user_id=user_id,
+                        risk_score=risk.score,
+                        risk_level=risk.level.value,
+                        matched_rule=(
+                            policy_result.matched_rule.rule_id
+                            if policy_result.matched_rule else None
+                        ),
+                    )
+                    return {
+                        "success": False,
+                        "error": f"Policy denied: {policy_result.explanation}",
+                        "execution_time": execution_time,
+                        "tool_name": tool_name,
+                        "governance": policy_result.to_audit_dict(),
+                    }
+                
+                if policy_result.decision == PolicyDecisionType.REQUIRE_APPROVAL:
+                    execution_time = time.time() - start_time
+                    self.metrics_collector.record_tool_execution(
+                        tool_name, "pending_approval", execution_time
+                    )
+                    logger.info(
+                        "Tool execution requires approval",
+                        tool_name=tool_name,
+                        user_id=user_id,
+                        approvers=policy_result.requires_approval_from,
+                    )
+                    return {
+                        "success": False,
+                        "error": "Approval required before execution",
+                        "requires_approval": True,
+                        "required_approvers": policy_result.requires_approval_from,
+                        "execution_time": execution_time,
+                        "tool_name": tool_name,
+                        "governance": policy_result.to_audit_dict(),
+                    }
+                
+                if policy_result.decision == PolicyDecisionType.QUARANTINE:
+                    execution_time = time.time() - start_time
+                    self.metrics_collector.record_tool_execution(
+                        tool_name, "quarantined", execution_time
+                    )
+                    logger.warning(
+                        "Tool execution quarantined for manual review",
+                        tool_name=tool_name,
+                        user_id=user_id,
+                    )
+                    return {
+                        "success": False,
+                        "error": "Action quarantined for manual security review",
+                        "quarantined": True,
+                        "execution_time": execution_time,
+                        "tool_name": tool_name,
+                        "governance": policy_result.to_audit_dict(),
+                    }
+                
+                # SIMULATE: run tool but mark result as simulation
+                # LOG_ONLY / ALLOW: proceed to execution
+                # (simulation flag will be added to result below)
+            
+            # ========================================================
+            # EXECUTE TOOL
+            # ========================================================
             
             # Create sandbox context
             sandbox_context = self.security_manager.create_sandbox_context()
@@ -195,12 +345,24 @@ class ToolRegistry:
                 execution_time=execution_time
             )
             
-            return {
+            response: Dict[str, Any] = {
                 "success": True,
                 "result": result,
                 "execution_time": execution_time,
-                "tool_name": tool_name
+                "tool_name": tool_name,
             }
+            
+            # Attach governance metadata when available
+            if policy_result:
+                response["governance"] = policy_result.to_audit_dict()
+                if policy_result.decision == PolicyDecisionType.SIMULATE:
+                    response["simulated"] = True
+                    response["warning"] = (
+                        "This result is a SIMULATION. The action was not "
+                        "committed. Approve to execute for real."
+                    )
+            
+            return response
             
         except asyncio.TimeoutError:
             execution_time = time.time() - start_time

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Boolean, 
+    Column, Integer, String, Text, DateTime, Boolean, Float,
     JSON, ForeignKey, Index, UniqueConstraint
 )
 from sqlalchemy.orm import declarative_base
@@ -211,6 +211,88 @@ class AuditLog(Base):
     __table_args__ = (
         Index("idx_audit_event_created", "event", "created_at"),
         Index("idx_audit_user_created", "user_id", "created_at"),
+    )
+
+
+class PolicyRule(Base):
+    """Versioned policy rule for the intent-aware execution policy engine."""
+    __tablename__ = "policy_rules"
+
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    priority: Mapped[int] = mapped_column(Integer, default=100, index=True)
+    tenant_id: Mapped[Optional[str]] = mapped_column(String(50), index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    # Conditions and action stored as JSON for maximum flexibility
+    conditions: Mapped[dict] = mapped_column(JSON, default=dict)
+    action: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="deny",
+        comment="Policy decision: allow, deny, require_approval, simulate, log_only, quarantine",
+    )
+    action_params: Mapped[Optional[dict]] = mapped_column(
+        JSON, default=dict,
+        comment="Additional params e.g. required_approvers, expiry_minutes",
+    )
+
+    created_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    decision_logs: Mapped[List["PolicyDecisionLog"]] = relationship(
+        "PolicyDecisionLog", back_populates="matched_rule",
+    )
+
+    __table_args__ = (
+        Index("idx_policy_rule_priority_active", "priority", "is_active"),
+        Index("idx_policy_rule_tenant", "tenant_id"),
+    )
+
+
+class PolicyDecisionLog(Base):
+    """Immutable audit record of every policy decision made by the governance engine."""
+    __tablename__ = "policy_decision_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    execution_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("tool_executions.id"), index=True,
+    )
+    session_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    tenant_id: Mapped[Optional[str]] = mapped_column(String(50), index=True)
+
+    tool_name: Mapped[str] = mapped_column(String(100), index=True)
+    intent_category: Mapped[str] = mapped_column(String(50), index=True)
+    risk_score: Mapped[float] = mapped_column(Float, index=True)
+    risk_level: Mapped[str] = mapped_column(String(20), index=True)
+    decision: Mapped[str] = mapped_column(String(50), index=True)
+
+    matched_rule_id: Mapped[Optional[str]] = mapped_column(
+        String(255), ForeignKey("policy_rules.id"), index=True,
+    )
+    evaluation_chain: Mapped[Optional[dict]] = mapped_column(
+        JSON, comment="Full explainability trace: all rules evaluated with match/skip reasons",
+    )
+    parameters_hash: Mapped[Optional[str]] = mapped_column(
+        String(64), comment="SHA-256 hash of the tool parameters for deduplication",
+    )
+    explanation: Mapped[Optional[str]] = mapped_column(Text)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    matched_rule: Mapped[Optional["PolicyRule"]] = relationship(
+        "PolicyRule", back_populates="decision_logs",
+    )
+
+    __table_args__ = (
+        Index("idx_decision_log_tool_decision", "tool_name", "decision"),
+        Index("idx_decision_log_risk", "risk_level", "risk_score"),
+        Index("idx_decision_log_created", "created_at"),
+        Index("idx_decision_log_tenant_created", "tenant_id", "created_at"),
     )
 
 

@@ -69,6 +69,37 @@ class Settings(BaseSettings):
     admin_password: str = Field(default="admin123", validation_alias="ADMIN_PASSWORD")
     admin_email: str = Field(default="admin@example.com", validation_alias="ADMIN_EMAIL")
 
+    # Governance — Intent-Aware Execution Policy Engine
+    enable_intent_policy: bool = Field(
+        default=True,
+        description="Enable the intent-aware policy engine in the execution pipeline",
+        validation_alias="ENABLE_INTENT_POLICY",
+    )
+    default_policy_action: str = Field(
+        default="deny",
+        description="Default decision when no policy rule matches (Zero Trust = deny)",
+        validation_alias="DEFAULT_POLICY_ACTION",
+    )
+    high_risk_threshold: float = Field(
+        default=0.70,
+        description="Risk score >= this value is classified as HIGH",
+        validation_alias="HIGH_RISK_THRESHOLD",
+    )
+    critical_risk_threshold: float = Field(
+        default=0.90,
+        description="Risk score >= this value is classified as CRITICAL",
+        validation_alias="CRITICAL_RISK_THRESHOLD",
+    )
+    risk_score_weights: Optional[dict] = Field(
+        default=None,
+        description=(
+            "Custom factor weights for risk scoring. "
+            "Keys: tool_sensitivity, parameter_risk, user_trust, "
+            "resource_sensitivity, blast_radius, temporal_risk, behavioral_anomaly"
+        ),
+        validation_alias="RISK_SCORE_WEIGHTS",
+    )
+
 
 # Global settings instance
 _settings: Optional[Settings] = None
