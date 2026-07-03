@@ -36,7 +36,9 @@ from .intent_types import (
 )
 from .intent_classifier import IntentClassifier
 from .risk_scorer import RiskScorer
-from .policy_evaluator import PolicyEvaluator, PolicyRule
+from .policy_evaluator import PolicyEvaluator
+from .opa_evaluator import OPAPolicyEvaluator, OPAPolicyResult
+from secure_mcp_server.database import PolicyRule
 from .quota_manager import QuotaManager, QuotaExceededError
 from .taint import TaintManager, TaintLabel
 from .compensation import CompensationRegistry, compensation_registry
@@ -49,6 +51,8 @@ __all__ = [
     "IntentClassifier",
     "RiskScorer",
     "PolicyEvaluator",
+    "OPAPolicyEvaluator",
+    "OPAPolicyResult",
     "PolicyRule",
     "QuotaManager",
     "TaintManager",

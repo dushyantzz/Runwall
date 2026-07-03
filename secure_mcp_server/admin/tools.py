@@ -9,8 +9,8 @@ import structlog
 from fastmcp import FastMCP
 from sqlalchemy.future import select
 
-from secure_mcp_server.database import get_db_manager, PolicyRule, PolicyDecisionLog, AuditLog, ToolManifest, ApprovalRequest
-from secure_mcp_server.governance import compensation_registry, ToolTrustManager, approval_manager
+from secure_mcp_server.database import get_db_manager, PolicyRule, PolicyDecisionLog, AuditLog, ToolManifest, ApprovalRequest, PolicyBundle
+from secure_mcp_server.governance import compensation_registry, ToolTrustManager, approval_manager, OPAPolicyEvaluator, IntentCategory, RiskScorer, IntentClassifier
 
 logger = structlog.get_logger(__name__)
 
@@ -299,3 +299,76 @@ def register_admin_tools(mcp: FastMCP):
             reason=reason
         )
         return result
+
+    @mcp.tool()
+    async def deploy_policy_version(version: str, rego_content: str, is_active: bool = False, is_simulation_mode: bool = False, rollout_percentage: int = 100) -> Dict[str, Any]:
+        """
+        Deploy a new OPA/Rego PolicyBundle version.
+        """
+        user_ctx = _require_admin(mcp.current_request)
+        tenant_id = user_ctx.get("tenant_id", "default")
+        
+        async with get_db_manager().get_session_context() as db:
+            if is_active:
+                # Deactivate others if this one is 100% active
+                if rollout_percentage == 100:
+                    stmt = select(PolicyBundle).where(PolicyBundle.tenant_id == tenant_id, PolicyBundle.is_active == True)
+                    result = await db.execute(stmt)
+                    for active_bundle in result.scalars().all():
+                        active_bundle.is_active = False
+                        
+            bundle = PolicyBundle(
+                id=f"pb-{uuid.uuid4().hex[:8]}",
+                tenant_id=tenant_id,
+                version=version,
+                rego_content=rego_content,
+                is_active=is_active,
+                is_simulation_mode=is_simulation_mode,
+                rollout_percentage=rollout_percentage
+            )
+            db.add(bundle)
+            await db.commit()
+            
+            return {
+                "success": True,
+                "message": f"Deployed PolicyBundle v{version}",
+                "bundle_id": bundle.id
+            }
+
+    @mcp.tool()
+    async def run_policy_simulation(tool_name: str, arguments: str, session_taints: str = "") -> Dict[str, Any]:
+        """
+        Simulate an OPA policy evaluation against the current active rules without executing the tool.
+        arguments: JSON string of tool arguments.
+        session_taints: comma separated taints (e.g. 'high_risk,pii').
+        """
+        user_ctx = _require_admin(mcp.current_request)
+        
+        try:
+            args_dict = json.loads(arguments)
+        except Exception:
+            args_dict = {}
+            
+        taint_list = [t.strip() for t in session_taints.split(",") if t.strip()]
+        
+        # Mock Intent and Risk (normally done by pipelines)
+        intent = IntentClassifier().classify(tool_name, args_dict, {})
+        intent.taint_labels = taint_list
+        risk = RiskScorer().score(intent, user_ctx, {})
+        
+        evaluator = OPAPolicyEvaluator()
+        result = await evaluator.evaluate(
+            intent=intent,
+            risk=risk,
+            user_context=user_ctx,
+            tool_metadata={},
+            simulation_mode=True
+        )
+        
+        return {
+            "success": True,
+            "decision": result.decision.value,
+            "explanation": result.explanation,
+            "simulated_intent": intent.intent_category.value,
+            "simulated_risk": risk.score
+        }

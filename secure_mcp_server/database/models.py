@@ -466,3 +466,24 @@ class TaskContract(Base):
     __table_args__ = (
         Index("idx_contract_tenant_status", "tenant_id", "status"),
     )
+
+class PolicyBundle(Base):
+    """Stores versioned OPA/Rego policy bundles."""
+    __tablename__ = "policy_bundles"
+    
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
+    version: Mapped[str] = mapped_column(String(50), index=True)
+    
+    rego_content: Mapped[str] = mapped_column(Text)
+    
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_simulation_mode: Mapped[bool] = mapped_column(Boolean, default=False)
+    rollout_percentage: Mapped[int] = mapped_column(Integer, default=100)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (
+        Index("idx_bundle_tenant_active", "tenant_id", "is_active"),
+    )

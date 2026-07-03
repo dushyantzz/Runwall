@@ -19,7 +19,7 @@ from secure_mcp_server.connectors import connector_manager, RestAPIConnector, Da
 from secure_mcp_server.governance import (
     IntentClassifier,
     RiskScorer,
-    PolicyEvaluator,
+    OPAPolicyEvaluator,
     IntentCategory,
     RiskLevel,
     PolicyDecisionType,
@@ -46,7 +46,7 @@ class ToolRegistry:
         context_manager: ContextManager,
         intent_classifier: Optional[IntentClassifier] = None,
         risk_scorer: Optional[RiskScorer] = None,
-        policy_evaluator: Optional[PolicyEvaluator] = None,
+        policy_evaluator: Optional[OPAPolicyEvaluator] = None,
         quota_manager: Optional[QuotaManager] = None,
         taint_manager: Optional[TaintManager] = None,
         tool_trust_manager: Optional[ToolTrustManager] = None,
@@ -60,7 +60,7 @@ class ToolRegistry:
         # Governance components
         self.intent_classifier = intent_classifier or IntentClassifier()
         self.risk_scorer = risk_scorer or RiskScorer()
-        self.policy_evaluator = policy_evaluator or PolicyEvaluator()
+        self.policy_evaluator = policy_evaluator or OPAPolicyEvaluator()
         self.quota_manager = quota_manager
         self.taint_manager = taint_manager or TaintManager()
         self.tool_trust_manager = tool_trust_manager or ToolTrustManager()
@@ -340,11 +340,15 @@ class ToolRegistry:
                     tool_metadata=tool_meta,
                 )
                 
-                # Step 3: Evaluate policy
+                # Step 3: Evaluate policy using OPA
+                # In a real enterprise system, we would fetch the active PolicyBundle 
+                # to get the simulation_mode flag. We default to False here.
                 policy_result = await self.policy_evaluator.evaluate(
                     intent=intent,
                     risk=risk,
                     user_context=user_context,
+                    tool_metadata=tool_meta,
+                    simulation_mode=False
                 )
                 
                 # Act on the policy decision
