@@ -62,6 +62,9 @@ class SecureMCPServer:
         self.context_manager = ContextManager(self.settings)
         
         # Initialize governance components
+        from secure_mcp_server.governance.quota_manager import QuotaManager
+        self.quota_manager = QuotaManager(self.settings)
+        
         self.intent_classifier = IntentClassifier()
         self.risk_scorer = RiskScorer(
             weights=self.settings.risk_score_weights,
@@ -88,6 +91,7 @@ class SecureMCPServer:
             intent_classifier=self.intent_classifier,
             risk_scorer=self.risk_scorer,
             policy_evaluator=self.policy_evaluator,
+            quota_manager=self.quota_manager,
             enable_governance=self.settings.enable_intent_policy,
         )
         
@@ -322,6 +326,7 @@ class SecureMCPServer:
         await self.database_manager.initialize()
         await self.context_manager.initialize()
         await self.tool_registry.initialize()
+        await self.quota_manager.initialize()
         
         logger.info("Server initialization complete")
     

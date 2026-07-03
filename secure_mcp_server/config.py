@@ -46,9 +46,13 @@ class Settings(BaseSettings):
     enable_multi_tenant: bool = Field(default=True, validation_alias="ENABLE_MULTI_TENANT")
     default_tenant: str = Field(default="default", validation_alias="DEFAULT_TENANT")
     
-    # Rate Limiting
-    rate_limit_requests_per_minute: int = Field(default=60, validation_alias="RATE_LIMIT_RPM")
-    rate_limit_tools_per_hour: int = Field(default=1000, validation_alias="RATE_LIMIT_TPH")
+    # Rate Limiting & Distributed Quotas
+    default_tenant_rpm: int = Field(default=1000, validation_alias="DEFAULT_TENANT_RPM")
+    default_user_rpm: int = Field(default=100, validation_alias="DEFAULT_USER_RPM")
+    default_service_account_rpm: int = Field(default=500, validation_alias="DEFAULT_SA_RPM")
+    default_tool_rpm: int = Field(default=50, validation_alias="DEFAULT_TOOL_RPM")
+    rate_limit_requests_per_minute: int = Field(default=60, validation_alias="RATE_LIMIT_RPM") # legacy
+    rate_limit_tools_per_hour: int = Field(default=1000, validation_alias="RATE_LIMIT_TPH") # legacy
     
     # Monitoring and Logging
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")

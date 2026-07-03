@@ -15,12 +15,16 @@ from .auth import AuthManager
 from .security import SecurityManager
 from .monitoring import MetricsCollector
 from .context import ContextManager
-from .governance import (
+from secure_mcp_server.governance import (
     IntentClassifier,
     RiskScorer,
     PolicyEvaluator,
+    IntentCategory,
+    RiskLevel,
     PolicyDecisionType,
     PolicyEvaluationResult,
+    QuotaManager,
+    QuotaExceededError
 )
 
 logger = structlog.get_logger()
@@ -38,6 +42,7 @@ class ToolRegistry:
         intent_classifier: Optional[IntentClassifier] = None,
         risk_scorer: Optional[RiskScorer] = None,
         policy_evaluator: Optional[PolicyEvaluator] = None,
+        quota_manager: Optional[QuotaManager] = None,
         enable_governance: bool = True,
     ):
         self.auth_manager = auth_manager
@@ -49,6 +54,7 @@ class ToolRegistry:
         self.intent_classifier = intent_classifier or IntentClassifier()
         self.risk_scorer = risk_scorer or RiskScorer()
         self.policy_evaluator = policy_evaluator or PolicyEvaluator()
+        self.quota_manager = quota_manager
         self.enable_governance = enable_governance
         
         # Tool implementations
@@ -210,12 +216,28 @@ class ToolRegistry:
             if not self.security_manager.validate_tool_access(user_context, tool_name):
                 raise PermissionError(f"Access denied to tool '{tool_name}'")
             
-            # Check rate limiting
-            if not await self.security_manager.check_rate_limit(
-                f"tool_{tool_name}_{user_id}",
-                limit=self.tool_metadata[tool_name].get("rate_limit_per_hour", 100) // 60
-            ):
-                raise Exception(f"Rate limit exceeded for tool '{tool_name}'")
+            # Check rate limiting / quotas
+            tenant_id = user_context.get('tenant_id', 'default')
+            sa_id = user_id if user_context.get('role') == 'service_account' else None
+            real_user_id = user_id if user_context.get('role') != 'service_account' else None
+            
+            if self.quota_manager:
+                try:
+                    await self.quota_manager.check_quotas(
+                        tenant_id=tenant_id,
+                        user_id=real_user_id,
+                        service_account_id=sa_id,
+                        tool_name=tool_name,
+                        risk_score=0.0
+                    )
+                except QuotaExceededError as e:
+                    raise Exception(str(e))
+            else:
+                if not await self.security_manager.check_rate_limit(
+                    f"tool_{tool_name}_{user_id}",
+                    limit=self.tool_metadata[tool_name].get("rate_limit_per_hour", 100) // 60
+                ):
+                    raise Exception(f"Rate limit exceeded for tool '{tool_name}'")
             
             # Sanitize input
             clean_arguments = self.security_manager.sanitize_input(arguments)
@@ -272,6 +294,19 @@ class ToolRegistry:
                         "governance": policy_result.to_audit_dict(),
                     }
                 
+                if self.quota_manager and risk.score >= 0.5:
+                    try:
+                        await self.quota_manager.check_quotas(
+                            tenant_id=tenant_id,
+                            user_id=real_user_id,
+                            service_account_id=sa_id,
+                            tool_name=tool_name,
+                            risk_score=risk.score
+                        )
+                    except QuotaExceededError as e:
+                        logger.warning("Execution throttled adaptively due to high risk", tool=tool_name, risk=risk.score)
+                        raise Exception(f"Adaptive quota limit exceeded due to elevated risk: {str(e)}")
+                        
                 if policy_result.decision == PolicyDecisionType.REQUIRE_APPROVAL:
                     execution_time = time.time() - start_time
                     self.metrics_collector.record_tool_execution(

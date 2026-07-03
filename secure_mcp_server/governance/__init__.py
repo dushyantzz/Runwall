@@ -37,12 +37,14 @@ from .intent_types import (
 from .intent_classifier import IntentClassifier
 from .risk_scorer import RiskScorer
 from .policy_evaluator import PolicyEvaluator
+from .quota_manager import QuotaManager, QuotaExceededError
 
 __all__ = [
     # Services
     "IntentClassifier",
     "RiskScorer",
     "PolicyEvaluator",
+    "QuotaManager",
     # Enums
     "IntentCategory",
     "BlastRadius",
@@ -55,4 +57,5 @@ __all__ = [
     "RiskScore",
     "PolicyRuleMatch",
     "PolicyEvaluationResult",
+    "QuotaExceededError",
 ]
