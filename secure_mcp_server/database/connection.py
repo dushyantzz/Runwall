@@ -64,17 +64,20 @@ class DatabaseManager:
             raise RuntimeError("Database not initialized")
         return self.session_factory()
     
+    from contextlib import asynccontextmanager
+    
+    @asynccontextmanager
     async def get_session_context(self) -> AsyncGenerator[AsyncSession, None]:
         """Get a database session as async context manager."""
-        async with self.get_session() as session:
-            try:
-                yield session
-                await session.commit()
-            except Exception:
-                await session.rollback()
-                raise
-            finally:
-                await session.close()
+        session = await self.get_session()
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
     
     async def health_check(self) -> bool:
         """Check database health."""
@@ -90,13 +93,16 @@ class DatabaseManager:
 # Global database manager instance
 db_manager: Optional[DatabaseManager] = None
 
+def set_db_manager(manager: DatabaseManager):
+    """Set the global database manager instance."""
+    global db_manager
+    db_manager = manager
 
 def get_db_manager() -> DatabaseManager:
     """Get the global database manager instance."""
     if db_manager is None:
         raise RuntimeError("Database manager not initialized")
     return db_manager
-
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for getting database session in FastAPI routes."""

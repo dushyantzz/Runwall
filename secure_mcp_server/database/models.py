@@ -26,14 +26,20 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
     
+    # Enterprise Identity Fields
+    auth_provider: Mapped[str] = mapped_column(String(50), default="local", index=True)
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Relationships
     sessions: Mapped[List["Session"]] = relationship("Session", back_populates="user")
     api_keys: Mapped[List["APIKey"]] = relationship("APIKey", back_populates="user")
-    permissions: Mapped[List["UserPermission"]] = relationship("UserPermission", back_populates="user")
+    user_permissions: Mapped[List["UserPermission"]] = relationship("UserPermission", back_populates="user", foreign_keys="[UserPermission.user_id]")
     
     __table_args__ = (
         Index("idx_user_tenant_active", "tenant_id", "is_active"),
@@ -50,6 +56,11 @@ class Session(Base):
     client_info: Mapped[Optional[dict]] = mapped_column(JSON)
     capabilities: Mapped[Optional[dict]] = mapped_column(JSON)
     
+    # Device and Network Metadata
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
+    user_agent: Mapped[Optional[str]] = mapped_column(Text)
+    device_metadata: Mapped[Optional[dict]] = mapped_column(JSON)
+    
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_activity: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -63,6 +74,23 @@ class Session(Base):
     __table_args__ = (
         Index("idx_session_tenant_active", "tenant_id", "is_active"),
         Index("idx_session_last_activity", "last_activity"),
+    )
+
+
+class TokenRevocation(Base):
+    """Stores revoked JWT token IDs (JTIs) before they naturally expire."""
+    __tablename__ = "token_revocations"
+    
+    jti: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    session_id: Mapped[Optional[str]] = mapped_column(String(255), ForeignKey("sessions.id"), index=True)
+    
+    revoked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    reason: Mapped[Optional[str]] = mapped_column(String(255))
+    
+    __table_args__ = (
+        Index("idx_token_expiry", "expires_at"),
     )
 
 
@@ -106,7 +134,7 @@ class Tool(Base):
     tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
     executions: Mapped[List["ToolExecution"]] = relationship("ToolExecution", back_populates="tool")
@@ -184,7 +212,7 @@ class UserPermission(Base):
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="permissions", foreign_keys=[user_id])
+    user: Mapped["User"] = relationship("User", back_populates="user_permissions", foreign_keys=[user_id])
     
     __table_args__ = (
         UniqueConstraint("user_id", "permission", "resource", name="uq_user_permission_resource"),
@@ -310,7 +338,7 @@ class Tenant(Base):
     max_sessions: Mapped[int] = mapped_column(Integer, default=1000)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     __table_args__ = (
         Index("idx_tenant_active", "is_active"),

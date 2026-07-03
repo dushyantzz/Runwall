@@ -3,7 +3,7 @@
 from .connection import DatabaseManager, get_db_manager, get_db_session
 from .models import (
     Base, User, APIKey, Session, Tool, AuditLog,
-    PolicyRule, PolicyDecisionLog,
+    PolicyRule, PolicyDecisionLog, TokenRevocation,
 )
 
 __all__ = [
@@ -18,4 +18,5 @@ __all__ = [
     'AuditLog',
     'PolicyRule',
     'PolicyDecisionLog',
+    'TokenRevocation',
 ]

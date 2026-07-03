@@ -39,6 +39,8 @@ structlog.configure(
     cache_logger_on_first_use=True,
 )
 
+from secure_mcp_server.database.connection import DatabaseManager, set_db_manager
+
 logger = structlog.get_logger()
 
 
@@ -51,10 +53,12 @@ class SecureMCPServer:
         self.running = False
         
         # Initialize core components
+        self.database_manager = DatabaseManager(self.settings.database_url)
+        set_db_manager(self.database_manager)
+        
         self.auth_manager = AuthManager(self.settings)
         self.security_manager = SecurityManager(self.settings)
         self.metrics_collector = MetricsCollector()
-        self.database_manager = DatabaseManager(self.settings.database_url)
         self.context_manager = ContextManager(self.settings)
         
         # Initialize governance components
