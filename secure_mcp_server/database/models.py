@@ -439,3 +439,30 @@ class ApprovalRequest(Base):
     __table_args__ = (
         Index("idx_approval_tenant_status", "tenant_id", "status"),
     )
+
+class TaskContract(Base):
+    """Dynamic mini-sandbox for multi-step LLM workflows."""
+    __tablename__ = "task_contracts"
+    
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True)
+    agent_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    
+    goal: Mapped[str] = mapped_column(Text)
+    expected_tools: Mapped[dict] = mapped_column(JSON) # List of strings
+    
+    max_writes: Mapped[int] = mapped_column(Integer, default=0)
+    current_writes: Mapped[int] = mapped_column(Integer, default=0)
+    
+    max_spend: Mapped[float] = mapped_column(Float, default=0.0)
+    current_spend: Mapped[float] = mapped_column(Float, default=0.0)
+    
+    status: Mapped[str] = mapped_column(String(50), default="PENDING", index=True) # PENDING, APPROVED, EXHAUSTED, VIOLATED, COMPLETED
+    approval_id: Mapped[Optional[str]] = mapped_column(String(255), ForeignKey("approval_requests.id"))
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    __table_args__ = (
+        Index("idx_contract_tenant_status", "tenant_id", "status"),
+    )

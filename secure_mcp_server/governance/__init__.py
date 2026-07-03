@@ -42,6 +42,7 @@ from .taint import TaintManager, TaintLabel
 from .compensation import CompensationRegistry, compensation_registry
 from .trust import ToolTrustManager
 from .approvals import ApprovalManager, approval_manager
+from .contracts import ContractManager, contract_manager
 
 __all__ = [
     # Services
@@ -56,6 +57,8 @@ __all__ = [
     "ToolTrustManager",
     "ApprovalManager",
     "approval_manager",
+    "ContractManager",
+    "contract_manager",
     # Enums
     "IntentCategory",
     "BlastRadius",

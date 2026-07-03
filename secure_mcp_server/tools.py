@@ -27,7 +27,8 @@ from secure_mcp_server.governance import (
     TaintManager,
     compensation_registry,
     ToolTrustManager,
-    approval_manager
+    approval_manager,
+    contract_manager
 )
 
 logger = structlog.get_logger()
@@ -64,6 +65,7 @@ class ToolRegistry:
         self.tool_trust_manager = tool_trust_manager or ToolTrustManager()
         self.compensation_registry = compensation_registry
         self.approval_manager = approval_manager
+        self.contract_manager = contract_manager
         self.enable_governance = enable_governance
         
         # Tool implementations
@@ -182,6 +184,21 @@ class ToolRegistry:
             "is_reversible": False
         }
         
+        # Propose task contract tool
+        self.tools["propose_task_contract"] = self._propose_task_contract_tool
+        self.tool_metadata["propose_task_contract"] = {
+            "name": "propose_task_contract",
+            "description": "Propose a task contract for a multi-step workflow. Requires goal, expected_tools (list), max_writes (int), and max_spend (float).",
+            "category": "system",
+            "permissions_required": [],
+            "rate_limit_per_hour": 100,
+            "timeout_seconds": 10,
+            "sensitivity_level": "internal",
+            "intent_category": "execute",
+            "resource_types": ["system"],
+            "is_reversible": False
+        }
+        
         # System info tool (admin only)
         self.tools["system_info"] = self._system_info_tool
         self.tool_metadata["system_info"] = {
@@ -262,6 +279,9 @@ class ToolRegistry:
                     limit=self.tool_metadata[tool_name].get("rate_limit_per_hour", 100) // 60
                 ):
                     raise Exception(f"Rate limit exceeded for tool '{tool_name}'")
+            
+            # Extract contract_id if provided by the agent
+            contract_id = arguments.pop("contract_id", None)
             
             # Sanitize input
             clean_arguments = self.security_manager.sanitize_input(arguments)
@@ -355,8 +375,36 @@ class ToolRegistry:
                         logger.warning("Execution throttled adaptively due to high risk", tool=tool_name, risk=risk.score)
                         raise Exception(f"Adaptive quota limit exceeded due to elevated risk: {str(e)}")
                         
+                # Validate against Task Contract if provided
+                contract_bypasses_approval = False
+                if contract_id:
+                    # Estimate cost for this tool execution (mocked as 0 for now)
+                    estimated_cost = 0.0 
+                    contract_val = await self.contract_manager.validate_execution(
+                        contract_id=contract_id,
+                        tool_name=tool_name,
+                        intent_category=intent.intent_category,
+                        cost=estimated_cost
+                    )
+                    if not contract_val.get("valid"):
+                        execution_time = time.time() - start_time
+                        logger.warning("Execution blocked by contract violation", tool_name=tool_name, contract_id=contract_id)
+                        return {
+                            "success": False,
+                            "error": f"Contract violation: {contract_val.get('error')}",
+                            "execution_time": execution_time,
+                            "tool_name": tool_name
+                        }
+                    else:
+                        contract_bypasses_approval = True
+                        
                 if policy_result.decision == PolicyDecisionType.REQUIRE_APPROVAL:
-                    execution_time = time.time() - start_time
+                    if contract_bypasses_approval:
+                        logger.info("Approval requirement bypassed by active Task Contract", tool_name=tool_name, contract_id=contract_id)
+                        # We change the decision locally so it proceeds to execution
+                        policy_result.decision = PolicyDecisionType.ALLOW
+                    else:
+                        execution_time = time.time() - start_time
                     self.metrics_collector.record_tool_execution(
                         tool_name, "pending_approval", execution_time
                     )
@@ -555,10 +603,6 @@ class ToolRegistry:
         old_gov = self.enable_governance
         self.enable_governance = False
         try:
-            # We call execute_tool but with governance disabled, it will just execute
-            # Wait, execute_tool doesn't let us pass `user_context` and `sandbox_context` directly,
-            # it takes token string. But here we have context. 
-            # We can directly invoke the tool function!
             timeout = self.tool_metadata[tool_name].get("timeout_seconds", 30)
             tool_func = self.tools[tool_name]
             
@@ -602,6 +646,31 @@ class ToolRegistry:
             return {"success": False, "error": str(e)}
         finally:
             self.enable_governance = old_gov
+
+    async def _propose_task_contract_tool(
+        self, arguments: Dict[str, Any], user_context: Dict[str, Any], sandbox_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Tool handler to propose a task contract."""
+        tenant_id = user_context.get("tenant_id", "default")
+        agent_id = user_context.get("user_id", "agent")
+        
+        goal = arguments.get("goal")
+        expected_tools = arguments.get("expected_tools", [])
+        max_writes = arguments.get("max_writes", 0)
+        max_spend = arguments.get("max_spend", 0.0)
+        
+        if not goal or not isinstance(expected_tools, list):
+            return {"success": False, "error": "goal (str) and expected_tools (list) are required"}
+            
+        result = await self.contract_manager.propose_contract(
+            tenant_id=tenant_id,
+            agent_id=agent_id,
+            goal=goal,
+            expected_tools=expected_tools,
+            max_writes=max_writes,
+            max_spend=max_spend
+        )
+        return result
 
     async def _echo_tool(
         self, 
