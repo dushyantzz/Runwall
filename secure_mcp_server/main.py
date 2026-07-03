@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional
 from fastmcp import FastMCP
 from mcp.types import Resource, Tool
 import structlog
+import uvicorn
+from secure_mcp_server.api.app import app as api_app
 
 from .config import Settings, get_settings
 from .auth import AuthManager
@@ -396,10 +398,15 @@ async def amain():
         logger.info("Starting server")
         await server.start()
         
+        # Start API server in the background
+        logger.info("Starting REST API Control Plane on port 8000")
+        config = uvicorn.Config(api_app, host="0.0.0.0", port=8000, log_level="info")
+        api_server = uvicorn.Server(config)
+        
         # Keep server running
         try:
-            while True:
-                await asyncio.sleep(1)
+            # api_server.serve() is async and blocks until stopped
+            await api_server.serve()
         except asyncio.CancelledError:
             logger.info("Server shutdown requested")
             await server.stop()
