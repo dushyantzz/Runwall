@@ -1,0 +1,36 @@
+name: Secure MCP Server
+runtime: python3.11
+start:
+  command: python -m secure_mcp_server.main
+health:
+  command: echo ok
+  interval: 30s
+  timeout: 5s
+env:
+  - name: SECRET_KEY
+    required: true
+  - name: ADMIN_USERNAME
+    default: admin
+  - name: ADMIN_PASSWORD
+    required: true
+  - name: ADMIN_EMAIL
+    default: admin@example.com
+  - name: ENVIRONMENT
+    default: production
+  - name: LOG_LEVEL
+    default: INFO
+  - name: DATABASE_URL
+    default: sqlite+aiosqlite:///./secure_mcp.db
+  - name: ENABLE_METRICS
+    default: "true"
+  - name: ENABLE_AUDIT_LOGGING
+    default: "true"
+  - name: ENABLE_INPUT_SANITIZATION
+    default: "true"
+  - name: ENABLE_RATE_LIMITING
+    default: "true"
+  - name: ENABLE_TOOL_SANDBOXING
+    default: "true"
+permissions:
+  network: outbound
+  filesystem: readwrite
