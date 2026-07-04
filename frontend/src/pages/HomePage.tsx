@@ -801,9 +801,9 @@ function BranchingWorkflowSection({
               display: 'inline-block',
               width: 6,
               height: 6,
-              background: '#22c55e',
+              background: '#FFDA62',
               borderRadius: '50%',
-              boxShadow: '0 0 8px #22c55e'
+              boxShadow: '0 0 8px #FFDA62'
             }} />
             <span style={{
               fontFamily: 'var(--font-mono)',
@@ -837,7 +837,7 @@ function BranchingWorkflowSection({
             <path
               d="M 250,0 L 400,0 C 450,0 520,0 580,75"
               fill="none"
-              stroke="#22c55e"
+              stroke="#FFDA62"
               strokeWidth="1.5"
             />
           </svg>
@@ -892,13 +892,13 @@ function BranchingWorkflowSection({
                 width: 20,
                 height: 20,
                 borderRadius: '50%',
-                background: '#052e16',
-                border: '1.5px solid #22c55e',
+                background: '#201a08',
+                border: '1.5px solid #FFDA62',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Check size={11} color="#22c55e" strokeWidth={3} />
+                <Check size={11} color="#FFDA62" strokeWidth={3} />
               </div>
             </div>
 
@@ -909,13 +909,13 @@ function BranchingWorkflowSection({
                 width: 20,
                 height: 20,
                 borderRadius: '50%',
-                background: '#052e16',
-                border: '1.5px solid #22c55e',
+                background: '#201a08',
+                border: '1.5px solid #FFDA62',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <ArrowRight size={11} color="#22c55e" strokeWidth={3} style={{ transform: 'rotate(-45deg)' }} />
+                <ArrowRight size={11} color="#FFDA62" strokeWidth={3} style={{ transform: 'rotate(-45deg)' }} />
               </div>
             </div>
           </div>
