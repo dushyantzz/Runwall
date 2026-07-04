@@ -1,0 +1,89 @@
+Build a production-ready SaaS website and app UI using the exact visual language of InsForge-style design, but adapted to a new brand and product.
+
+## Core design direction
+Use a dark, developer-native, grid-based, highly polished SaaS style inspired by InsForge:
+- pure black or near-black page background
+- white primary text
+- muted gray secondary text
+- emerald/mint green as the main accent
+- 1px borders used heavily instead of soft shadows
+- bento/grid layout sections
+- geometric, structured, infrastructure-grade visual language
+- minimalistic but premium
+- product-engineering aesthetic, not playful startup illustration style
+- use typography and spacing to create authority and calm
+- motion should be subtle and technical, not decorative
+
+## Font system
+Use a four-font system modeled after InsForge:
+- Primary UI/body sans: Inter
+- Display/headline sans: Manrope
+- Technical mono supporting font: IBM Plex Mono
+- Code/CLI/codeblock font: Fira Code
+
+Apply fonts intentionally:
+- Headlines: Manrope
+- Body/UI labels/navigation: Inter
+- Metadata, tags, chips, terminal snippets: IBM Plex Mono
+- Code samples and CLI blocks: Fira Code
+
+## Color tokens
+Use these style tokens:
+- background: #000000
+- background-secondary: #0f0f0f
+- card-background: #141414
+- card-hover: #1a1a1a
+- border: #1a1a1a to #333333
+- heading: #ffffff
+- body: #b4b4b4
+- muted: #999999
+- primary accent: #6ee7b7
+- success green: #22c55e
+- warning amber: #f59e0b
+- destructive red: #ef4444
+
+## Layout principles
+- max content width around 1280px
+- generous horizontal padding
+- large top/bottom breathing room
+- sections separated by rhythm, not heavy visual clutter
+- use bordered containers and grid divisions
+- bento layout for feature cards
+- avoid rounded cartoon-style components; use small to medium radius only
+- use precise spacing and alignment, not oversized playful gaps
+
+## Component styling rules
+- buttons: clean, compact, medium radius, one solid primary, one outline secondary
+- cards: dark fill, 1px border, hover shift via border or background only
+- tables: minimal, developer-console aesthetic
+- badges/chips: mono labels, subtle border, dim background
+- nav: thin, elegant, compact
+- footer: grid-like and utility-driven
+- code blocks: crisp mono, technical, slightly elevated via border not shadow
+- diagrams/visuals: grid overlays, node/link systems, subtle glow accents
+
+## Motion
+- use restrained transitions
+- slow fade or translate on section reveal
+- gentle marquee or auto-scroll where appropriate
+- no bouncy consumer-app motion
+- any glow should be subtle
+- any hero animation should feel infrastructural / system-level
+
+## Product tone
+This is an enterprise AI execution governance product.
+The UI must feel:
+- trustworthy
+- technical
+- premium
+- calm
+- deployable in enterprise
+- built for developers, platform teams, and security teams
+
+## Important
+Do not make the design generic Tailwind SaaS.
+Do not use bright rainbow gradients.
+Do not use oversized soft cards.
+Do not use startup-illustration blobs.
+Do not use glossy glassmorphism everywhere.
+Use precision, contrast, borders, mono accents, grids, and dark infrastructure aesthetics.

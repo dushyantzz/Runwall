@@ -1,0 +1,41 @@
+Create 12 dedicated product feature pages for an enterprise AI agent execution governance platform.
+
+Each feature page must use the same premium dark infrastructure design language:
+- InsForge-inspired layout rhythm
+- black background
+- fine borders
+- white headings
+- muted gray body text
+- emerald accent
+- mono technical labels
+- bento/rail/grid product visuals
+- restrained enterprise motion
+
+Each page must follow this structure:
+1. Hero
+2. Problem statement
+3. What this feature does
+4. Why it matters for enterprise AI agents
+5. Key capabilities
+6. Technical architecture visual
+7. Example workflow
+8. Example policy / config / log snippet
+9. FAQ
+10. CTA
+
+The 12 feature pages are:
+- Identity & Access Control
+- Tenant & Organization Management
+- Tool / MCP Registry
+- Policy Engine
+- Runtime Interceptor / Gateway
+- Risk Scoring Engine
+- Taint Tracking Engine
+- Approval Workflow Engine
+- Audit / Evidence / Replay
+- Rollback / Compensating Actions
+- Quotas / Budgets / Rate Limits
+- Sandboxing / Execution Profiles
+
+Each page should feel like a serious enterprise product page, not a blog article.
+Each page must include product UI mock panels that visually explain the feature.

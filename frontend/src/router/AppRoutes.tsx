@@ -1,36 +1,46 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from '@/layout/AppLayout';
-import DashboardPage from '@/features/dashboard/DashboardPage';
-import GovernancePage from '@/features/governance/GovernancePage';
-import IdentityPage from '@/features/identity/IdentityPage';
-import APIKeysPage from '@/features/api-keys/APIKeysPage';
-import RiskPage from '@/features/risk/RiskPage';
-import QuotasPage from '@/features/quotas/QuotasPage';
-import ApprovalsPage from '@/features/approvals/ApprovalsPage';
-import ContractsPage from '@/features/contracts/ContractsPage';
-import ConnectorsPage from '@/features/connectors/ConnectorsPage';
-import AuditPage from '@/features/audit/AuditPage';
-import PoliciesPage from '@/features/policies/PoliciesPage';
-import DocsPage from '@/features/docs/DocsPage';
+import HomePage from '@/pages/HomePage';
+import IdentityAccessControl from '@/pages/features/IdentityAccessControl';
+import TenantManagement from '@/pages/features/TenantManagement';
+import ToolMcpRegistry from '@/pages/features/ToolMcpRegistry';
+import PolicyEngine from '@/pages/features/PolicyEngine';
+import RuntimeInterceptor from '@/pages/features/RuntimeInterceptor';
+import RiskScoringEngine from '@/pages/features/RiskScoringEngine';
+import TaintTrackingEngine from '@/pages/features/TaintTrackingEngine';
+import ApprovalWorkflowEngine from '@/pages/features/ApprovalWorkflowEngine';
+import AuditEvidenceReplay from '@/pages/features/AuditEvidenceReplay';
+import RollbackCompensating from '@/pages/features/RollbackCompensating';
+import QuotasBudgetsRateLimits from '@/pages/features/QuotasBudgetsRateLimits';
+import SandboxingExecutionProfiles from '@/pages/features/SandboxingExecutionProfiles';
 
 export function AppRoutes() {
   return (
     <AppLayout>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/dashboard/governance" element={<GovernancePage />} />
-        <Route path="/dashboard/identity" element={<IdentityPage />} />
-        <Route path="/dashboard/api-keys" element={<APIKeysPage />} />
-        <Route path="/dashboard/risk" element={<RiskPage />} />
-        <Route path="/dashboard/quotas" element={<QuotasPage />} />
-        <Route path="/dashboard/approvals" element={<ApprovalsPage />} />
-        <Route path="/dashboard/contracts" element={<ContractsPage />} />
-        <Route path="/dashboard/connectors" element={<ConnectorsPage />} />
-        <Route path="/dashboard/audit" element={<AuditPage />} />
-        <Route path="/dashboard/policies" element={<PoliciesPage />} />
-        <Route path="/dashboard/docs" element={<DocsPage />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Home */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Feature Pages */}
+        <Route path="/features/identity-access-control" element={<IdentityAccessControl />} />
+        <Route path="/features/tenant-management" element={<TenantManagement />} />
+        <Route path="/features/tool-mcp-registry" element={<ToolMcpRegistry />} />
+        <Route path="/features/policy-engine" element={<PolicyEngine />} />
+        <Route path="/features/runtime-interceptor" element={<RuntimeInterceptor />} />
+        <Route path="/features/risk-scoring-engine" element={<RiskScoringEngine />} />
+        <Route path="/features/taint-tracking-engine" element={<TaintTrackingEngine />} />
+        <Route path="/features/approval-workflow-engine" element={<ApprovalWorkflowEngine />} />
+        <Route path="/features/audit-evidence-replay" element={<AuditEvidenceReplay />} />
+        <Route path="/features/rollback-compensating" element={<RollbackCompensating />} />
+        <Route path="/features/quotas-budgets-rate-limits" element={<QuotasBudgetsRateLimits />} />
+        <Route path="/features/sandboxing-execution-profiles" element={<SandboxingExecutionProfiles />} />
+
+        {/* Placeholder routes — redirect to home */}
+        <Route path="/pricing" element={<HomePage />} />
+        <Route path="/docs" element={<HomePage />} />
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>
   );
