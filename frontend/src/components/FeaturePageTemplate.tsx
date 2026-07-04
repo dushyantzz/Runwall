@@ -224,7 +224,7 @@ function WhyItMattersSection({ data }: { data: FeaturePageData }) {
               padding: '24px 20px',
               background: 'var(--card-bg)',
             }}>
-              <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--heading)', marginBottom: 8 }}>{b.title}</h4>
+              <h4 style={{ fontSize: 14, fontWeight: 450, color: 'var(--heading)', marginBottom: 8 }}>{b.title}</h4>
               <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>{b.description}</p>
             </div>
           ))}
@@ -243,39 +243,49 @@ function WhyItMattersSection({ data }: { data: FeaturePageData }) {
 function CapabilitiesSection({ data }: { data: FeaturePageData }) {
   const ref = useScrollAnimation();
   return (
-    <section className="section section-border-top" ref={ref}>
+    <section className="section section-border-top" ref={ref} style={{ background: '#000000' }}>
       <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <span className="mono-label" style={{ display: 'block', marginBottom: 12 }}>Key Capabilities</span>
-          <h2>Built for enterprise scale</h2>
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 300, color: '#ffffff' }}>Built for enterprise scale</h2>
         </div>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 12,
-          border: '1px solid var(--border)',
-          borderRadius: 12,
+          borderLeft: '1px solid #141414',
+          borderRight: '1px solid #141414',
+          borderBottom: '1px solid #141414',
+          borderTop: '1px solid #141414',
+          borderRadius: 8,
           overflow: 'hidden',
         }}>
           {data.capabilities.map((cap, i) => {
             const CapIcon = cap.icon;
             return (
               <div key={cap.title} style={{
-                padding: '24px 20px',
-                borderRight: (i + 1) % 3 !== 0 ? '1px solid var(--border)' : 'none',
-                borderBottom: i < data.capabilities.length - 3 ? '1px solid var(--border)' : 'none',
-                background: 'var(--card-bg)',
-              }}>
+                padding: '32px 24px',
+                borderRight: (i + 1) % 3 !== 0 ? '1px solid #141414' : 'none',
+                borderBottom: i < data.capabilities.length - 3 ? '1px solid #141414' : 'none',
+                background: '#000000',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#0a0a0a';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#000000';
+              }}
+              >
                 <div style={{
                   width: 32, height: 32, borderRadius: 6,
-                  border: '1px solid var(--border)', display: 'flex',
+                  border: '1px solid #141414', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
-                  background: 'var(--bg-secondary)', marginBottom: 12,
+                  background: '#080808', marginBottom: 16,
                 }}>
-                  <CapIcon size={16} color="var(--accent)" />
+                  <CapIcon size={14} color="var(--accent)" />
                 </div>
-                <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--heading)', marginBottom: 6 }}>{cap.title}</h4>
-                <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>{cap.description}</p>
+                <h4 style={{ fontSize: 14, fontWeight: 450, color: '#ffffff', marginBottom: 8 }}>{cap.title}</h4>
+                <p style={{ fontSize: 12, color: '#777777', lineHeight: 1.5, margin: 0 }}>{cap.description}</p>
               </div>
             );
           })}
