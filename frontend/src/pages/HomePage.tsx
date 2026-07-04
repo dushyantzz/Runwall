@@ -138,7 +138,7 @@ function HeroSection({
           color: '#ffffff',
           letterSpacing: '-0.02em',
         }}>
-          <span style={{ color: 'var(--accent)', fontFamily: 'Georgia, serif', fontStyle: 'italic', paddingRight: '4px' }}>The Agent-Native</span>
+          <span style={{ color: 'var(--accent)' }}>The Agent-Native</span>
           <br />
           Execution Governance Platform
         </h1>

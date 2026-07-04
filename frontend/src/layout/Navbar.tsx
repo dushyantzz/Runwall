@@ -49,7 +49,7 @@ export default function Navbar() {
         zIndex: 100,
         background: scrolled ? 'rgba(0,0,0,0.85)' : '#000000',
         backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: scrolled ? '1px solid #141414' : '1px solid transparent',
+        borderBottom: '1px solid #141414',
         transition: 'all 0.3s ease',
       }}
     >
