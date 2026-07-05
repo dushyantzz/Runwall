@@ -143,8 +143,8 @@ function HeroSection({
             background: '#ffffff',
             color: '#000000',
             fontWeight: 600,
-            fontSize: 13,
-            padding: '10px 24px',
+            fontSize: 15,
+            padding: '12px 32px',
             borderRadius: '6px',
             textDecoration: 'none',
             transition: 'opacity 0.2s',
@@ -157,20 +157,20 @@ function HeroSection({
           <Link to="/docs" style={{
             background: '#000000',
             color: '#ffffff',
-            border: '1px solid #333333',
+            border: '1px solid #ffffff',
             fontWeight: 500,
-            fontSize: 13,
-            padding: '10px 24px',
+            fontSize: 15,
+            padding: '12px 32px',
             borderRadius: '6px',
             textDecoration: 'none',
             transition: 'border-color 0.2s, background 0.2s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#555';
+            e.currentTarget.style.borderColor = '#ffffff';
             e.currentTarget.style.background = '#111';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#333';
+            e.currentTarget.style.borderColor = '#ffffff';
             e.currentTarget.style.background = '#000';
           }}
           >
@@ -1093,7 +1093,7 @@ function CTASection() {
         pointerEvents: 'none',
       }} />
       <div className="container" style={{ position: 'relative', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '2rem', fontWeight: 700, color: '#ffffff', marginBottom: 16 }}>
+        <h2 style={{ fontSize: '2rem', fontWeight: 300, color: '#ffffff', marginBottom: 16 }}>
           Ready to govern your <span style={{ color: 'var(--accent)' }}>AI agents</span>?
         </h2>
         <p style={{ maxWidth: 480, margin: '0 auto 32px', color: '#777777', fontSize: 13 }}>
@@ -1102,11 +1102,11 @@ function CTASection() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
           <Link to="/signup" style={{
-            background: 'var(--accent)',
+            background: '#ffffff',
             color: '#000000',
             fontWeight: 600,
-            fontSize: 13,
-            padding: '10px 24px',
+            fontSize: 15,
+            padding: '12px 32px',
             borderRadius: '6px',
             textDecoration: 'none',
           }}>
@@ -1115,10 +1115,10 @@ function CTASection() {
           <Link to="/contact" style={{
             background: 'transparent',
             color: '#ffffff',
-            border: '1px solid #333333',
+            border: '1px solid #ffffff',
             fontWeight: 500,
-            fontSize: 13,
-            padding: '10px 24px',
+            fontSize: 15,
+            padding: '12px 32px',
             borderRadius: '6px',
             textDecoration: 'none',
           }}>
