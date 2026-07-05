@@ -453,7 +453,7 @@ allow if {
   }, [title]);
 
   return (
-    <section className="section section-border-top" style={{ background: '#050505', borderBottom: '1px solid #141414' }}>
+    <section className="section section-border-top" style={{ background: '#050505', borderBottom: '1px solid #333333' }}>
       <div className="container" style={{ maxWidth: 900 }}>
         {/* Title Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
@@ -529,7 +529,7 @@ allow if {
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               {/* Form block */}
-              <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+              <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
                 <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                   <Key size={14} color="var(--accent)" /> Generate Enterprise API Key
                 </h4>
@@ -574,7 +574,7 @@ allow if {
               </div>
 
               {/* API Keys list */}
-              <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
                 <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                   <Fingerprint size={14} color="var(--accent)" /> Active API Keys
                 </h4>
@@ -583,7 +583,7 @@ allow if {
                     <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 20 }}>No API Keys generated yet.</div>
                   ) : (
                     apiKeys.map(k => (
-                      <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #141414' }}>
+                      <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #333333' }}>
                         <div>
                           <div style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>{k.name}</div>
                           <div style={{ fontSize: 10, color: '#777777' }}>Prefix: <code>{k.prefix}</code> • Env: {k.environment}</div>
@@ -597,13 +597,13 @@ allow if {
             </div>
 
             {/* Users / Identities list */}
-            <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+            <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <Users size={14} color="var(--accent)" /> Registered Identities
               </h4>
               <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ color: '#777777', textAlign: 'left', borderBottom: '1px solid #141414' }}>
+                  <tr style={{ color: '#777777', textAlign: 'left', borderBottom: '1px solid #333333' }}>
                     <th style={{ padding: '8px 0' }}>Username</th>
                     <th>Email</th>
                     <th>Role</th>
@@ -637,7 +637,7 @@ allow if {
             2. TENANT MANAGEMENT
             ------------------------------------------------------------------- */}
         {title === 'Tenant Management' && (
-          <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+          <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
             <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <Server size={14} color="var(--accent)" /> Active Multi-Tenant Workspaces
             </h4>
@@ -664,7 +664,7 @@ allow if {
             3. TOOL & MCP REGISTRY
             ------------------------------------------------------------------- */}
         {title === 'Tool & MCP Registry' && (
-          <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+          <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
             <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <Shield size={14} color="var(--accent)" /> Verified Tool Signatures Manifest
             </h4>
@@ -672,7 +672,7 @@ allow if {
               {tools.map(tool => {
                 const isTrusted = tool.trust_status === 'TRUSTED';
                 return (
-                  <div key={tool.tool_name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, border: '1px solid #141414', borderRadius: 6, background: '#050505', gap: 12 }}>
+                  <div key={tool.tool_name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, border: '1px solid #333333', borderRadius: 6, background: '#050505', gap: 12 }}>
                     <div style={{ width: 28, height: 28, borderRadius: 6, background: isTrusted ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)', border: `1px solid ${isTrusted ? '#10b981' : '#ef4444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {isTrusted ? <ShieldCheck size={14} color="#10b981" /> : <ShieldAlert size={14} color="#ef4444" />}
                     </div>
@@ -696,7 +696,7 @@ allow if {
         {title === 'Policy Engine' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 16 }}>
             {/* Deploy Form */}
-            <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+            <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <Plus size={14} color="var(--accent)" /> Author Rego Policy Bundle
               </h4>
@@ -739,7 +739,7 @@ allow if {
             </div>
 
             {/* Active Policies */}
-            <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <Shield size={14} color="var(--accent)" /> Deployed Policy Versions
               </h4>
@@ -750,7 +750,7 @@ allow if {
                   </div>
                 ) : (
                   policies.map(p => (
-                    <div key={p.id} style={{ border: '1px solid #141414', borderRadius: 6, padding: 12, marginBottom: 8, background: '#050505' }}>
+                    <div key={p.id} style={{ border: '1px solid #333333', borderRadius: 6, padding: 12, marginBottom: 8, background: '#050505' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#ffffff' }}>Version {p.version}</span>
                         <span style={{ fontSize: 9, background: p.is_active ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.05)', color: p.is_active ? '#10b981' : '#777777', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>
@@ -774,7 +774,7 @@ allow if {
         {title === 'Runtime Interceptor' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 16 }}>
             {/* Input Config */}
-            <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+            <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <Play size={14} color="var(--accent)" /> Simulate Agent Tool Call
               </h4>
@@ -831,7 +831,7 @@ allow if {
             </div>
 
             {/* Results Console */}
-            <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <Activity size={14} color="var(--accent)" /> Interception Decision Output
               </h4>
@@ -863,7 +863,7 @@ allow if {
                     </div>
 
                     {/* Metadata JSON */}
-                    <pre style={{ margin: 0, padding: 12, background: '#050505', border: '1px solid #141414', borderRadius: 6, fontSize: 11, overflowX: 'auto', color: '#b4b4b4', maxHeight: 180 }}>
+                    <pre style={{ margin: 0, padding: 12, background: '#050505', border: '1px solid #333333', borderRadius: 6, fontSize: 11, overflowX: 'auto', color: '#b4b4b4', maxHeight: 180 }}>
                       <code>{JSON.stringify(simResult, null, 2)}</code>
                     </pre>
                   </div>
@@ -879,7 +879,7 @@ allow if {
         {title === 'Risk Scoring Engine' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 16 }}>
             {/* Form inputs */}
-            <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+            <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <Settings size={14} color="var(--accent)" /> Risk Calculator Inputs
               </h4>
@@ -923,7 +923,7 @@ allow if {
             </div>
 
             {/* Risk Gauge Result */}
-            <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                 <Activity size={14} color="var(--accent)" /> Risk Calculation Output
               </h4>
@@ -936,7 +936,7 @@ allow if {
                   <div style={{ animation: 'fadeIn 0.2s ease-out' }}>
                     {/* Score display */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-                      <div style={{ position: 'relative', width: 64, height: 64, borderRadius: '50%', background: '#0a0a0a', border: '1px solid #141414', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ position: 'relative', width: 64, height: 64, borderRadius: '50%', background: '#0a0a0a', border: '1px solid #333333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ fontSize: 16, fontWeight: 700, color: riskResult.risk_level === 'high' ? '#ef4444' : riskResult.risk_level === 'medium' ? '#f59e0b' : '#10b981' }}>
                           {riskResult.risk_score.toFixed(2)}
                         </div>
@@ -962,7 +962,7 @@ allow if {
 
                     {/* Risk Factors */}
                     <span style={{ fontSize: 11, color: '#777777', display: 'block', marginBottom: 8, fontWeight: 600 }}>Multi-Factor Score Weights</span>
-                    <pre style={{ margin: 0, padding: 12, background: '#050505', border: '1px solid #141414', borderRadius: 6, fontSize: 11, color: '#b4b4b4' }}>
+                    <pre style={{ margin: 0, padding: 12, background: '#050505', border: '1px solid #333333', borderRadius: 6, fontSize: 11, color: '#b4b4b4' }}>
                       <code>{JSON.stringify(riskResult.factors, null, 2)}</code>
                     </pre>
                   </div>
@@ -979,7 +979,7 @@ allow if {
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               {/* Add Taint */}
-              <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+              <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
                 <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                   <Plus size={14} color="var(--accent)" /> Inject Session Taint Label
                 </h4>
@@ -1015,7 +1015,7 @@ allow if {
               </div>
 
               {/* Tainted Sessions */}
-              <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
                 <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                   <Shield size={14} color="var(--accent)" /> Active Session Taint States
                 </h4>
@@ -1024,7 +1024,7 @@ allow if {
                     <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 20 }}>No active session taint records.</div>
                   ) : (
                     taintSessions.map(s => (
-                      <div key={s.id} style={{ padding: '10px', border: '1px solid #141414', borderRadius: 6, marginBottom: 8, background: '#050505' }}>
+                      <div key={s.id} style={{ padding: '10px', border: '1px solid #333333', borderRadius: 6, marginBottom: 8, background: '#050505' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                           <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 600 }}>{s.id}</span>
                           <span style={{ fontSize: 9, background: s.taints.length > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', color: s.taints.length > 0 ? '#ef4444' : '#10b981', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>
@@ -1055,7 +1055,7 @@ allow if {
             8. APPROVAL WORKFLOW ENGINE
             ------------------------------------------------------------------- */}
         {title === 'Approval Workflow Engine' && (
-          <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+          <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
             <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <Clock size={14} color="var(--accent)" /> Pending Approvals Inbox
             </h4>
@@ -1067,7 +1067,7 @@ allow if {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {approvals.map(req => (
-                  <div key={req.id} style={{ border: '1px solid #141414', borderRadius: 6, padding: 16, background: '#050505' }}>
+                  <div key={req.id} style={{ border: '1px solid #333333', borderRadius: 6, padding: 16, background: '#050505' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                       <div>
                         <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 600 }}>Request <code>{req.id}</code></div>
@@ -1110,9 +1110,9 @@ allow if {
             9. AUDIT, EVIDENCE & REPLAY
             ------------------------------------------------------------------- */}
         {title === 'Audit, Evidence & Replay' && (
-          <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+          <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
             {/* Tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid #141414', marginBottom: 16 }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid #333333', marginBottom: 16 }}>
               <button 
                 onClick={() => setAuditTab('decisions')}
                 style={{
@@ -1145,7 +1145,7 @@ allow if {
                 ) : (
                   <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                      <tr style={{ color: '#777777', borderBottom: '1px solid #141414' }}>
+                      <tr style={{ color: '#777777', borderBottom: '1px solid #333333' }}>
                         <th style={{ padding: '8px 0' }}>Timestamp</th>
                         <th>User ID</th>
                         <th>Decision</th>
@@ -1174,7 +1174,7 @@ allow if {
                 ) : (
                   <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                      <tr style={{ color: '#777777', borderBottom: '1px solid #141414' }}>
+                      <tr style={{ color: '#777777', borderBottom: '1px solid #333333' }}>
                         <th style={{ padding: '8px 0' }}>Timestamp</th>
                         <th>Tool Name</th>
                         <th>Action</th>
@@ -1208,7 +1208,7 @@ allow if {
             10. ROLLBACK & COMPENSATING CONTROLS
             ------------------------------------------------------------------- */}
         {title === 'Rollback & Compensating Controls' && (
-          <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+          <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
             <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <Clock size={14} color="var(--accent)" /> Reversible Execution Logs
             </h4>
@@ -1221,7 +1221,7 @@ allow if {
                 {rollbackLogs.map(log => {
                   const isCommitted = log.status === 'committed';
                   return (
-                    <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, border: '1px solid #141414', borderRadius: 6, background: '#050505', gap: 16 }}>
+                    <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, border: '1px solid #333333', borderRadius: 6, background: '#050505', gap: 16 }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <span style={{ fontSize: 13, color: '#ffffff', fontWeight: 600 }}><code>{log.id}</code></span>
@@ -1250,23 +1250,23 @@ allow if {
             11. QUOTAS, BUDGETS & RATE LIMITS
             ------------------------------------------------------------------- */}
         {title === 'Quotas, Budgets & Rate Limits' && (
-          <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+          <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
             <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <Activity size={14} color="var(--accent)" /> Rate Throttling Status
             </h4>
             {quotas ? (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                <div style={{ background: '#050505', border: '1px solid #141414', borderRadius: 6, padding: 16 }}>
+                <div style={{ background: '#050505', border: '1px solid #333333', borderRadius: 6, padding: 16 }}>
                   <div style={{ fontSize: 10, color: '#777777', textTransform: 'uppercase', marginBottom: 4 }}>Tenant RPM Limit</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: '#ffffff' }}>{quotas.default_tenant_rpm}</div>
                   <span style={{ fontSize: 10, color: '#10b981' }}>Quota healthy</span>
                 </div>
-                <div style={{ background: '#050505', border: '1px solid #141414', borderRadius: 6, padding: 16 }}>
+                <div style={{ background: '#050505', border: '1px solid #333333', borderRadius: 6, padding: 16 }}>
                   <div style={{ fontSize: 10, color: '#777777', textTransform: 'uppercase', marginBottom: 4 }}>Current Load TPH</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: '#ffffff' }}>{quotas.current_tph}</div>
                   <span style={{ fontSize: 10, color: '#777777' }}>Transactions/hour</span>
                 </div>
-                <div style={{ background: '#050505', border: '1px solid #141414', borderRadius: 6, padding: 16 }}>
+                <div style={{ background: '#050505', border: '1px solid #333333', borderRadius: 6, padding: 16 }}>
                   <div style={{ fontSize: 10, color: '#777777', textTransform: 'uppercase', marginBottom: 4 }}>Throttled Status</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: quotas.is_throttled ? '#ef4444' : '#10b981' }}>
                     {quotas.is_throttled ? 'ACTIVE' : 'NONE'}
@@ -1284,13 +1284,13 @@ allow if {
             12. SANDBOXING & EXECUTION PROFILES
             ------------------------------------------------------------------- */}
         {title === 'Sandboxing & Execution Profiles' && (
-          <div style={{ border: '1px solid #141414', borderRadius: 8, padding: 20, background: '#000000' }}>
+          <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
             <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <Database size={14} color="var(--accent)" /> Sandbox Isolation Profiles
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {sandboxProfiles.map(p => (
-                <div key={p.profile_name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, border: '1px solid #141414', borderRadius: 6, background: '#050505', gap: 16 }}>
+                <div key={p.profile_name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, border: '1px solid #333333', borderRadius: 6, background: '#050505', gap: 16 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 13, color: '#ffffff', fontWeight: 600 }}>{p.profile_name}</span>

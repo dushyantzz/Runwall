@@ -183,20 +183,20 @@ pre {
 .content-frame {
   max-width: 1200px;
   margin: 0 auto;
-  border-left: 1px solid #141414;
-  border-right: 1px solid #141414;
+  border-left: 1px solid #333333;
+  border-right: 1px solid #333333;
   position: relative;
   background: #000000;
 }
 
 .section {
   padding: 96px 0;
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid #333333;
 }
 
 .section-sm {
   padding: 64px 0;
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid #333333;
 }
 
 /* ── BUTTONS ── */

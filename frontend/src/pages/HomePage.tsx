@@ -60,7 +60,7 @@ function HeroSection({
       overflow: 'hidden',
       paddingTop: 100,
       paddingBottom: 80,
-      borderBottom: '1px solid #141414'
+      borderBottom: '1px solid #333333'
     }}>
       {/* Grid overlay */}
       <div className="grid-overlay" style={{ opacity: 0.8 }} />
@@ -188,7 +188,7 @@ function FeatureBentoGrid() {
   return (
     <section style={{
       background: '#000000',
-      borderBottom: '1px solid #141414',
+      borderBottom: '1px solid #333333',
       paddingTop: 80,
       paddingBottom: 80,
       position: 'relative'
@@ -198,7 +198,7 @@ function FeatureBentoGrid() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 2fr',
-          borderBottom: '1px solid #141414',
+          borderBottom: '1px solid #333333',
           paddingBottom: 40,
           marginBottom: 0
         }}>
@@ -221,7 +221,7 @@ function FeatureBentoGrid() {
               Built-in policy, identity, risk, and control components that secure agent actions automatically.
             </p>
           </div>
-          <div style={{ position: 'relative', overflow: 'hidden', borderLeft: '1px solid #141414', paddingLeft: 40 }}>
+          <div style={{ position: 'relative', overflow: 'hidden', borderLeft: '1px solid #333333', paddingLeft: 40 }}>
             {/* Background grid representation */}
             <div className="grid-overlay" style={{ opacity: 0.4 }} />
           </div>
@@ -231,9 +231,9 @@ function FeatureBentoGrid() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          borderLeft: '1px solid #141414',
-          borderRight: '1px solid #141414',
-          borderBottom: '1px solid #141414',
+          borderLeft: '1px solid #333333',
+          borderRight: '1px solid #333333',
+          borderBottom: '1px solid #333333',
         }}>
           {/* Card 1: Tool / MCP Registry */}
           <BentoCard
@@ -524,8 +524,8 @@ function BentoCard({
       to={to}
       style={{
         padding: '32px 24px',
-        borderRight: borderRight ? '1px solid #141414' : 'none',
-        borderBottom: '1px solid #141414',
+        borderRight: borderRight ? '1px solid #333333' : 'none',
+        borderBottom: '1px solid #333333',
         background: '#000000',
         textDecoration: 'none',
         transition: 'background 0.2s ease',
@@ -581,7 +581,7 @@ function BranchingWorkflowSection({
       background: '#000000',
       paddingTop: 96,
       paddingBottom: 96,
-      borderBottom: '1px solid #141414'
+      borderBottom: '1px solid #333333'
     }}>
       <div className="grid-overlay" style={{ opacity: 0.6 }} />
 
@@ -664,7 +664,7 @@ function BranchingWorkflowSection({
             transform: 'translateY(-50%)',
             zIndex: 4,
             background: '#090909',
-            border: '1px solid #141414',
+            border: '1px solid #333333',
             borderRadius: '4px',
             padding: '4px 10px',
             display: 'flex',
@@ -1026,7 +1026,7 @@ function TestimonialSection() {
   const ref = useScrollAnimation();
 
   return (
-    <section className="section section-border-top" ref={ref} style={{ background: '#000000', borderBottom: '1px solid #141414' }}>
+    <section className="section section-border-top" ref={ref} style={{ background: '#000000', borderBottom: '1px solid #333333' }}>
       <div className="container">
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>Trusted By Teams</span>
@@ -1040,7 +1040,7 @@ function TestimonialSection() {
         }}>
           {testimonials.map((t) => (
             <div key={t.author} style={{
-              border: '1px solid #141414',
+              border: '1px solid #333333',
               borderRadius: 8,
               padding: '32px 24px',
               background: '#050505',
@@ -1056,7 +1056,7 @@ function TestimonialSection() {
               <p style={{ fontSize: 13, color: '#b4b4b4', lineHeight: 1.6, flex: 1, margin: 0 }}>
                 "{t.quote}"
               </p>
-              <div style={{ borderTop: '1px solid #141414', paddingTop: 14 }}>
+              <div style={{ borderTop: '1px solid #333333', paddingTop: 14 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#ffffff' }}>{t.author}</div>
                 <div style={{ fontSize: 11, color: '#777777', fontFamily: 'var(--font-mono)' }}>{t.role}</div>
               </div>

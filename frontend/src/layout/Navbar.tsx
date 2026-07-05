@@ -49,7 +49,7 @@ export default function Navbar() {
         zIndex: 100,
         background: scrolled ? 'rgba(0,0,0,0.85)' : '#000000',
         backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: '1px solid #141414',
+        borderBottom: '1px solid #333333',
         transition: 'all 0.3s ease',
       }}
     >
@@ -214,7 +214,7 @@ export default function Navbar() {
           className="mobile-menu"
           style={{
             background: '#000000',
-            borderTop: '1px solid #141414',
+            borderTop: '1px solid #333333',
             padding: '16px 24px 24px',
             display: 'flex',
             flexDirection: 'column',
@@ -239,7 +239,7 @@ export default function Navbar() {
             </Link>
           ))}
           <Link to="/docs" style={{ padding: '8px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 13 }}>Documentation</Link>
-          <div style={{ borderTop: '1px solid #141414', margin: '8px 0' }} />
+          <div style={{ borderTop: '1px solid #333333', margin: '8px 0' }} />
           <Link to="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>Sign Up</Link>
         </div>
       )}

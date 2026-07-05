@@ -255,10 +255,10 @@ function CapabilitiesSection({ data }: { data: FeaturePageData }) {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          borderLeft: '1px solid #141414',
-          borderRight: '1px solid #141414',
-          borderBottom: '1px solid #141414',
-          borderTop: '1px solid #141414',
+          borderLeft: '1px solid #333333',
+          borderRight: '1px solid #333333',
+          borderBottom: '1px solid #333333',
+          borderTop: '1px solid #333333',
           borderRadius: 8,
           overflow: 'hidden',
         }}>
@@ -267,8 +267,8 @@ function CapabilitiesSection({ data }: { data: FeaturePageData }) {
             return (
               <div key={cap.title} style={{
                 padding: '32px 24px',
-                borderRight: (i + 1) % 3 !== 0 ? '1px solid #141414' : 'none',
-                borderBottom: i < data.capabilities.length - 3 ? '1px solid #141414' : 'none',
+                borderRight: (i + 1) % 3 !== 0 ? '1px solid #333333' : 'none',
+                borderBottom: i < data.capabilities.length - 3 ? '1px solid #333333' : 'none',
                 background: '#000000',
                 transition: 'background 0.2s ease',
               }}
@@ -281,7 +281,7 @@ function CapabilitiesSection({ data }: { data: FeaturePageData }) {
               >
                 <div style={{
                   width: 32, height: 32, borderRadius: 6,
-                  border: '1px solid #141414', display: 'flex',
+                  border: '1px solid #333333', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                   background: '#080808', marginBottom: 16,
                 }}>
