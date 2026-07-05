@@ -1,0 +1,238 @@
+{
+  "communities": {
+    "0": [
+      "feat_admin_governance_controls",
+      "feat_intent_aware_policy_engine",
+      "feat_quotas_rate_limiting",
+      "feat_taint_tracking"
+    ],
+    "1": [
+      "feat_approval_workflow",
+      "feat_reversible_execution",
+      "feat_task_contracts"
+    ],
+    "2": [
+      "blueprint_execution_governance_platform",
+      "readme_secure_mcp_server"
+    ],
+    "3": [
+      "feat_api_key_management",
+      "feat_identity_session_management"
+    ],
+    "4": [
+      "feat_connector_architecture",
+      "feat_tool_trust"
+    ],
+    "5": [
+      "feat_opa_rego",
+      "feat_rest_api"
+    ],
+    "6": [
+      "components_featurepagetemplate_featurepagedata"
+    ],
+    "7": [
+      "components_featurepagetemplate_featurepagetemplate"
+    ],
+    "8": [
+      "features_approvalworkflowengine_approvalworkflowengine"
+    ],
+    "9": [
+      "features_auditevidencereplay_auditevidencereplay"
+    ],
+    "10": [
+      "features_identityaccesscontrol_identityaccesscontrol"
+    ],
+    "11": [
+      "features_policyengine_policyengine"
+    ],
+    "12": [
+      "features_quotasbudgetsratelimits_quotasbudgetsratelimits"
+    ],
+    "13": [
+      "features_riskscoringengine_riskscoringengine"
+    ],
+    "14": [
+      "features_rollbackcompensating_rollbackcompensating"
+    ],
+    "15": [
+      "features_runtimeinterceptor_runtimeinterceptor"
+    ],
+    "16": [
+      "features_sandboxingexecutionprofiles_sandboxingexecutionprofiles"
+    ],
+    "17": [
+      "features_tainttrackingengine_tainttrackingengine"
+    ],
+    "18": [
+      "features_tenantmanagement_tenantmanagement"
+    ],
+    "19": [
+      "features_toolmcpregistry_toolmcpregistry"
+    ],
+    "20": [
+      "hooks_usescrollanimation_usescrollanimation"
+    ],
+    "21": [
+      "layout_applayout_applayout"
+    ],
+    "22": [
+      "router_approutes_approutes"
+    ]
+  },
+  "cohesion": {
+    "0": 0.5,
+    "1": 0.6666666666666666,
+    "2": 1.0,
+    "3": 1.0,
+    "4": 1.0,
+    "5": 1.0,
+    "6": 1.0,
+    "7": 1.0,
+    "8": 1.0,
+    "9": 1.0,
+    "10": 1.0,
+    "11": 1.0,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0
+  },
+  "gods": [
+    {
+      "id": "feat_intent_aware_policy_engine",
+      "label": "Intent-Aware Policy Engine",
+      "degree": 6
+    },
+    {
+      "id": "feat_approval_workflow",
+      "label": "Approval Workflow Engine",
+      "degree": 3
+    },
+    {
+      "id": "readme_secure_mcp_server",
+      "label": "Secure MCP Server",
+      "degree": 2
+    },
+    {
+      "id": "feat_opa_rego",
+      "label": "OPA Rego Policy System",
+      "degree": 2
+    },
+    {
+      "id": "blueprint_execution_governance_platform",
+      "label": "Execution Governance Platform",
+      "degree": 1
+    },
+    {
+      "id": "feat_identity_session_management",
+      "label": "Identity & Session Management",
+      "degree": 1
+    },
+    {
+      "id": "feat_api_key_management",
+      "label": "API Key Management",
+      "degree": 1
+    },
+    {
+      "id": "feat_quotas_rate_limiting",
+      "label": "Distributed Quotas & Rate Limiting",
+      "degree": 1
+    },
+    {
+      "id": "feat_admin_governance_controls",
+      "label": "Admin & Governance Controls",
+      "degree": 1
+    },
+    {
+      "id": "feat_taint_tracking",
+      "label": "Taint Tracking Engine",
+      "degree": 1
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Secure MCP Server",
+      "target": "Intent-Aware Policy Engine",
+      "source_files": [
+        "README.md",
+        "Features Guide/01_Intent_Aware_Execution_Policy.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "runs",
+      "why": "connects across different repos/directories; bridges separate communities; peripheral node `Secure MCP Server` unexpectedly reaches hub `Intent-Aware Policy Engine`"
+    },
+    {
+      "source": "Execution Governance Platform",
+      "target": "Secure MCP Server",
+      "source_files": [
+        "Execution_Governance_Platform_Blueprint.md",
+        "README.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "describes",
+      "why": "connects across different repos/directories"
+    },
+    {
+      "source": "Intent-Aware Policy Engine",
+      "target": "OPA Rego Policy System",
+      "source_files": [
+        "Features Guide/01_Intent_Aware_Execution_Policy.md",
+        "Features Guide/12_OPA_Rego_Policy_System.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "evaluates",
+      "why": "bridges separate communities; peripheral node `OPA Rego Policy System` unexpectedly reaches hub `Intent-Aware Policy Engine`"
+    },
+    {
+      "source": "Admin & Governance Controls",
+      "target": "Intent-Aware Policy Engine",
+      "source_files": [
+        "Features Guide/05_Admin_and_Governance_Controls.md",
+        "Features Guide/01_Intent_Aware_Execution_Policy.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "configures",
+      "why": "peripheral node `Admin & Governance Controls` unexpectedly reaches hub `Intent-Aware Policy Engine`"
+    },
+    {
+      "source": "Intent-Aware Policy Engine",
+      "target": "Approval Workflow Engine",
+      "source_files": [
+        "Features Guide/01_Intent_Aware_Execution_Policy.md",
+        "Features Guide/09_Approval_Workflow_Engine.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "triggers",
+      "why": "bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `Intent-Aware Policy Engine` connect `Community 0` to `Community 1`, `Community 2`, `Community 5`?",
+      "why": "High betweenness centrality (0.086) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Approval Workflow Engine` connect `Community 1` to `Community 0`?",
+      "why": "High betweenness centrality (0.037) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Secure MCP Server` connect `Community 2` to `Community 0`?",
+      "why": "High betweenness centrality (0.019) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `FeaturePageData`, `FeaturePageTemplate`, `useScrollAnimation` to the rest of the system?",
+      "why": "28 weakly-connected nodes found - possible documentation gaps or missing edges."
+    }
+  ]
+}

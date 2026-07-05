@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>graphify - graphify-out\graph.html</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"
+        integrity="sha384-Ux6phic9PEHJ38YtrijhkzyJ8yQlH8i/+buBR8s3mAZOJrP1gwyvAcIYl3GWtpX1"
+        crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
+  #graph { flex: 1; }
+  #sidebar { width: 280px; background: #1a1a2e; border-left: 1px solid #2a2a4e; display: flex; flex-direction: column; overflow: hidden; }
+  #search-wrap { padding: 12px; border-bottom: 1px solid #2a2a4e; }
+  #search { width: 100%; background: #0f0f1a; border: 1px solid #3a3a5e; color: #e0e0e0; padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+  #search:focus { border-color: #4E79A7; }
+  #search-results { max-height: 140px; overflow-y: auto; padding: 4px 12px; border-bottom: 1px solid #2a2a4e; display: none; }
+  .search-item { padding: 4px 6px; cursor: pointer; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-item:hover { background: #2a2a4e; }
+  #info-panel { padding: 14px; border-bottom: 1px solid #2a2a4e; min-height: 140px; }
+  #info-panel h3 { font-size: 13px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #info-content { font-size: 13px; color: #ccc; line-height: 1.6; }
+  #info-content .field { margin-bottom: 5px; }
+  #info-content .field b { color: #e0e0e0; }
+  #info-content .empty { color: #555; font-style: italic; }
+  .neighbor-link { display: block; padding: 2px 6px; margin: 2px 0; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid #333; }
+  .neighbor-link:hover { background: #2a2a4e; }
+  #neighbors-list { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+  #legend-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  #legend-wrap h3 { font-size: 13px; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; border-radius: 4px; font-size: 12px; }
+  .legend-item:hover { background: #2a2a4e; padding-left: 4px; }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { color: #666; font-size: 11px; }
+  #stats { padding: 10px 14px; border-top: 1px solid #2a2a4e; font-size: 11px; color: #555; }
+  #legend-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 4px 0; }
+  #legend-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: #aaa; user-select: none; }
+  #legend-controls label:hover { color: #e0e0e0; }
+  .legend-cb, #select-all-cb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; border: 1.5px solid #3a3a5e; border-radius: 3px; background: #0f0f1a; cursor: pointer; position: relative; flex-shrink: 0; }
+  .legend-cb:checked, #select-all-cb:checked { background: #4E79A7; border-color: #4E79A7; }
+  .legend-cb:checked::after, #select-all-cb:checked::after { content: ''; position: absolute; left: 3.5px; top: 1px; width: 4px; height: 7px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  #select-all-cb:indeterminate { background: #4E79A7; border-color: #4E79A7; }
+  #select-all-cb:indeterminate::after { content: ''; position: absolute; left: 2px; top: 5px; width: 8px; height: 2px; background: #fff; border: none; transform: none; }
+</style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+  <div id="info-panel">
+    <h3>Node Info</h3>
+    <div id="info-content"><span class="empty">Click a node to inspect it</span></div>
+  </div>
+  <div id="legend-wrap">
+    <h3>Communities</h3>
+    <div id="legend-controls">
+      <label><input type="checkbox" id="select-all-cb" checked onchange="toggleAllCommunities(!this.checked)">Select All</label>
+    </div>
+    <div id="legend"></div>
+  </div>
+  <div id="stats">32 nodes &middot; 12 edges &middot; 23 communities</div>
+</div>
+<script>
+const RAW_NODES = [{"id": "components_featurepagetemplate_featurepagedata", "label": "FeaturePageData", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "FeaturePageData", "community": 6, "community_name": "UI Feature Page Data", "source_file": "frontend/src/components/FeaturePageTemplate.tsx", "file_type": "code", "degree": 0}, {"id": "components_featurepagetemplate_featurepagetemplate", "label": "FeaturePageTemplate", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "FeaturePageTemplate", "community": 7, "community_name": "UI Feature Page Template", "source_file": "frontend/src/components/FeaturePageTemplate.tsx", "file_type": "code", "degree": 0}, {"id": "hooks_usescrollanimation_usescrollanimation", "label": "useScrollAnimation", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "useScrollAnimation", "community": 20, "community_name": "UI Scroll Animation Hook", "source_file": "frontend/src/hooks/useScrollAnimation.ts", "file_type": "code", "degree": 0}, {"id": "layout_applayout_applayout", "label": "AppLayout", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "AppLayout", "community": 21, "community_name": "UI App Shell Layout", "source_file": "frontend/src/layout/AppLayout.tsx", "file_type": "code", "degree": 0}, {"id": "features_approvalworkflowengine_approvalworkflowengine", "label": "ApprovalWorkflowEngine", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "ApprovalWorkflowEngine", "community": 8, "community_name": "UI Approval Workflow Engine Page", "source_file": "frontend/src/pages/features/ApprovalWorkflowEngine.tsx", "file_type": "code", "degree": 0}, {"id": "features_auditevidencereplay_auditevidencereplay", "label": "AuditEvidenceReplay", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "AuditEvidenceReplay", "community": 9, "community_name": "UI Audit Evidence Replay Page", "source_file": "frontend/src/pages/features/AuditEvidenceReplay.tsx", "file_type": "code", "degree": 0}, {"id": "features_identityaccesscontrol_identityaccesscontrol", "label": "IdentityAccessControl", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "IdentityAccessControl", "community": 10, "community_name": "UI Identity & Access Control Page", "source_file": "frontend/src/pages/features/IdentityAccessControl.tsx", "file_type": "code", "degree": 0}, {"id": "features_policyengine_policyengine", "label": "PolicyEngine", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "PolicyEngine", "community": 11, "community_name": "UI Policy Engine Page", "source_file": "frontend/src/pages/features/PolicyEngine.tsx", "file_type": "code", "degree": 0}, {"id": "features_quotasbudgetsratelimits_quotasbudgetsratelimits", "label": "QuotasBudgetsRateLimits", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "QuotasBudgetsRateLimits", "community": 12, "community_name": "UI Quotas & Rate Limits Page", "source_file": "frontend/src/pages/features/QuotasBudgetsRateLimits.tsx", "file_type": "code", "degree": 0}, {"id": "features_riskscoringengine_riskscoringengine", "label": "RiskScoringEngine", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "RiskScoringEngine", "community": 13, "community_name": "UI Risk Scoring Engine Page", "source_file": "frontend/src/pages/features/RiskScoringEngine.tsx", "file_type": "code", "degree": 0}, {"id": "features_rollbackcompensating_rollbackcompensating", "label": "RollbackCompensating", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "RollbackCompensating", "community": 14, "community_name": "UI Rollback & Compensation Page", "source_file": "frontend/src/pages/features/RollbackCompensating.tsx", "file_type": "code", "degree": 0}, {"id": "features_runtimeinterceptor_runtimeinterceptor", "label": "RuntimeInterceptor", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "RuntimeInterceptor", "community": 15, "community_name": "UI Runtime Interceptor Page", "source_file": "frontend/src/pages/features/RuntimeInterceptor.tsx", "file_type": "code", "degree": 0}, {"id": "features_sandboxingexecutionprofiles_sandboxingexecutionprofiles", "label": "SandboxingExecutionProfiles", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "SandboxingExecutionProfiles", "community": 16, "community_name": "UI Sandboxing Execution Page", "source_file": "frontend/src/pages/features/SandboxingExecutionProfiles.tsx", "file_type": "code", "degree": 0}, {"id": "features_tainttrackingengine_tainttrackingengine", "label": "TaintTrackingEngine", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "TaintTrackingEngine", "community": 17, "community_name": "UI Taint Tracking Engine Page", "source_file": "frontend/src/pages/features/TaintTrackingEngine.tsx", "file_type": "code", "degree": 0}, {"id": "features_tenantmanagement_tenantmanagement", "label": "TenantManagement", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "TenantManagement", "community": 18, "community_name": "UI Tenant Management Page", "source_file": "frontend/src/pages/features/TenantManagement.tsx", "file_type": "code", "degree": 0}, {"id": "features_toolmcpregistry_toolmcpregistry", "label": "ToolMcpRegistry", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "ToolMcpRegistry", "community": 19, "community_name": "UI Tool MCP Registry Page", "source_file": "frontend/src/pages/features/ToolMcpRegistry.tsx", "file_type": "code", "degree": 0}, {"id": "router_approutes_approutes", "label": "AppRoutes", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "AppRoutes", "community": 22, "community_name": "UI Router Configuration", "source_file": "frontend/src/router/AppRoutes.tsx", "file_type": "code", "degree": 0}, {"id": "readme_secure_mcp_server", "label": "Secure MCP Server", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 20.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Secure MCP Server", "community": 2, "community_name": "Platform Blueprint & Setup", "source_file": "README.md", "file_type": "document", "degree": 2}, {"id": "blueprint_execution_governance_platform", "label": "Execution Governance Platform", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Execution Governance Platform", "community": 2, "community_name": "Platform Blueprint & Setup", "source_file": "Execution_Governance_Platform_Blueprint.md", "file_type": "document", "degree": 1}, {"id": "feat_intent_aware_policy_engine", "label": "Intent-Aware Policy Engine", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 40.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Intent-Aware Policy Engine", "community": 0, "community_name": "Intent & Core Policy Governance", "source_file": "Features Guide/01_Intent_Aware_Execution_Policy.md", "file_type": "concept", "degree": 6}, {"id": "feat_identity_session_management", "label": "Identity & Session Management", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Identity &amp; Session Management", "community": 3, "community_name": "Identity, Access & API Keys", "source_file": "Features Guide/02_Enterprise_Identity_Session_Management.md", "file_type": "concept", "degree": 1}, {"id": "feat_api_key_management", "label": "API Key Management", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "API Key Management", "community": 3, "community_name": "Identity, Access & API Keys", "source_file": "Features Guide/03_Enterprise_API_Key_Management.md", "file_type": "concept", "degree": 1}, {"id": "feat_quotas_rate_limiting", "label": "Distributed Quotas & Rate Limiting", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Distributed Quotas &amp; Rate Limiting", "community": 0, "community_name": "Intent & Core Policy Governance", "source_file": "Features Guide/04_Distributed_Quotas_and_Rate_Limiting.md", "file_type": "concept", "degree": 1}, {"id": "feat_admin_governance_controls", "label": "Admin & Governance Controls", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Admin &amp; Governance Controls", "community": 0, "community_name": "Intent & Core Policy Governance", "source_file": "Features Guide/05_Admin_and_Governance_Controls.md", "file_type": "concept", "degree": 1}, {"id": "feat_taint_tracking", "label": "Taint Tracking Engine", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Taint Tracking Engine", "community": 0, "community_name": "Intent & Core Policy Governance", "source_file": "Features Guide/06_Taint_Tracking_Engine.md", "file_type": "concept", "degree": 1}, {"id": "feat_reversible_execution", "label": "Reversible Execution & Compensating Controls", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Reversible Execution &amp; Compensating Controls", "community": 1, "community_name": "Staging, Approvals & Compensation", "source_file": "Features Guide/07_Reversible_Execution_and_Compensating_Controls.md", "file_type": "concept", "degree": 1}, {"id": "feat_tool_trust", "label": "Tool Trust & Provenance", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Tool Trust &amp; Provenance", "community": 4, "community_name": "Connectors & Cryptographic Tool Trust", "source_file": "Features Guide/08_Tool_Trust_and_Provenance.md", "file_type": "concept", "degree": 1}, {"id": "feat_approval_workflow", "label": "Approval Workflow Engine", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Approval Workflow Engine", "community": 1, "community_name": "Staging, Approvals & Compensation", "source_file": "Features Guide/09_Approval_Workflow_Engine.md", "file_type": "concept", "degree": 3}, {"id": "feat_task_contracts", "label": "Optional Task Contracts", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Optional Task Contracts", "community": 1, "community_name": "Staging, Approvals & Compensation", "source_file": "Features Guide/10_Optional_Task_Contracts.md", "file_type": "concept", "degree": 1}, {"id": "feat_connector_architecture", "label": "Connector & Tool Architecture", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Connector &amp; Tool Architecture", "community": 4, "community_name": "Connectors & Cryptographic Tool Trust", "source_file": "Features Guide/11_Connector_Architecture.md", "file_type": "concept", "degree": 1}, {"id": "feat_opa_rego", "label": "OPA Rego Policy System", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 20.0, "font": {"size": 12, "color": "#ffffff"}, "title": "OPA Rego Policy System", "community": 5, "community_name": "OPA Rego Policies & Control Plane", "source_file": "Features Guide/12_OPA_Rego_Policy_System.md", "file_type": "concept", "degree": 2}, {"id": "feat_rest_api", "label": "REST API Control Plane", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "REST API Control Plane", "community": 5, "community_name": "OPA Rego Policies & Control Plane", "source_file": "Features Guide/13_REST_API_Control_Plane.md", "file_type": "concept", "degree": 1}];
+const RAW_EDGES = [{"from": "readme_secure_mcp_server", "to": "blueprint_execution_governance_platform", "label": "describes", "title": "describes [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_secure_mcp_server", "to": "feat_intent_aware_policy_engine", "label": "runs", "title": "runs [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_intent_aware_policy_engine", "to": "feat_admin_governance_controls", "label": "configures", "title": "configures [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_intent_aware_policy_engine", "to": "feat_approval_workflow", "label": "triggers", "title": "triggers [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_intent_aware_policy_engine", "to": "feat_opa_rego", "label": "evaluates", "title": "evaluates [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_intent_aware_policy_engine", "to": "feat_quotas_rate_limiting", "label": "checks", "title": "checks [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_intent_aware_policy_engine", "to": "feat_taint_tracking", "label": "utilizes", "title": "utilizes [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_identity_session_management", "to": "feat_api_key_management", "label": "governs", "title": "governs [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_reversible_execution", "to": "feat_approval_workflow", "label": "coordinates", "title": "coordinates [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "feat_tool_trust", "to": "feat_connector_architecture", "label": "governed_by", "title": "governed_by [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "feat_approval_workflow", "to": "feat_task_contracts", "label": "bypasses", "title": "bypasses [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "feat_opa_rego", "to": "feat_rest_api", "label": "manages", "title": "manages [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}];
+const LEGEND = [{"cid": 0, "color": "#4E79A7", "label": "Intent &amp; Core Policy Governance", "count": 4}, {"cid": 1, "color": "#F28E2B", "label": "Staging, Approvals &amp; Compensation", "count": 3}, {"cid": 2, "color": "#E15759", "label": "Platform Blueprint &amp; Setup", "count": 2}, {"cid": 3, "color": "#76B7B2", "label": "Identity, Access &amp; API Keys", "count": 2}, {"cid": 4, "color": "#59A14F", "label": "Connectors &amp; Cryptographic Tool Trust", "count": 2}, {"cid": 5, "color": "#EDC948", "label": "OPA Rego Policies &amp; Control Plane", "count": 2}, {"cid": 6, "color": "#B07AA1", "label": "UI Feature Page Data", "count": 1}, {"cid": 7, "color": "#FF9DA7", "label": "UI Feature Page Template", "count": 1}, {"cid": 8, "color": "#9C755F", "label": "UI Approval Workflow Engine Page", "count": 1}, {"cid": 9, "color": "#BAB0AC", "label": "UI Audit Evidence Replay Page", "count": 1}, {"cid": 10, "color": "#4E79A7", "label": "UI Identity &amp; Access Control Page", "count": 1}, {"cid": 11, "color": "#F28E2B", "label": "UI Policy Engine Page", "count": 1}, {"cid": 12, "color": "#E15759", "label": "UI Quotas &amp; Rate Limits Page", "count": 1}, {"cid": 13, "color": "#76B7B2", "label": "UI Risk Scoring Engine Page", "count": 1}, {"cid": 14, "color": "#59A14F", "label": "UI Rollback &amp; Compensation Page", "count": 1}, {"cid": 15, "color": "#EDC948", "label": "UI Runtime Interceptor Page", "count": 1}, {"cid": 16, "color": "#B07AA1", "label": "UI Sandboxing Execution Page", "count": 1}, {"cid": 17, "color": "#FF9DA7", "label": "UI Taint Tracking Engine Page", "count": 1}, {"cid": 18, "color": "#9C755F", "label": "UI Tenant Management Page", "count": 1}, {"cid": 19, "color": "#BAB0AC", "label": "UI Tool MCP Registry Page", "count": 1}, {"cid": 20, "color": "#4E79A7", "label": "UI Scroll Animation Hook", "count": 1}, {"cid": 21, "color": "#F28E2B", "label": "UI App Shell Layout", "count": 1}, {"cid": 22, "color": "#E15759", "label": "UI Router Configuration", "count": 1}];
+
+// HTML-escape helper — prevents XSS when injecting graph data into innerHTML
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Build vis datasets
+const nodesDS = new vis.DataSet(RAW_NODES.map(n => ({
+  id: n.id, label: n.label, color: n.color, size: n.size,
+  font: n.font, title: n.title,
+  _community: n.community, _community_name: n.community_name,
+  _source_file: n.source_file, _file_type: n.file_type, _degree: n.degree,
+})));
+
+const edgesDS = new vis.DataSet(RAW_EDGES.map((e, i) => ({
+  id: i, from: e.from, to: e.to,
+  label: '',
+  title: e.title,
+  dashes: e.dashes,
+  width: e.width,
+  color: e.color,
+  arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+})));
+
+const container = document.getElementById('graph');
+const network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -60,
+      centralGravity: 0.005,
+      springLength: 120,
+      springConstant: 0.08,
+      damping: 0.4,
+      avoidOverlap: 0.8,
+    },
+    stabilization: { iterations: 200, fit: true },
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    hideEdgesOnDrag: true,
+    navigationButtons: false,
+    keyboard: false,
+  },
+  nodes: { shape: 'dot', borderWidth: 1.5 },
+  edges: { smooth: { type: 'continuous', roundness: 0.2 }, selectionWidth: 3 },
+});
+
+network.once('stabilizationIterationsDone', () => {
+  network.setOptions({ physics: { enabled: false } });
+});
+
+function showInfo(nodeId) {
+  const n = nodesDS.get(nodeId);
+  if (!n) return;
+  const neighborIds = network.getConnectedNodes(nodeId);
+  const neighborItems = neighborIds.map(nid => {
+    const nb = nodesDS.get(nid);
+    const color = nb ? nb.color.background : '#555';
+    return `<span class="neighbor-link" style="border-left-color:${esc(color)}" onclick="focusNode(${JSON.stringify(nid)})">${esc(nb ? nb.label : nid)}</span>`;
+  }).join('');
+  document.getElementById('info-content').innerHTML = `
+    <div class="field"><b>${esc(n.label)}</b></div>
+    <div class="field">Type: ${esc(n._file_type || 'unknown')}</div>
+    <div class="field">Community: ${esc(n._community_name)}</div>
+    <div class="field">Source: ${esc(n._source_file || '-')}</div>
+    <div class="field">Degree: ${n._degree}</div>
+    ${neighborIds.length ? `<div class="field" style="margin-top:8px;color:#aaa;font-size:11px">Neighbors (${neighborIds.length})</div><div id="neighbors-list">${neighborItems}</div>` : ''}
+  `;
+}
+
+function focusNode(nodeId) {
+  network.focus(nodeId, { scale: 1.4, animation: true });
+  network.selectNodes([nodeId]);
+  showInfo(nodeId);
+}
+
+// Track hovered node — hover detection is more reliable than click params
+let hoveredNodeId = null;
+network.on('hoverNode', params => {
+  hoveredNodeId = params.node;
+  container.style.cursor = 'pointer';
+});
+network.on('blurNode', () => {
+  hoveredNodeId = null;
+  container.style.cursor = 'default';
+});
+container.addEventListener('click', () => {
+  if (hoveredNodeId !== null) {
+    showInfo(hoveredNodeId);
+    network.selectNodes([hoveredNodeId]);
+  }
+});
+network.on('click', params => {
+  if (params.nodes.length > 0) {
+    showInfo(params.nodes[0]);
+  } else if (hoveredNodeId === null) {
+    document.getElementById('info-content').innerHTML = '<span class="empty">Click a node to inspect it</span>';
+  }
+});
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+  if (!q) { searchResults.style.display = 'none'; return; }
+  const matches = RAW_NODES.filter(n => n.label.toLowerCase().includes(q)).slice(0, 20);
+  if (!matches.length) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'search-item';
+    el.textContent = n.label;
+    el.style.borderLeft = `3px solid ${n.color.background}`;
+    el.style.paddingLeft = '8px';
+    el.onclick = () => {
+      network.focus(n.id, { scale: 1.5, animation: true });
+      network.selectNodes([n.id]);
+      showInfo(n.id);
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(el);
+  });
+});
+document.addEventListener('click', e => {
+  if (!searchResults.contains(e.target) && e.target !== searchInput)
+    searchResults.style.display = 'none';
+});
+
+const hiddenCommunities = new Set();
+
+const selectAllCb = document.getElementById('select-all-cb');
+
+function updateSelectAllState() {
+  const total = LEGEND.length;
+  const hidden = hiddenCommunities.size;
+  selectAllCb.checked = hidden === 0;
+  selectAllCb.indeterminate = hidden > 0 && hidden < total;
+}
+
+function toggleAllCommunities(hide) {
+  document.querySelectorAll('.legend-item').forEach(item => {
+    hide ? item.classList.add('dimmed') : item.classList.remove('dimmed');
+  });
+  document.querySelectorAll('.legend-cb').forEach(cb => {
+    cb.checked = !hide;
+  });
+  LEGEND.forEach(c => {
+    if (hide) hiddenCommunities.add(c.cid); else hiddenCommunities.delete(c.cid);
+  });
+  const updates = RAW_NODES.map(n => ({ id: n.id, hidden: hide }));
+  nodesDS.update(updates);
+  updateSelectAllState();
+}
+
+const legendEl = document.getElementById('legend');
+LEGEND.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'legend-cb';
+  cb.checked = true;
+  cb.addEventListener('change', (e) => {
+    e.stopPropagation();
+    if (cb.checked) {
+      hiddenCommunities.delete(c.cid);
+      item.classList.remove('dimmed');
+    } else {
+      hiddenCommunities.add(c.cid);
+      item.classList.add('dimmed');
+    }
+    const updates = RAW_NODES
+      .filter(n => n.community === c.cid)
+      .map(n => ({ id: n.id, hidden: !cb.checked }));
+    nodesDS.update(updates);
+    updateSelectAllState();
+  });
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>
+    <span class="legend-label">${c.label}</span>
+    <span class="legend-count">${c.count}</span>`;
+  item.prepend(cb);
+  item.onclick = (e) => {
+    if (e.target === cb) return;
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+  };
+  legendEl.appendChild(item);
+});
+</script>
+<script>
+// Render hyperedges as shaded regions
+const hyperedges = [];
+// afterDrawing passes ctx already transformed to network coordinate space.
+// Draw node positions raw — no manual pan/zoom/DPR math needed.
+network.on('afterDrawing', function(ctx) {
+    hyperedges.forEach(h => {
+        const positions = h.nodes
+            .map(nid => network.getPositions([nid])[nid])
+            .filter(p => p !== undefined);
+        if (positions.length < 2) return;
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#6366f1';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Centroid and expanded hull in network coordinates
+        const cx = positions.reduce((s, p) => s + p.x, 0) / positions.length;
+        const cy = positions.reduce((s, p) => s + p.y, 0) / positions.length;
+        const expanded = positions.map(p => ({
+            x: cx + (p.x - cx) * 1.15,
+            y: cy + (p.y - cy) * 1.15
+        }));
+        ctx.moveTo(expanded[0].x, expanded[0].y);
+        expanded.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        // Label
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, cx, cy - 5);
+        ctx.restore();
+    });
+});
+</script>
+</body>
+</html>

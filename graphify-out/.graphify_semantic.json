@@ -1,0 +1,297 @@
+{
+  "nodes": [
+    {
+      "id": "readme_secure_mcp_server",
+      "label": "Secure MCP Server",
+      "file_type": "document",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "blueprint_execution_governance_platform",
+      "label": "Execution Governance Platform",
+      "file_type": "document",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Execution_Governance_Platform_Blueprint.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_intent_aware_policy_engine",
+      "label": "Intent-Aware Policy Engine",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_identity_session_management",
+      "label": "Identity & Session Management",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\02_Enterprise_Identity_Session_Management.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_api_key_management",
+      "label": "API Key Management",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\03_Enterprise_API_Key_Management.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_quotas_rate_limiting",
+      "label": "Distributed Quotas & Rate Limiting",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\04_Distributed_Quotas_and_Rate_Limiting.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_admin_governance_controls",
+      "label": "Admin & Governance Controls",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\05_Admin_and_Governance_Controls.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_taint_tracking",
+      "label": "Taint Tracking Engine",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\06_Taint_Tracking_Engine.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_reversible_execution",
+      "label": "Reversible Execution & Compensating Controls",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\07_Reversible_Execution_and_Compensating_Controls.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_tool_trust",
+      "label": "Tool Trust & Provenance",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\08_Tool_Trust_and_Provenance.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_approval_workflow",
+      "label": "Approval Workflow Engine",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\09_Approval_Workflow_Engine.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_task_contracts",
+      "label": "Optional Task Contracts",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\10_Optional_Task_Contracts.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_connector_architecture",
+      "label": "Connector & Tool Architecture",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\11_Connector_Architecture.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_opa_rego",
+      "label": "OPA Rego Policy System",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\12_OPA_Rego_Policy_System.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "feat_rest_api",
+      "label": "REST API Control Plane",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\13_REST_API_Control_Plane.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "readme_secure_mcp_server",
+      "target": "feat_intent_aware_policy_engine",
+      "relation": "runs",
+      "confidence": "EXTRACTED",
+      "why": "Secure MCP Server intercepts tool requests and evaluates them through the Intent-Aware Policy Engine.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\README.md"
+      ]
+    },
+    {
+      "source": "blueprint_execution_governance_platform",
+      "target": "readme_secure_mcp_server",
+      "relation": "describes",
+      "confidence": "EXTRACTED",
+      "why": "Blueprint outlines the execution governance vision implemented by the Secure MCP Server.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Execution_Governance_Platform_Blueprint.md"
+      ]
+    },
+    {
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_taint_tracking",
+      "relation": "utilizes",
+      "confidence": "EXTRACTED",
+      "why": "The Policy Engine checks active session taints to determine execution outcomes.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md"
+      ]
+    },
+    {
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_opa_rego",
+      "relation": "evaluates",
+      "confidence": "EXTRACTED",
+      "why": "The Policy Engine forwards parameters and context to the OPA Rego evaluator.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md",
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\12_OPA_Rego_Policy_System.md"
+      ]
+    },
+    {
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_quotas_rate_limiting",
+      "relation": "checks",
+      "confidence": "EXTRACTED",
+      "why": "The Policy Engine verifies rate limits and adapts limits based on computed risk scores.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md",
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\04_Distributed_Quotas_and_Rate_Limiting.md"
+      ]
+    },
+    {
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_approval_workflow",
+      "relation": "triggers",
+      "confidence": "EXTRACTED",
+      "why": "High risk intent classification triggers the Low-Friction Approval Workflow Engine.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md",
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\09_Approval_Workflow_Engine.md"
+      ]
+    },
+    {
+      "source": "feat_identity_session_management",
+      "target": "feat_api_key_management",
+      "relation": "governs",
+      "confidence": "EXTRACTED",
+      "why": "Identity management provides service account abstractions for programmatically issued API keys.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\02_Enterprise_Identity_Session_Management.md"
+      ]
+    },
+    {
+      "source": "feat_reversible_execution",
+      "target": "feat_approval_workflow",
+      "relation": "coordinates",
+      "confidence": "INFERRED",
+      "why": "Reversible executions and undo flows are often integrated into staging environments and approval workflow pipelines.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\07_Reversible_Execution_and_Compensating_Controls.md"
+      ]
+    },
+    {
+      "source": "feat_task_contracts",
+      "target": "feat_approval_workflow",
+      "relation": "bypasses",
+      "confidence": "EXTRACTED",
+      "why": "Optional Task Contracts allow the agent to execute actions bypassing individual approval requirements.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\10_Optional_Task_Contracts.md"
+      ]
+    },
+    {
+      "source": "feat_connector_architecture",
+      "target": "feat_tool_trust",
+      "relation": "governed_by",
+      "confidence": "INFERRED",
+      "why": "Dynamic connectors register tools whose trust state and drift are monitored by Tool Trust.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\11_Connector_Architecture.md"
+      ]
+    },
+    {
+      "source": "feat_rest_api",
+      "target": "feat_opa_rego",
+      "relation": "manages",
+      "confidence": "EXTRACTED",
+      "why": "The REST API Control Plane allows administrators to upload and manage Rego policy bundles.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\13_REST_API_Control_Plane.md"
+      ]
+    },
+    {
+      "source": "feat_admin_governance_controls",
+      "target": "feat_intent_aware_policy_engine",
+      "relation": "configures",
+      "confidence": "EXTRACTED",
+      "why": "Admin MCP tools enable real-time CRUD and policy management of the engine rules.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\05_Admin_and_Governance_Controls.md"
+      ]
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

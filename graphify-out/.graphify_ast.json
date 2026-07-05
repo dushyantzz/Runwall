@@ -1,0 +1,724 @@
+{
+  "nodes": [
+    {
+      "id": "components_featurepagetemplate_featurepagedata",
+      "label": "FeaturePageData",
+      "file_type": "code",
+      "source_file": "frontend/src/components/FeaturePageTemplate.tsx",
+      "source_location": "L10",
+      "_origin": "ast"
+    },
+    {
+      "id": "components_featurepagetemplate_featurepagetemplate",
+      "label": "FeaturePageTemplate",
+      "file_type": "code",
+      "source_file": "frontend/src/components/FeaturePageTemplate.tsx",
+      "source_location": "L65",
+      "_origin": "ast"
+    },
+    {
+      "id": "hooks_usescrollanimation_usescrollanimation",
+      "label": "useScrollAnimation",
+      "file_type": "code",
+      "source_file": "frontend/src/hooks/useScrollAnimation.ts",
+      "source_location": "L3",
+      "_origin": "ast"
+    },
+    {
+      "id": "layout_applayout_applayout",
+      "label": "AppLayout",
+      "file_type": "code",
+      "source_file": "frontend/src/layout/AppLayout.tsx",
+      "source_location": "L6",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_approvalworkflowengine_approvalworkflowengine",
+      "label": "ApprovalWorkflowEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/ApprovalWorkflowEngine.tsx",
+      "source_location": "L130",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_auditevidencereplay_auditevidencereplay",
+      "label": "AuditEvidenceReplay",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/AuditEvidenceReplay.tsx",
+      "source_location": "L131",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_identityaccesscontrol_identityaccesscontrol",
+      "label": "IdentityAccessControl",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/IdentityAccessControl.tsx",
+      "source_location": "L121",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_policyengine_policyengine",
+      "label": "PolicyEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/PolicyEngine.tsx",
+      "source_location": "L127",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_quotasbudgetsratelimits_quotasbudgetsratelimits",
+      "label": "QuotasBudgetsRateLimits",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/QuotasBudgetsRateLimits.tsx",
+      "source_location": "L132",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_riskscoringengine_riskscoringengine",
+      "label": "RiskScoringEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/RiskScoringEngine.tsx",
+      "source_location": "L132",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_rollbackcompensating_rollbackcompensating",
+      "label": "RollbackCompensating",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/RollbackCompensating.tsx",
+      "source_location": "L123",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_runtimeinterceptor_runtimeinterceptor",
+      "label": "RuntimeInterceptor",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/RuntimeInterceptor.tsx",
+      "source_location": "L126",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_sandboxingexecutionprofiles_sandboxingexecutionprofiles",
+      "label": "SandboxingExecutionProfiles",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/SandboxingExecutionProfiles.tsx",
+      "source_location": "L130",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_tainttrackingengine_tainttrackingengine",
+      "label": "TaintTrackingEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/TaintTrackingEngine.tsx",
+      "source_location": "L122",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_tenantmanagement_tenantmanagement",
+      "label": "TenantManagement",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/TenantManagement.tsx",
+      "source_location": "L121",
+      "_origin": "ast"
+    },
+    {
+      "id": "features_toolmcpregistry_toolmcpregistry",
+      "label": "ToolMcpRegistry",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/ToolMcpRegistry.tsx",
+      "source_location": "L122",
+      "_origin": "ast"
+    },
+    {
+      "id": "router_approutes_approutes",
+      "label": "AppRoutes",
+      "file_type": "code",
+      "source_file": "frontend/src/router/AppRoutes.tsx",
+      "source_location": "L17",
+      "_origin": "ast"
+    }
+  ],
+  "edges": [
+    {
+      "source": "secure_mcp_server_init",
+      "target": "secure_mcp_server_monitoring",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/__init__.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "admin_init",
+      "target": "admin_tools",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/admin/__init__.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "api_init",
+      "target": "api_app",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/api/__init__.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "connectors_init",
+      "target": "connectors_base",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/connectors/__init__.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "connectors_init",
+      "target": "connectors_registry",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/connectors/__init__.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "connectors_init",
+      "target": "connectors_rest_api",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/connectors/__init__.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "connectors_init",
+      "target": "connectors_database",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/connectors/__init__.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "connectors_init",
+      "target": "connectors_shell",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/connectors/__init__.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "database_init",
+      "target": "database_connection",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/database/__init__.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "database_init",
+      "target": "database_models",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/database/__init__.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_intent_types",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_intent_classifier",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_risk_scorer",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_policy_evaluator",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_opa_evaluator",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "database_init",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_quota_manager",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_taint",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_compensation",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_trust",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_approvals",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "governance_init",
+      "target": "governance_contracts",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/governance/__init__.py",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "components_featurepagetemplate",
+      "target": "hooks_usescrollanimation_usescrollanimation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/FeaturePageTemplate.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "pages_homepage",
+      "target": "hooks_usescrollanimation_usescrollanimation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/HomePage.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "features_approvalworkflowengine",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/ApprovalWorkflowEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_approvalworkflowengine",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/ApprovalWorkflowEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_auditevidencereplay",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/AuditEvidenceReplay.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_auditevidencereplay",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/AuditEvidenceReplay.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_identityaccesscontrol",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/IdentityAccessControl.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_identityaccesscontrol",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/IdentityAccessControl.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_policyengine",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/PolicyEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_policyengine",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/PolicyEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_quotasbudgetsratelimits",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/QuotasBudgetsRateLimits.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_quotasbudgetsratelimits",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/QuotasBudgetsRateLimits.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_riskscoringengine",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/RiskScoringEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_riskscoringengine",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/RiskScoringEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_rollbackcompensating",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/RollbackCompensating.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_rollbackcompensating",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/RollbackCompensating.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_runtimeinterceptor",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/RuntimeInterceptor.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_runtimeinterceptor",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/RuntimeInterceptor.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_sandboxingexecutionprofiles",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/SandboxingExecutionProfiles.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_sandboxingexecutionprofiles",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/SandboxingExecutionProfiles.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_tainttrackingengine",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/TaintTrackingEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_tainttrackingengine",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/TaintTrackingEngine.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_tenantmanagement",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/TenantManagement.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_tenantmanagement",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/TenantManagement.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_toolmcpregistry",
+      "target": "components_featurepagetemplate_featurepagedata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/ToolMcpRegistry.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "features_toolmcpregistry",
+      "target": "components_featurepagetemplate_featurepagetemplate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/features/ToolMcpRegistry.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "mcp_server_main",
+      "target": "api_auth",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp_server/main.py",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mcp_server_main",
+      "target": "api_tools",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp_server/main.py",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mcp_server_main",
+      "target": "api_admin",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp_server/main.py",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mcp_server_main",
+      "target": "api_health",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp_server/main.py",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "api_app",
+      "target": "routes_policies",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/api/app.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "api_app",
+      "target": "routes_approvals",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/api/app.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "api_app",
+      "target": "routes_audit",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/api/app.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "routes_init",
+      "target": "routes_policies",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/api/routes/__init__.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "routes_init",
+      "target": "routes_approvals",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/api/routes/__init__.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "routes_init",
+      "target": "routes_audit",
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "secure_mcp_server/api/routes/__init__.py",
+      "source_location": "L3",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

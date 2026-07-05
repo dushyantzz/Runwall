@@ -1,0 +1,523 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "FeaturePageData",
+      "file_type": "code",
+      "source_file": "frontend/src/components/FeaturePageTemplate.tsx",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "components_featurepagetemplate_featurepagedata",
+      "community": 6,
+      "norm_label": "featurepagedata"
+    },
+    {
+      "label": "FeaturePageTemplate",
+      "file_type": "code",
+      "source_file": "frontend/src/components/FeaturePageTemplate.tsx",
+      "source_location": "L65",
+      "_origin": "ast",
+      "id": "components_featurepagetemplate_featurepagetemplate",
+      "community": 7,
+      "norm_label": "featurepagetemplate"
+    },
+    {
+      "label": "useScrollAnimation",
+      "file_type": "code",
+      "source_file": "frontend/src/hooks/useScrollAnimation.ts",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "hooks_usescrollanimation_usescrollanimation",
+      "community": 20,
+      "norm_label": "usescrollanimation"
+    },
+    {
+      "label": "AppLayout",
+      "file_type": "code",
+      "source_file": "frontend/src/layout/AppLayout.tsx",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "layout_applayout_applayout",
+      "community": 21,
+      "norm_label": "applayout"
+    },
+    {
+      "label": "ApprovalWorkflowEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/ApprovalWorkflowEngine.tsx",
+      "source_location": "L130",
+      "_origin": "ast",
+      "id": "features_approvalworkflowengine_approvalworkflowengine",
+      "community": 8,
+      "norm_label": "approvalworkflowengine"
+    },
+    {
+      "label": "AuditEvidenceReplay",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/AuditEvidenceReplay.tsx",
+      "source_location": "L131",
+      "_origin": "ast",
+      "id": "features_auditevidencereplay_auditevidencereplay",
+      "community": 9,
+      "norm_label": "auditevidencereplay"
+    },
+    {
+      "label": "IdentityAccessControl",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/IdentityAccessControl.tsx",
+      "source_location": "L121",
+      "_origin": "ast",
+      "id": "features_identityaccesscontrol_identityaccesscontrol",
+      "community": 10,
+      "norm_label": "identityaccesscontrol"
+    },
+    {
+      "label": "PolicyEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/PolicyEngine.tsx",
+      "source_location": "L127",
+      "_origin": "ast",
+      "id": "features_policyengine_policyengine",
+      "community": 11,
+      "norm_label": "policyengine"
+    },
+    {
+      "label": "QuotasBudgetsRateLimits",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/QuotasBudgetsRateLimits.tsx",
+      "source_location": "L132",
+      "_origin": "ast",
+      "id": "features_quotasbudgetsratelimits_quotasbudgetsratelimits",
+      "community": 12,
+      "norm_label": "quotasbudgetsratelimits"
+    },
+    {
+      "label": "RiskScoringEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/RiskScoringEngine.tsx",
+      "source_location": "L132",
+      "_origin": "ast",
+      "id": "features_riskscoringengine_riskscoringengine",
+      "community": 13,
+      "norm_label": "riskscoringengine"
+    },
+    {
+      "label": "RollbackCompensating",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/RollbackCompensating.tsx",
+      "source_location": "L123",
+      "_origin": "ast",
+      "id": "features_rollbackcompensating_rollbackcompensating",
+      "community": 14,
+      "norm_label": "rollbackcompensating"
+    },
+    {
+      "label": "RuntimeInterceptor",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/RuntimeInterceptor.tsx",
+      "source_location": "L126",
+      "_origin": "ast",
+      "id": "features_runtimeinterceptor_runtimeinterceptor",
+      "community": 15,
+      "norm_label": "runtimeinterceptor"
+    },
+    {
+      "label": "SandboxingExecutionProfiles",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/SandboxingExecutionProfiles.tsx",
+      "source_location": "L130",
+      "_origin": "ast",
+      "id": "features_sandboxingexecutionprofiles_sandboxingexecutionprofiles",
+      "community": 16,
+      "norm_label": "sandboxingexecutionprofiles"
+    },
+    {
+      "label": "TaintTrackingEngine",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/TaintTrackingEngine.tsx",
+      "source_location": "L122",
+      "_origin": "ast",
+      "id": "features_tainttrackingengine_tainttrackingengine",
+      "community": 17,
+      "norm_label": "tainttrackingengine"
+    },
+    {
+      "label": "TenantManagement",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/TenantManagement.tsx",
+      "source_location": "L121",
+      "_origin": "ast",
+      "id": "features_tenantmanagement_tenantmanagement",
+      "community": 18,
+      "norm_label": "tenantmanagement"
+    },
+    {
+      "label": "ToolMcpRegistry",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/features/ToolMcpRegistry.tsx",
+      "source_location": "L122",
+      "_origin": "ast",
+      "id": "features_toolmcpregistry_toolmcpregistry",
+      "community": 19,
+      "norm_label": "toolmcpregistry"
+    },
+    {
+      "label": "AppRoutes",
+      "file_type": "code",
+      "source_file": "frontend/src/router/AppRoutes.tsx",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "router_approutes_approutes",
+      "community": 22,
+      "norm_label": "approutes"
+    },
+    {
+      "label": "Secure MCP Server",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_secure_mcp_server",
+      "community": 2,
+      "norm_label": "secure mcp server"
+    },
+    {
+      "label": "Execution Governance Platform",
+      "file_type": "document",
+      "source_file": "Execution_Governance_Platform_Blueprint.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "blueprint_execution_governance_platform",
+      "community": 2,
+      "norm_label": "execution governance platform"
+    },
+    {
+      "label": "Intent-Aware Policy Engine",
+      "file_type": "concept",
+      "source_file": "Features Guide/01_Intent_Aware_Execution_Policy.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_intent_aware_policy_engine",
+      "community": 0,
+      "norm_label": "intent-aware policy engine"
+    },
+    {
+      "label": "Identity & Session Management",
+      "file_type": "concept",
+      "source_file": "Features Guide/02_Enterprise_Identity_Session_Management.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_identity_session_management",
+      "community": 3,
+      "norm_label": "identity & session management"
+    },
+    {
+      "label": "API Key Management",
+      "file_type": "concept",
+      "source_file": "Features Guide/03_Enterprise_API_Key_Management.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_api_key_management",
+      "community": 3,
+      "norm_label": "api key management"
+    },
+    {
+      "label": "Distributed Quotas & Rate Limiting",
+      "file_type": "concept",
+      "source_file": "Features Guide/04_Distributed_Quotas_and_Rate_Limiting.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_quotas_rate_limiting",
+      "community": 0,
+      "norm_label": "distributed quotas & rate limiting"
+    },
+    {
+      "label": "Admin & Governance Controls",
+      "file_type": "concept",
+      "source_file": "Features Guide/05_Admin_and_Governance_Controls.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_admin_governance_controls",
+      "community": 0,
+      "norm_label": "admin & governance controls"
+    },
+    {
+      "label": "Taint Tracking Engine",
+      "file_type": "concept",
+      "source_file": "Features Guide/06_Taint_Tracking_Engine.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_taint_tracking",
+      "community": 0,
+      "norm_label": "taint tracking engine"
+    },
+    {
+      "label": "Reversible Execution & Compensating Controls",
+      "file_type": "concept",
+      "source_file": "Features Guide/07_Reversible_Execution_and_Compensating_Controls.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_reversible_execution",
+      "community": 1,
+      "norm_label": "reversible execution & compensating controls"
+    },
+    {
+      "label": "Tool Trust & Provenance",
+      "file_type": "concept",
+      "source_file": "Features Guide/08_Tool_Trust_and_Provenance.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_tool_trust",
+      "community": 4,
+      "norm_label": "tool trust & provenance"
+    },
+    {
+      "label": "Approval Workflow Engine",
+      "file_type": "concept",
+      "source_file": "Features Guide/09_Approval_Workflow_Engine.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_approval_workflow",
+      "community": 1,
+      "norm_label": "approval workflow engine"
+    },
+    {
+      "label": "Optional Task Contracts",
+      "file_type": "concept",
+      "source_file": "Features Guide/10_Optional_Task_Contracts.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_task_contracts",
+      "community": 1,
+      "norm_label": "optional task contracts"
+    },
+    {
+      "label": "Connector & Tool Architecture",
+      "file_type": "concept",
+      "source_file": "Features Guide/11_Connector_Architecture.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_connector_architecture",
+      "community": 4,
+      "norm_label": "connector & tool architecture"
+    },
+    {
+      "label": "OPA Rego Policy System",
+      "file_type": "concept",
+      "source_file": "Features Guide/12_OPA_Rego_Policy_System.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_opa_rego",
+      "community": 5,
+      "norm_label": "opa rego policy system"
+    },
+    {
+      "label": "REST API Control Plane",
+      "file_type": "concept",
+      "source_file": "Features Guide/13_REST_API_Control_Plane.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "feat_rest_api",
+      "community": 5,
+      "norm_label": "rest api control plane"
+    }
+  ],
+  "links": [
+    {
+      "relation": "describes",
+      "confidence": "EXTRACTED",
+      "why": "Blueprint outlines the execution governance vision implemented by the Secure MCP Server.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Execution_Governance_Platform_Blueprint.md"
+      ],
+      "source_file": "Execution_Governance_Platform_Blueprint.md",
+      "source": "blueprint_execution_governance_platform",
+      "target": "readme_secure_mcp_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "runs",
+      "confidence": "EXTRACTED",
+      "why": "Secure MCP Server intercepts tool requests and evaluates them through the Intent-Aware Policy Engine.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\README.md"
+      ],
+      "source_file": "README.md",
+      "source": "readme_secure_mcp_server",
+      "target": "feat_intent_aware_policy_engine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "configures",
+      "confidence": "EXTRACTED",
+      "why": "Admin MCP tools enable real-time CRUD and policy management of the engine rules.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\05_Admin_and_Governance_Controls.md"
+      ],
+      "source_file": "Features Guide/05_Admin_and_Governance_Controls.md",
+      "source": "feat_admin_governance_controls",
+      "target": "feat_intent_aware_policy_engine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "triggers",
+      "confidence": "EXTRACTED",
+      "why": "High risk intent classification triggers the Low-Friction Approval Workflow Engine.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md",
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\09_Approval_Workflow_Engine.md"
+      ],
+      "source_file": "Features Guide/01_Intent_Aware_Execution_Policy.md",
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_approval_workflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "evaluates",
+      "confidence": "EXTRACTED",
+      "why": "The Policy Engine forwards parameters and context to the OPA Rego evaluator.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md",
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\12_OPA_Rego_Policy_System.md"
+      ],
+      "source_file": "Features Guide/01_Intent_Aware_Execution_Policy.md",
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_opa_rego",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "checks",
+      "confidence": "EXTRACTED",
+      "why": "The Policy Engine verifies rate limits and adapts limits based on computed risk scores.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md",
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\04_Distributed_Quotas_and_Rate_Limiting.md"
+      ],
+      "source_file": "Features Guide/01_Intent_Aware_Execution_Policy.md",
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_quotas_rate_limiting",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "utilizes",
+      "confidence": "EXTRACTED",
+      "why": "The Policy Engine checks active session taints to determine execution outcomes.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\01_Intent_Aware_Execution_Policy.md"
+      ],
+      "source_file": "Features Guide/01_Intent_Aware_Execution_Policy.md",
+      "source": "feat_intent_aware_policy_engine",
+      "target": "feat_taint_tracking",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "governs",
+      "confidence": "EXTRACTED",
+      "why": "Identity management provides service account abstractions for programmatically issued API keys.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\02_Enterprise_Identity_Session_Management.md"
+      ],
+      "source_file": "Features Guide/02_Enterprise_Identity_Session_Management.md",
+      "source": "feat_identity_session_management",
+      "target": "feat_api_key_management",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "coordinates",
+      "confidence": "INFERRED",
+      "why": "Reversible executions and undo flows are often integrated into staging environments and approval workflow pipelines.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\07_Reversible_Execution_and_Compensating_Controls.md"
+      ],
+      "source_file": "Features Guide/07_Reversible_Execution_and_Compensating_Controls.md",
+      "source": "feat_reversible_execution",
+      "target": "feat_approval_workflow",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "governed_by",
+      "confidence": "INFERRED",
+      "why": "Dynamic connectors register tools whose trust state and drift are monitored by Tool Trust.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\11_Connector_Architecture.md"
+      ],
+      "source_file": "Features Guide/11_Connector_Architecture.md",
+      "source": "feat_connector_architecture",
+      "target": "feat_tool_trust",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "bypasses",
+      "confidence": "EXTRACTED",
+      "why": "Optional Task Contracts allow the agent to execute actions bypassing individual approval requirements.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\10_Optional_Task_Contracts.md"
+      ],
+      "source_file": "Features Guide/10_Optional_Task_Contracts.md",
+      "source": "feat_task_contracts",
+      "target": "feat_approval_workflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "manages",
+      "confidence": "EXTRACTED",
+      "why": "The REST API Control Plane allows administrators to upload and manage Rego policy bundles.",
+      "source_files": [
+        "C:\\Users\\Shubham\\Desktop\\Execution Governance Platform for AI Agents\\Features Guide\\13_REST_API_Control_Plane.md"
+      ],
+      "source_file": "Features Guide/13_REST_API_Control_Plane.md",
+      "source": "feat_rest_api",
+      "target": "feat_opa_rego",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "9c09c52768478e92f754054ef659ec0d71b0a85e"
+}
