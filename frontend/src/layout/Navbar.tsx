@@ -56,23 +56,15 @@ export default function Navbar() {
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
         {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <div style={{
-            background: 'var(--accent)',
-            width: 14,
-            height: 14,
-            transform: 'rotate(45deg)',
-            borderRadius: '2px',
-            position: 'relative'
-          }}>
-            <div style={{
-              background: '#000',
-              width: 6,
-              height: 6,
-              position: 'absolute',
-              top: 4,
-              left: 4
-            }} />
-          </div>
+          <img
+            src="/logo.svg"
+            alt="Runwall Logo"
+            style={{
+              height: '28px',
+              width: 'auto',
+              display: 'block'
+            }}
+          />
           <span style={{
             fontFamily: 'var(--font-display)',
             fontSize: 17,
@@ -176,8 +168,8 @@ export default function Navbar() {
             fontWeight: 500,
             transition: 'color 0.2s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#b4b4b4')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#b4b4b4')}
           >
             Login
           </Link>
@@ -192,8 +184,8 @@ export default function Navbar() {
             borderRadius: '6px',
             transition: 'opacity 0.2s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
             Sign Up
           </Link>

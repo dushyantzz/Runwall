@@ -35,7 +35,9 @@
 }
 
 /* ── RESET & BASE ── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -69,50 +71,77 @@ body {
   scrollbar-color: #333 transparent;
   scrollbar-width: thin;
 }
-*::-webkit-scrollbar { width: 6px; height: 6px; }
-*::-webkit-scrollbar-track { background: transparent; }
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 *::-webkit-scrollbar-thumb {
   background: #333;
   border-radius: 3px;
 }
 
 /* ── TYPOGRAPHY ── */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   color: var(--heading);
-  font-weight: 400; /* Thinner weights like in the picture */
+  font-weight: 400;
+  /* Thinner weights like in the picture */
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
 
 h1 {
   font-size: 4.25rem;
-  font-weight: 300; /* Thinner display font */
+  font-weight: 300;
+  /* Thinner display font */
   letter-spacing: -0.03em;
 }
+
 h2 {
   font-size: 2.5rem;
   font-weight: 400;
 }
+
 h3 {
   font-size: 1.75rem;
   font-weight: 450;
 }
+
 h4 {
   font-size: 1.25rem;
   font-weight: 500;
 }
 
 @media (max-width: 768px) {
-  h1 { font-size: 2.75rem; }
-  h2 { font-size: 2rem; }
-  h3 { font-size: 1.5rem; }
+  h1 {
+    font-size: 2.75rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
 }
 
 p {
   color: var(--body);
   line-height: 1.7;
-  font-weight: 300; /* Thinner body text */
+  font-weight: 300;
+  /* Thinner body text */
 }
 
 a {
@@ -120,11 +149,13 @@ a {
   text-decoration: none;
   transition: color 0.2s ease;
 }
+
 a:hover {
   color: #a7f3d0;
 }
 
-code, pre {
+code,
+pre {
   font-family: var(--font-code);
 }
 
@@ -137,10 +168,15 @@ code, pre {
 }
 
 @media (max-width: 1024px) {
-  .container { padding: 0 32px; }
+  .container {
+    padding: 0 32px;
+  }
 }
+
 @media (max-width: 768px) {
-  .container { padding: 0 24px; }
+  .container {
+    padding: 0 24px;
+  }
 }
 
 /* Centralized content column structure with vertical side borders */
@@ -187,6 +223,7 @@ code, pre {
   color: #000000;
   border-color: var(--accent);
 }
+
 .btn-primary:hover {
   background: #a7f3d0;
   border-color: #a7f3d0;
@@ -198,6 +235,7 @@ code, pre {
   color: var(--heading);
   border-color: var(--border-bright);
 }
+
 .btn-secondary:hover {
   background: var(--card-hover);
   border-color: #555;
@@ -209,6 +247,7 @@ code, pre {
   border: none;
   padding: 8px 12px;
 }
+
 .btn-ghost:hover {
   color: var(--heading);
 }
@@ -292,12 +331,29 @@ code, pre {
   margin: 0;
 }
 
-.code-block .keyword { color: #c084fc; }
-.code-block .string { color: var(--accent); }
-.code-block .comment { color: #555; }
-.code-block .property { color: #60a5fa; }
-.code-block .number { color: #f59e0b; }
-.code-block .boolean { color: #f472b6; }
+.code-block .keyword {
+  color: #c084fc;
+}
+
+.code-block .string {
+  color: var(--accent);
+}
+
+.code-block .comment {
+  color: #555;
+}
+
+.code-block .property {
+  color: #60a5fa;
+}
+
+.code-block .number {
+  color: #f59e0b;
+}
+
+.code-block .boolean {
+  color: #f472b6;
+}
 
 .grid-overlay {
   position: absolute;
@@ -327,6 +383,7 @@ code, pre {
     opacity: 0;
     transform: translateY(24px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -334,18 +391,35 @@ code, pre {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideRight {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 .animate-fade-up {
@@ -358,12 +432,29 @@ code, pre {
   opacity: 0;
 }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
-.delay-600 { animation-delay: 0.6s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-600 {
+  animation-delay: 0.6s;
+}
 
 /* ── SECTION DIVIDERS ── */
 .section-border-top {

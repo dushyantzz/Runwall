@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 const footerLinks = {
   Product: [
@@ -115,7 +115,15 @@ export default function Footer() {
           gap: 16,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Shield size={18} color="var(--accent)" strokeWidth={2.5} />
+            <img
+              src="/logo.svg"
+              alt="Runwall Logo"
+              style={{
+                height: '26px',
+                width: 'auto',
+                display: 'block'
+              }}
+            />
             <span style={{
               fontFamily: 'var(--font-display)',
               fontSize: 14,
