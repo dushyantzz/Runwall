@@ -28,36 +28,6 @@ const testimonials = [
   },
 ];
 
-const pricingPlans = [
-  {
-    name: 'Community',
-    price: 'Free',
-    period: '',
-    desc: 'For individuals and small teams exploring AI governance.',
-    features: ['Up to 5 agents', '1,000 actions/day', 'Basic policy engine', 'Community support', '7-day audit retention'],
-    cta: 'Get Started Free',
-    highlighted: false,
-  },
-  {
-    name: 'Pro',
-    price: '$299',
-    period: '/mo',
-    desc: 'For teams shipping AI agents to production.',
-    features: ['Unlimited agents', '100K actions/day', 'Full policy engine', 'Risk scoring & taint tracking', 'Approval workflows', '90-day audit retention', 'Priority support', 'SSO & RBAC'],
-    cta: 'Start Free Trial',
-    highlighted: true,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    desc: 'For organizations with advanced security and compliance needs.',
-    features: ['Everything in Pro', 'Unlimited actions', 'Custom policies (Rego/CEL)', 'Dedicated environment', 'SOC 2 / HIPAA evidence packs', 'SLA guarantees', '24/7 support', 'Custom integrations'],
-    cta: 'Contact Sales',
-    highlighted: false,
-  },
-];
-
 /* ════════════════════════════════════════════════════════════
    COMPONENT
    ════════════════════════════════════════════════════════════ */
@@ -71,7 +41,6 @@ export default function HomePage() {
       <FeatureBentoGrid />
       <BranchingWorkflowSection activeToggle={activeToggle} setActiveToggle={setActiveToggle} />
       <TestimonialSection />
-      <PricingSection />
       <CTASection />
     </div>
   );
@@ -97,37 +66,6 @@ function HeroSection({
       <div className="grid-overlay" style={{ opacity: 0.8 }} />
 
       <div className="container" style={{ position: 'relative', textAlign: 'center', zIndex: 10 }}>
-        {/* Y Combinator Badge */}
-        <div className="animate-fade-up" style={{ marginBottom: 32 }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: 'rgba(249, 115, 22, 0.05)',
-            border: '1px solid rgba(249, 115, 22, 0.15)',
-            borderRadius: '6px',
-            padding: '5px 12px',
-            color: '#ffedd5',
-            fontSize: 11,
-            fontFamily: 'var(--font-mono)',
-          }}>
-            <span style={{
-              background: '#f97316',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: 10,
-              width: 14,
-              height: 14,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '2px',
-              fontFamily: 'sans-serif'
-            }}>Y</span>
-            Backed by Y Combinator
-          </div>
-        </div>
-
         {/* Headline */}
         <h1 className="animate-fade-up delay-100" style={{
           fontSize: '3.75rem',
@@ -240,70 +178,6 @@ function HeroSection({
           </Link>
         </div>
 
-        {/* Integration logos bar */}
-        <div style={{
-          borderTop: '1px solid #141414',
-          paddingTop: 24,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          gap: 24,
-          color: '#777777',
-          fontSize: 12,
-        }}>
-          <span style={{ color: '#555555' }}>Works perfectly with</span>
-          <span style={{ fontWeight: 600, color: '#ffffff' }}>Copilot</span>
-          <span style={{ fontWeight: 600, color: '#ffffff' }}>Codex</span>
-          <span style={{ fontWeight: 600, color: '#ffffff' }}>Cline</span>
-
-          {/* Toggle pill */}
-          <div style={{
-            display: 'inline-flex',
-            background: '#0f0f0f',
-            border: '1px solid #1c1c1c',
-            borderRadius: '20px',
-            padding: 2,
-          }}>
-            <button
-              onClick={() => setActiveToggle('human')}
-              style={{
-                background: activeToggle === 'human' ? 'var(--accent)' : 'transparent',
-                color: activeToggle === 'human' ? '#000' : '#777',
-                border: 'none',
-                borderRadius: '20px',
-                padding: '4px 10px',
-                fontSize: 10,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              HUMAN
-            </button>
-            <button
-              onClick={() => setActiveToggle('agent')}
-              style={{
-                background: activeToggle === 'agent' ? 'var(--accent)' : 'transparent',
-                color: activeToggle === 'agent' ? '#000' : '#777',
-                border: 'none',
-                borderRadius: '20px',
-                padding: '4px 10px',
-                fontSize: 10,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              AGENT
-            </button>
-          </div>
-
-          <span style={{ fontWeight: 600, color: '#ffffff' }}>Google Antigravity</span>
-          <span style={{ fontWeight: 600, color: '#ffffff' }}>Kiro</span>
-          <span style={{ fontWeight: 600, color: '#ffffff' }}>Trae</span>
-          <span style={{ fontWeight: 600, color: '#ffffff' }}>Qoder</span>
-        </div>
       </div>
     </section>
   );
@@ -1202,127 +1076,6 @@ function TestimonialSection() {
   );
 }
 
-/* ── 5. PRICING SECTION ── */
-function PricingSection() {
-  const ref = useScrollAnimation();
-
-  return (
-    <section id="pricing" className="section section-border-top" ref={ref} style={{ background: '#000000', borderBottom: '1px solid #141414' }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>Pricing</span>
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 300, color: '#ffffff', marginBottom: 16 }}>
-            Simple, transparent pricing
-          </h2>
-          <p style={{ color: '#777777', fontSize: 13, maxWidth: 420, margin: '0 auto' }}>
-            Start free, scale as your agent infrastructure grows.
-          </p>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 16,
-          maxWidth: 960,
-          margin: '0 auto',
-        }}>
-          {pricingPlans.map((plan) => (
-            <div key={plan.name} style={{
-              border: plan.highlighted ? '1px solid var(--accent-border)' : '1px solid #141414',
-              borderRadius: 8,
-              padding: '32px 28px',
-              background: plan.highlighted ? '#0a0a0a' : '#050505',
-              display: 'flex',
-              flexDirection: 'column',
-              position: 'relative',
-              boxShadow: plan.highlighted ? '0 0 30px rgba(110,231,183,0.04)' : 'none',
-            }}>
-              {plan.highlighted && (
-                <div style={{
-                  position: 'absolute',
-                  top: -1,
-                  left: 20,
-                  right: 20,
-                  height: 2,
-                  background: 'var(--accent)',
-                  borderRadius: '0 0 2px 2px',
-                }} />
-              )}
-
-              <div style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 10,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                color: plan.highlighted ? 'var(--accent)' : '#777777',
-                marginBottom: 12,
-              }}>
-                {plan.name}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
-                <span style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 36,
-                  fontWeight: 850,
-                  color: '#ffffff',
-                  lineHeight: 1,
-                }}>
-                  {plan.price}
-                </span>
-                {plan.period && (
-                  <span style={{ fontSize: 13, color: '#777777' }}>{plan.period}</span>
-                )}
-              </div>
-
-              <p style={{ fontSize: 12, color: '#777777', marginBottom: 24, lineHeight: 1.5 }}>
-                {plan.desc}
-              </p>
-
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-                {plan.features.map((f) => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b4b4b4' }}>
-                    <Check size={12} color="var(--accent)" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                to={plan.name === 'Enterprise' ? '/contact' : '/signup'}
-                style={{
-                  width: '100%',
-                  background: plan.highlighted ? 'var(--accent)' : 'transparent',
-                  color: plan.highlighted ? '#000000' : '#ffffff',
-                  border: plan.highlighted ? 'none' : '1px solid #333333',
-                  fontWeight: 600,
-                  fontSize: 12,
-                  padding: '10px 16px',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  textAlign: 'center',
-                  transition: 'opacity 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-              >
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          #pricing .container > div:last-child {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-    </section>
-  );
-}
 
 /* ── 6. CTA SECTION ── */
 function CTASection() {

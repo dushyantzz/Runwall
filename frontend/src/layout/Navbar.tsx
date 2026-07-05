@@ -163,58 +163,11 @@ export default function Navbar() {
             )}
           </div>
 
-          <NavLink to="/blog">Blogs</NavLink>
-          <NavLink to="/docs">Docs</NavLink>
-          <NavLink to="/integrations">Integrations</NavLink>
-          <NavLink to="/templates">Templates</NavLink>
-          <NavLink to="/pricing">Pricing</NavLink>
-          <NavLink to="/careers">Careers</NavLink>
-          <NavLink to="/roadmap">Roadmap</NavLink>
+          <NavLink to="/docs">Documentation</NavLink>
         </div>
 
         {/* Right actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="desktop-nav">
-          {/* Discord Icon */}
-          <a
-            href="https://discord.gg"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: '#b4b4b4', opacity: 0.8 }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
-          >
-            <svg width="18" height="18" viewBox="0 0 127.14 96.36" fill="currentColor">
-              <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,67.43,67.43,0,0,1-10.5-5c2.06-1.5,4.07-3.14,6-4.87a75.25,75.25,0,0,0,66,0c1.91,1.73,3.92,3.37,6,4.87a67.4,67.4,0,0,1-10.5,5,77.06,77.06,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.87,48.12,123.6,25.25,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
-            </svg>
-          </a>
-
-          {/* GitHub Star Badge */}
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              textDecoration: 'none',
-              color: '#b4b4b4',
-              fontSize: 11,
-              fontFamily: 'var(--font-mono)',
-              border: '1px solid #1c1c1c',
-              borderRadius: 4,
-              padding: '2px 6px',
-              background: '#0d0d0d',
-              transition: 'border-color 0.2s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#333')}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1c1c1c')}
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-              <path fillRule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-            </svg>
-            <span>12.0k</span>
-          </a>
 
           <Link to="/login" style={{
             color: '#b4b4b4',
@@ -293,10 +246,7 @@ export default function Navbar() {
               {f.label}
             </Link>
           ))}
-          <div style={{ borderTop: '1px solid #141414', margin: '8px 0' }} />
-          <Link to="/blog" style={{ padding: '8px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 13 }}>Blogs</Link>
-          <Link to="/docs" style={{ padding: '8px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 13 }}>Docs</Link>
-          <Link to="/pricing" style={{ padding: '8px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 13 }}>Pricing</Link>
+          <Link to="/docs" style={{ padding: '8px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 13 }}>Documentation</Link>
           <div style={{ borderTop: '1px solid #141414', margin: '8px 0' }} />
           <Link to="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>Sign Up</Link>
         </div>
