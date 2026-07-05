@@ -48,8 +48,8 @@ export default function HomePage() {
 
 /* ── 1. HERO SECTION ── */
 function HeroSection({
-  activeToggle,
-  setActiveToggle
+  activeToggle: _,
+  setActiveToggle: __
 }: {
   activeToggle: 'human' | 'agent';
   setActiveToggle: (val: 'human' | 'agent') => void;

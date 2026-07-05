@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from secure_mcp_server.api.routes import policies, approvals, audit
+from secure_mcp_server.api.routes import policies, approvals, audit, dashboard
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application for the Control Plane."""
@@ -24,6 +24,7 @@ def create_app() -> FastAPI:
     app.include_router(policies.router, prefix="/api/v1/policies", tags=["Policies"])
     app.include_router(approvals.router, prefix="/api/v1/approvals", tags=["Approvals"])
     app.include_router(audit.router, prefix="/api/v1/audit", tags=["Audit"])
+    app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 
     @app.get("/health")
     async def health_check():

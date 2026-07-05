@@ -58,6 +58,8 @@ export interface FeaturePageData {
   }[];
 }
 
+import PlaygroundConsole from './PlaygroundConsole';
+
 /* ════════════════════════════════════════════════════════════
    TEMPLATE
    ════════════════════════════════════════════════════════════ */
@@ -74,6 +76,7 @@ export default function FeaturePageTemplate({ data }: { data: FeaturePageData })
       <WorkflowSection data={data} />
       <CodeExampleSection data={data} />
       <FAQSection data={data} />
+      <PlaygroundConsole title={data.title} />
       <FeatureCTA data={data} />
     </div>
   );
