@@ -75,7 +75,7 @@ export default function Navbar() {
           </div>
           <span style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 15,
+            fontSize: 17,
             fontWeight: 700,
             color: 'var(--heading)',
             letterSpacing: '-0.02em',
@@ -98,7 +98,7 @@ export default function Navbar() {
                 border: 'none',
                 color: 'var(--muted)',
                 fontFamily: 'var(--font-body)',
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: 500,
                 padding: '6px 10px',
                 cursor: 'pointer',
@@ -172,7 +172,7 @@ export default function Navbar() {
           <Link to="/login" style={{
             color: '#b4b4b4',
             textDecoration: 'none',
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 500,
             transition: 'color 0.2s',
           }}
@@ -186,7 +186,7 @@ export default function Navbar() {
             background: 'var(--accent)',
             color: '#000000',
             textDecoration: 'none',
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 600,
             padding: '5px 12px',
             borderRadius: '6px',
@@ -269,7 +269,7 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
       style={{
         color: 'var(--muted)',
         fontFamily: 'var(--font-body)',
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 500,
         padding: '6px 10px',
         textDecoration: 'none',
