@@ -1,5 +1,0 @@
-C:\Users\Shubham\Desktop\CORE PROJECT\secure-mcp-server-framework\README.md
-C:\Users\Shubham\Desktop\CORE PROJECT\secure-mcp-server-framework\constraints.txt
-C:\Users\Shubham\Desktop\CORE PROJECT\secure-mcp-server-framework\docker-compose.yml
-C:\Users\Shubham\Desktop\CORE PROJECT\secure-mcp-server-framework\fastmcp.yaml
-C:\Users\Shubham\Desktop\CORE PROJECT\secure-mcp-server-framework\requirements.txt
