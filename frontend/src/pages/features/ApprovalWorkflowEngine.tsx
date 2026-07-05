@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Structured approval workflows for agent governance',
-    description: 'AegisGuard\'s Approval Workflow Engine routes high-risk agent actions to designated reviewers with configurable escalation chains, SLA timers, and multi-party approval requirements.',
+    description: 'Runwall\'s Approval Workflow Engine routes high-risk agent actions to designated reviewers with configurable escalation chains, SLA timers, and multi-party approval requirements.',
     points: [
       'Configurable approval routing rules',
       'Multi-party and quorum-based approval',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'approval-workflow.yaml',
     language: 'yaml',
-    code: `# AegisGuard Approval Workflow Configuration
+    code: `# Runwall Approval Workflow Configuration
 workflows:
   - name: "high-risk-tool-access"
     trigger:
@@ -123,7 +123,7 @@ workflows:
     { question: 'What happens to the agent while waiting for approval?', answer: 'The agent action is suspended and queued. The runtime interceptor holds the request until a decision is made. Agents can be configured to continue other work or wait synchronously.' },
     { question: 'Can approvals be automated for known-safe patterns?', answer: 'Yes. You can define auto-approval rules for patterns that have been manually approved multiple times. This creates a learning feedback loop that reduces approval fatigue over time.' },
     { question: 'What if all approvers are unavailable?', answer: 'Escalation chains ensure the request reaches someone who can act. After all escalation tiers are exhausted, a configurable default action (typically deny) is applied.' },
-    { question: 'Can I integrate with my existing ticketing system?', answer: 'Yes. AegisGuard integrates with Jira, ServiceNow, and custom ticketing systems via webhooks. Approval requests can create tickets and sync decisions bidirectionally.' },
+    { question: 'Can I integrate with my existing ticketing system?', answer: 'Yes. Runwall integrates with Jira, ServiceNow, and custom ticketing systems via webhooks. Approval requests can create tickets and sync decisions bidirectionally.' },
   ],
 };
 

@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'The governance control plane for every agent action',
-    description: 'AegisGuard\'s Runtime Interceptor sits between agents and their tools, transparently intercepting every request and response to enforce governance in real-time.',
+    description: 'Runwall\'s Runtime Interceptor sits between agents and their tools, transparently intercepting every request and response to enforce governance in real-time.',
     points: [
       'Transparent request/response interception',
       'Pre-execution policy enforcement',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'interceptor-config.yaml',
     language: 'yaml',
-    code: `# AegisGuard Runtime Interceptor Configuration
+    code: `# Runwall Runtime Interceptor Configuration
 interceptor:
   mode: "sidecar"
   listen_port: 8443

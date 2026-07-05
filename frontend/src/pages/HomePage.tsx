@@ -12,7 +12,7 @@ import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const testimonials = [
   {
-    quote: "AegisGuard gave us the confidence to deploy autonomous agents in production. The policy engine alone saved us months of custom development.",
+    quote: "Runwall gave us the confidence to deploy autonomous agents in production. The policy engine alone saved us months of custom development.",
     author: "Sarah Chen",
     role: "VP of Engineering, Meridian AI",
   },

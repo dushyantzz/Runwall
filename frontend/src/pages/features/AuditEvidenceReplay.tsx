@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Complete, immutable audit infrastructure',
-    description: 'AegisGuard records every agent action, policy decision, and governance event in an immutable, cryptographically-signed audit log with full session replay capabilities.',
+    description: 'Runwall records every agent action, policy decision, and governance event in an immutable, cryptographically-signed audit log with full session replay capabilities.',
     points: [
       'Immutable, append-only audit logs',
       'Cryptographic signing for tamper detection',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'audit-config.yaml',
     language: 'yaml',
-    code: `# AegisGuard Audit Configuration
+    code: `# Runwall Audit Configuration
 audit:
   signing:
     algorithm: "ed25519"
@@ -122,7 +122,7 @@ audit:
 
   faq: [
     { question: 'How long are audit logs retained?', answer: 'Retention is configurable per tenant. Default retention is 365 days with automatic archival to cold storage. Compliance holds can extend retention to 7+ years for regulated industries.' },
-    { question: 'Can I export audit data to my SIEM?', answer: 'Yes. AegisGuard supports real-time streaming to Splunk, Datadog, ELK, and custom SIEM platforms via CEF, JSON, and syslog formats.' },
+    { question: 'Can I export audit data to my SIEM?', answer: 'Yes. Runwall supports real-time streaming to Splunk, Datadog, ELK, and custom SIEM platforms via CEF, JSON, and syslog formats.' },
     { question: 'How do I verify log integrity?', answer: 'Every log entry is cryptographically signed and hash-chained. The verification API allows you to validate the entire chain or individual entries at any time. Any tampering breaks the chain.' },
     { question: 'What does session replay look like?', answer: 'Session replay shows a step-by-step timeline of agent actions with full context: what tool was called, what inputs were provided, what the policy engine decided, what the risk score was, and what the tool returned.' },
   ],

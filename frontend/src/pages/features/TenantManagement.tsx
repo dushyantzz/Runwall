@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Hierarchical multi-tenancy for agent platforms',
-    description: 'AegisGuard provides complete tenant isolation with organizational hierarchies, enabling enterprises to manage thousands of agents across complex organizational structures.',
+    description: 'Runwall provides complete tenant isolation with organizational hierarchies, enabling enterprises to manage thousands of agents across complex organizational structures.',
     points: [
       'Strict resource isolation between tenants',
       'Hierarchical org structures (org → team → project)',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'tenant-config.yaml',
     language: 'yaml',
-    code: `# AegisGuard Tenant Configuration
+    code: `# Runwall Tenant Configuration
 tenant:
   id: "acme-corp"
   display_name: "Acme Corporation"
@@ -111,10 +111,10 @@ quotas:
   },
 
   faq: [
-    { question: 'How many tenants can the platform support?', answer: 'AegisGuard is designed for unlimited tenants with consistent performance. The partitioned architecture ensures each tenant operates independently without noisy neighbor effects.' },
+    { question: 'How many tenants can the platform support?', answer: 'Runwall is designed for unlimited tenants with consistent performance. The partitioned architecture ensures each tenant operates independently without noisy neighbor effects.' },
     { question: 'Can tenants override inherited policies?', answer: 'Yes, with configurable permissions. Parent organizations can mark policies as mandatory (non-overridable) or advisory (tenant can override). All overrides are logged.' },
     { question: 'How is data isolated between tenants?', answer: 'Data is partitioned at the storage level with separate encryption keys per tenant. Cross-tenant queries are architecturally impossible without explicit federation configuration.' },
-    { question: 'Can I migrate agents between tenants?', answer: 'Yes. AegisGuard supports agent migration between tenants with configurable data transfer policies. Migration events are fully audited.' },
+    { question: 'Can I migrate agents between tenants?', answer: 'Yes. Runwall supports agent migration between tenants with configurable data transfer policies. Migration events are fully audited.' },
   ],
 };
 

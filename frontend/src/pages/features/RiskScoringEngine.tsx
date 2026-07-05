@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Continuous, multi-dimensional risk evaluation',
-    description: 'AegisGuard\'s Risk Scoring Engine computes a composite risk score for every agent action by combining signals from identity, tool metadata, data classification, and behavioral analytics.',
+    description: 'Runwall\'s Risk Scoring Engine computes a composite risk score for every agent action by combining signals from identity, tool metadata, data classification, and behavioral analytics.',
     points: [
       'Multi-signal composite risk scoring',
       'Configurable risk dimensions and weights',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'risk-config.yaml',
     language: 'yaml',
-    code: `# AegisGuard Risk Scoring Configuration
+    code: `# Runwall Risk Scoring Configuration
 risk_engine:
   scoring_model: "weighted_composite"
   default_threshold: 0.7

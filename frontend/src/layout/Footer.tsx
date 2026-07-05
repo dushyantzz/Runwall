@@ -122,7 +122,7 @@ export default function Footer() {
               fontWeight: 600,
               color: 'var(--heading)',
             }}>
-              AegisGuard
+              Runwall
             </span>
             <span style={{ color: 'var(--muted)', fontSize: 12, marginLeft: 8 }}>
               © {new Date().getFullYear()} All rights reserved.

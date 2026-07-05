@@ -109,7 +109,7 @@ export default function PlaygroundConsole({ title }: { title: string }) {
   // 4. Policy Engine State
   // -------------------------------------------------------------------------
   const [policies, setPolicies] = useState<any[]>([]);
-  const [regoCode, setRegoCode] = useState(`package aegisguard.tools
+  const [regoCode, setRegoCode] = useState(`package runwall.tools
 default allow := false
 
 # Allow if developer and risk < 0.5

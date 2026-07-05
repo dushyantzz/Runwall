@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Cryptographic identity for every agent',
-    description: 'AegisGuard assigns and verifies unique identities for every agent, user, and service — enforcing authentication and authorization at every execution boundary.',
+    description: 'Runwall assigns and verifies unique identities for every agent, user, and service — enforcing authentication and authorization at every execution boundary.',
     points: [
       'JWT and API key-based agent authentication',
       'Per-agent identity with unique cryptographic fingerprints',
@@ -80,11 +80,11 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'identity-policy.yaml',
     language: 'yaml',
-    code: `# AegisGuard Identity & Access Control Configuration
+    code: `# Runwall Identity & Access Control Configuration
 identity:
   provider: "jwt"
-  issuer: "https://auth.aegisguard.io"
-  audience: "aegisguard-platform"
+  issuer: "https://auth.runwall.io"
+  audience: "runwall-platform"
   token_ttl: "1h"
   refresh_enabled: true
 
@@ -111,7 +111,7 @@ credentials:
   },
 
   faq: [
-    { question: 'Can I use existing identity providers like Okta or Auth0?', answer: 'Yes. AegisGuard supports OIDC and SAML federation, allowing you to use existing identity providers. Agent identities are mapped to your IdP through configurable claims mapping.' },
+    { question: 'Can I use existing identity providers like Okta or Auth0?', answer: 'Yes. Runwall supports OIDC and SAML federation, allowing you to use existing identity providers. Agent identities are mapped to your IdP through configurable claims mapping.' },
     { question: 'How does identity work for autonomous agents?', answer: 'Each autonomous agent receives a unique cryptographic identity with scoped credentials. These are managed through the Agent Registry and support automatic rotation without human intervention.' },
     { question: 'What happens when an agent\'s credentials expire?', answer: 'Expired tokens are rejected at the authentication boundary. Agents with refresh tokens can automatically obtain new credentials. Forced revocation immediately invalidates all active sessions.' },
     { question: 'Can I scope different permissions per environment?', answer: 'Yes. Roles and permissions can be scoped by environment (dev, staging, production) with separate credential stores and policy bindings for each.' },

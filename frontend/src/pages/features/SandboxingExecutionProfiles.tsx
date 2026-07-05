@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Permission-scoped execution environments',
-    description: 'AegisGuard sandboxes every agent execution within a configured profile that restricts filesystem access, network communication, available tools, and system resources.',
+    description: 'Runwall sandboxes every agent execution within a configured profile that restricts filesystem access, network communication, available tools, and system resources.',
     points: [
       'Per-agent execution sandboxes',
       'Configurable permission profiles',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'execution-profile.yaml',
     language: 'yaml',
-    code: `# AegisGuard Execution Profile
+    code: `# Runwall Execution Profile
 profiles:
   - name: "restricted-reader"
     description: "Read-only access to internal APIs"
@@ -120,7 +120,7 @@ profiles:
   },
 
   faq: [
-    { question: 'What level of isolation does sandboxing provide?', answer: 'AegisGuard supports multiple isolation levels: application-level sandboxing (fastest, lightest), container-level isolation (moderate), and VM-level isolation (maximum security). Choose based on your threat model.' },
+    { question: 'What level of isolation does sandboxing provide?', answer: 'Runwall supports multiple isolation levels: application-level sandboxing (fastest, lightest), container-level isolation (moderate), and VM-level isolation (maximum security). Choose based on your threat model.' },
     { question: 'Does sandboxing affect performance?', answer: 'Application-level sandboxing adds negligible overhead (<1ms). Container-level isolation adds a small startup overhead but has minimal runtime impact. Performance characteristics are documented per isolation mode.' },
     { question: 'Can agents request elevated permissions?', answer: 'Yes, through the approval workflow engine. An agent can request a profile upgrade which routes through human approval before being granted.' },
     { question: 'How do execution profiles work with multi-step agent workflows?', answer: 'Each step in a workflow can have a different execution profile. The runtime dynamically switches profiles based on the current step, ensuring each phase runs with minimal required permissions.' },

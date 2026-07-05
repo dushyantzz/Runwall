@@ -80,7 +80,7 @@ export default function Navbar() {
             color: 'var(--heading)',
             letterSpacing: '-0.02em',
           }}>
-            AegisGuard
+            Runwall
           </span>
         </Link>
 

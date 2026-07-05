@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Information flow tracking for AI agents',
-    description: 'AegisGuard\'s Taint Tracking Engine labels data at its source, propagates taint through agent execution chains, and enforces flow policies at every boundary.',
+    description: 'Runwall\'s Taint Tracking Engine labels data at its source, propagates taint through agent execution chains, and enforces flow policies at every boundary.',
     points: [
       'Automatic data classification and labeling',
       'Taint propagation through execution chains',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'taint-policy.yaml',
     language: 'yaml',
-    code: `# AegisGuard Taint Tracking Configuration
+    code: `# Runwall Taint Tracking Configuration
 taint_engine:
   auto_classify: true
   propagation_mode: "strict"

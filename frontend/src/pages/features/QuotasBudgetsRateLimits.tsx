@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Comprehensive resource governance for AI agents',
-    description: 'AegisGuard enforces quotas, budgets, and rate limits at every level — per agent, per team, per tenant, and per tool — with real-time tracking and alerting.',
+    description: 'Runwall enforces quotas, budgets, and rate limits at every level — per agent, per team, per tenant, and per tool — with real-time tracking and alerting.',
     points: [
       'Per-agent and per-team rate limits',
       'Budget caps with real-time cost tracking',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'quota-config.yaml',
     language: 'yaml',
-    code: `# AegisGuard Quota & Rate Limit Configuration
+    code: `# Runwall Quota & Rate Limit Configuration
 quotas:
   global:
     max_actions_per_day: 10000000
@@ -122,7 +122,7 @@ budget_alerts:
   },
 
   faq: [
-    { question: 'What rate limiting algorithms are supported?', answer: 'AegisGuard supports token bucket, sliding window, and fixed window algorithms. Token bucket is the default, offering smooth rate limiting with configurable burst allowances.' },
+    { question: 'What rate limiting algorithms are supported?', answer: 'Runwall supports token bucket, sliding window, and fixed window algorithms. Token bucket is the default, offering smooth rate limiting with configurable burst allowances.' },
     { question: 'Can I set different limits for different tools?', answer: 'Yes. Rate limits and quotas can be configured per tool, per risk level, or per agent-tool combination. High-risk tools can have stricter limits than low-risk ones.' },
     { question: 'How does cost tracking work?', answer: 'Each tool invocation has an associated cost (configurable per tool). The budget tracker sums costs in real-time and compares against configured limits. Costs can be pulled from actual API billing or estimated from usage patterns.' },
     { question: 'What happens when a quota is exceeded?', answer: 'Configurable behavior: hard block, throttle to a reduced rate, queue for later execution, or allow with alert. The default is to throttle rather than hard-block for better agent experience.' },

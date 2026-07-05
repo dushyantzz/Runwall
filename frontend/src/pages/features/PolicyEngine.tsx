@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Declarative policy evaluation at every decision point',
-    description: 'AegisGuard\'s Policy Engine evaluates every agent action against declarative Rego or CEL policies with sub-millisecond latency, full version history, and simulation capabilities.',
+    description: 'Runwall\'s Policy Engine evaluates every agent action against declarative Rego or CEL policies with sub-millisecond latency, full version history, and simulation capabilities.',
     points: [
       'Rego and CEL policy language support',
       'Attribute-based access control (ABAC)',
@@ -80,8 +80,8 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'policy.rego',
     language: 'rego',
-    code: `# AegisGuard Policy — Restrict high-risk tool access
-package aegisguard.tools
+    code: `# Runwall Policy — Restrict high-risk tool access
+package runwall.tools
 
 import future.keywords.in
 
@@ -117,7 +117,7 @@ violations[msg] {
   },
 
   faq: [
-    { question: 'Do I need to learn Rego or CEL?', answer: 'AegisGuard provides a template library and visual policy builder for common patterns. For advanced policies, Rego and CEL offer maximum flexibility. Both languages have excellent documentation and community support.' },
+    { question: 'Do I need to learn Rego or CEL?', answer: 'Runwall provides a template library and visual policy builder for common patterns. For advanced policies, Rego and CEL offer maximum flexibility. Both languages have excellent documentation and community support.' },
     { question: 'How fast is policy evaluation?', answer: 'Policy evaluation typically completes in under 1ms. Policies are pre-compiled and cached. The engine supports parallel evaluation for complex policy bundles.' },
     { question: 'Can I use both Rego and CEL in the same deployment?', answer: 'Yes. Different policies can use different languages. The evaluation engine normalizes results from both into a unified decision format.' },
     { question: 'How do I test policies before deploying?', answer: 'Use the built-in testing framework to write test cases with fixture data. Run tests in CI/CD pipelines. Use dry-run mode to evaluate against live traffic without enforcement.' },

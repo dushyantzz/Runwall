@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'The single source of truth for agent tooling',
-    description: 'AegisGuard provides a governed registry where every tool and MCP server is cataloged, versioned, and enriched with governance metadata before agents can invoke it.',
+    description: 'Runwall provides a governed registry where every tool and MCP server is cataloged, versioned, and enriched with governance metadata before agents can invoke it.',
     points: [
       'Centralized tool and MCP server catalog',
       'Capability declarations with typed schemas',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'tool-registration.yaml',
     language: 'yaml',
-    code: `# AegisGuard Tool Registration
+    code: `# Runwall Tool Registration
 tool:
   name: "web_search"
   version: "2.1.0"

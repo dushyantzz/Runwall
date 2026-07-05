@@ -21,7 +21,7 @@ const data: FeaturePageData = {
 
   whatItDoes: {
     heading: 'Automated recovery for agent actions',
-    description: 'AegisGuard defines and executes compensating transactions for every governed action, enabling automated rollback when failures or violations are detected.',
+    description: 'Runwall defines and executes compensating transactions for every governed action, enabling automated rollback when failures or violations are detected.',
     points: [
       'Automatic compensating transaction generation',
       'Multi-step rollback orchestration',
@@ -80,7 +80,7 @@ const data: FeaturePageData = {
   codeExample: {
     title: 'rollback-config.yaml',
     language: 'yaml',
-    code: `# AegisGuard Rollback Configuration
+    code: `# Runwall Rollback Configuration
 rollback:
   auto_compensate: true
   recovery_window: "24h"
@@ -113,7 +113,7 @@ triggers:
   },
 
   faq: [
-    { question: 'Can all agent actions be rolled back?', answer: 'Rollback is supported for operations with defined compensating transactions. Some operations (e.g., sending emails, external API calls) may not be fully reversible, but AegisGuard tracks them and notifies operators.' },
+    { question: 'Can all agent actions be rolled back?', answer: 'Rollback is supported for operations with defined compensating transactions. Some operations (e.g., sending emails, external API calls) may not be fully reversible, but Runwall tracks them and notifies operators.' },
     { question: 'How quickly can a rollback execute?', answer: 'Automated rollbacks typically complete in seconds for single actions. Multi-step rollbacks depend on the number of steps and external system latency.' },
     { question: 'What happens if the rollback itself fails?', answer: 'Failed rollbacks trigger alerts to the operations team with full diagnostic information. The system enters a "requires manual intervention" state with detailed recovery guidance.' },
     { question: 'Can I test rollback procedures?', answer: 'Yes. Compensating transactions can be tested in dry-run mode. The testing framework simulates failures and validates that rollback restores expected state.' },
