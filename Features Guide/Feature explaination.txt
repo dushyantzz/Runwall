@@ -1,0 +1,174 @@
+Feature explaination:
+
+AegisGuard: The Zero-Trust Execution Governance Platform for AI Agents
+Welcome to AegisGuard! This document provides a comprehensive, sales-oriented, and developer-friendly breakdown of every single feature in this platform. If you want to know how the platform works under the hood, why it is essential for the future of AI automation, and exactly how to implement or integrate it in the easiest way possible—you are in the right place.
+
+🌟 The Sales Pitch: Why AegisGuard?
+The Problem in Today's AI Landscape
+Everyone is building AI agents and connecting them to production tools (Jira, Salesforce, internal databases, cloud providers, and shell terminals) using protocols like the Model Context Protocol (MCP).
+
+However, standard AI connections are like leaving your servers unlocked:
+
+The Infinite Loop Risk: A minor agent logic error can trigger thousands of API calls, costing you thousands of dollars in minutes.
+The Prompt Injection Threat: If your agent reads an untrusted document or web page, an embedded prompt injection attack can hijack the agent, instructing it to "Delete all users in Salesforce" or "Export our database to a public pastebin."
+The Trust Gap: Traditional security says: "Can the user access the tool?" But with AI agents, we must ask: "Is the specific action the AI is attempting safe under enterprise policy right now?"
+The Solution
+AegisGuard acts as an intelligent security gateway and firewall sitting between your AI reasoning models and your actual tools/infrastructure. It reviews every intent, parameters, and risk profile in real-time, enforcing enterprise rules before a single line of execution happens.
+
+🛠️ Deep-Dive: The 13 Core Features
+Below is a detailed breakdown of all 13 features, explaining what they are, why they matter, and how to integrate or use them.
+
+1. Intent-Aware Execution Policy Engine
+What it is: Instead of just checking if an agent can access a tool, AegisGuard reads the parameters and semantic intent of what the agent is trying to do.
+Why it matters: It prevents binary "all-or-nothing" permissions. You can allow an agent to read a single Jira ticket, but automatically block or require human approval if the agent attempts a bulk export.
+How to Use & Implement: The engine categorizes actions into categories like read, write, delete, or export and scores them on a scale of 0.0 (Safe) to 1.0 (Dangerous).
+If the AI attempts to read a record: It is instantly allowed.
+If the AI attempts a bulk operation: It triggers a human approval workflow.
+
+2. Enterprise Identity & Session Management
+What it is: A database-backed enterprise identity system that tracks who is running the AI session, which organization they belong to, and their current access tokens.
+Why it matters: In an enterprise, you need to know exactly which employee or client initiated the AI workflow. If a token is compromised, you must be able to revoke it instantly.
+How to Use & Implement: AegisGuard uses a dual-token architecture (short-lived JWT Access Tokens + long-lived Refresh Tokens) with secure bcrypt password hashing. It includes a global JTI (JWT ID) Blacklist so admins can immediately log out compromised sessions.
+json
+
+// Request header passed with agent requests
+Authorization: Bearer <JWT_access_token>
+
+3. Enterprise API Key Management
+What it is: Programmatic access keys designed specifically for machines, scripts, and service accounts.
+Why it matters: AI agents frequently run as automated background workers (cron jobs or event handlers) where human username/password login is impossible. These keys must be cryptographically hashed, scoped, and bound to specific networks.
+How to Use & Implement: AegisGuard generates a secure 32-byte API token (prefixed with mcp_ for identification) and only displays the raw key to the developer once. The server only stores a SHA-256 hash. Keys can be scoped to environments (e.g., staging vs production) and locked to specific CIDR IP Allowlists.
+bash
+
+# Authenticating service accounts/agents programmatically
+Authorization: Bearer mcp_abc123...[secret_hash_key]
+
+4. Distributed Quotas & Rate Limiting
+What it is: A multi-dimensional rate limiter that prevents API abuse or cost runaways.
+Why it matters: Stops AI agents from getting stuck in infinite loops and racking up thousands of dollars in LLM API bills.
+How to Use & Implement: AegisGuard tracks limits on multiple levels simultaneously:
+Tenant Quotas (Total requests/cost per customer organization).
+User Quotas (Limits per user within that organization).
+Tool Quotas (Limits on sensitive tools like database executers).
+Adaptive Throttling: If a request’s risk score climbs above 0.7, AegisGuard automatically halves the rate limit for that session to contain potential damage. It supports Redis for high-scale distributed clusters.
+
+5. Admin & Governance Controls
+What it is: High-level administrative operations allowing security teams to manage policy rules, explore system logs, and view tool inventories.
+Why it matters: Gives compliance officers and administrators absolute visibility and real-time control over what active AI agents are doing.
+How to Use & Implement: Because AegisGuard is an MCP-first platform, these administrative functions are exposed as secure, built-in Admin MCP Tools or REST APIs requiring admin privileges:
+manage_policy: Create, update, or soft-delete policy rules.
+explore_audit_logs: Query who ran which tools and when.
+get_decision_logs: Inspect the exact mathematical "evaluation chain" for why a specific action was allowed or denied.
+
+6. Taint Tracking Engine
+What it is: An engine that tracks whether an AI session has been exposed to untrusted data (like external web pages, emails, or user uploads).
+Why it matters: The ultimate defense against prompt injection. If an AI reads an untrusted email containing a malicious command, AegisGuard flags the session as "Tainted" and blocks the AI from executing subsequent sensitive tools (like sending a Slack message or writing to a DB).
+How to Use & Implement:
+Reading tools (e.g., fetch_webpage) are marked as Taint Sources. Running them appends taint labels (e.g., EXTERNAL_WEB) to the active session.
+Writing tools (e.g., execute_sql) are marked as Taint Sinks.
+The policy engine blocks any sink operations when taint labels are active on the session.
+
+7. Reversible Execution & Compensating Controls
+What it is: An automated "Undo" registry that pairs mutating tools with rollback handlers.
+Why it matters: If an AI makes a mistake or executes an unauthorized action, you need an easy, reliable way to roll back the change.
+How to Use & Implement: Developers register tools with a mapped compensation handler.
+python
+
+@tool(is_reversible=True, compensation_handler="rollback_create_user")
+async def create_user(username: str):
+    # Tool execution...
+If an action needs to be undone, an admin calls rollback_action(execution_id="rev-abc123") which invokes the compensation handler with the exact archived arguments.
+
+8. Tool Trust & Provenance
+What it is: Cryptographic baseline verification of tool source code and descriptions.
+Why it matters: Prevents malicious actors or system drift from silently altering the Python code of your tools or editing descriptions to poison AI instructions.
+How to Use & Implement: AegisGuard hashes function source code and descriptions at boot. If a code file is edited on disk without authorization, the tool's status shifts to QUARANTINED, and it refuses to run. Admins must call approve_tool_trust_state(tool_name) to baseline the new code version.
+
+9. Low-Friction Asynchronous Approval Workflow Engine
+What it is: A staging sandbox that pauses high-risk AI actions and requests human sign-off.
+Why it matters: Allows security without breaking the AI's flow. Instead of failing, the AI is given a tracking ID and told to wait while a Slack alert or notification is sent to the admin.
+How to Use & Implement:
+A high-risk action returns REQUIRE_APPROVAL with an approval_id.
+An admin reviews the request via dashboard or REST API: POST /api/v1/approvals/{id}/review with "APPROVED".
+The agent is notified, calls execute_approved_action(approval_id), and execution safely completes.
+
+10. Optional Task Contracts
+What it is: Upfront sandboxed boundaries declared by the AI agent before executing a complex, multi-step job.
+Why it matters: Prevents "approval fatigue." If an agent needs to edit 10 files, asking a human for permission 10 times is annoying. Instead, the agent requests a "Contract" for the whole task once.
+How to Use & Implement: The agent proposes a contract:
+json
+
+{
+  "goal": "Refactor authentication module",
+  "expected_tools": ["read_file", "write_file", "git_commit"],
+  "max_writes": 12,
+  "max_spend": 25.0
+}
+Once approved, the agent includes the contract_id in subsequent tool calls. AegisGuard bypasses individual policy checks as long as the agent stays strictly within the declared tools, write limits, and budget.
+
+11. Connector & Tool Architecture
+What it is: Dynamic plugins (databases, REST APIs, local terminals) that automatically generate fully governed MCP tools.
+Why it matters: You don't want to write custom python code for every tool. You can simply feed AegisGuard a Database URL or an OpenAPI spec, and it generates the tools for the AI agent.
+How to Use & Implement: Register a connector in the system configuration:
+RestAPIConnector: Dynamically turns HTTP endpoints into tools.
+DatabaseConnector: Connects to Postgres/MySQL, generating sql_query and sql_execute.
+ShellConnector: Safely runs bash/powershell commands locked inside a strict sandbox directory.
+All generated tools automatically inherit Taint Tracking, Risk Scoring, and Rate Limits!
+
+12. OPA / Rego Policy System (Policy-as-Code)
+What it is: Industry-standard Open Policy Agent (OPA) rules engine using Rego.
+Why it matters: Allows security teams to write version-controlled, GitOps-compliant policy files that govern agent actions without changing a single line of backend code.
+How to Use & Implement: Policies are written in standard Rego files:
+rego
+
+package execution.governance
+deny[msg] {
+    input.intent.intent_category == "delete"
+    input.user_context.role != "admin"
+    msg := "Only administrators can perform delete operations."
+}
+AegisGuard evaluates these rules locally using the OPA binary or in-memory fallback. It supports a Simulation Mode (dry-run rules against live production traffic to test impact without breaking agent flows).
+
+13. REST API Control Plane
+What it is: A FastAPI REST server exposing full CRUD endpoints, OpenAPI specs, and Swagger documentation.
+Why it matters: Powers web UI dashboards and enables integration into corporate monitoring platforms.
+How to Use & Implement: Start the API server alongside the MCP server. Visually inspect and test endpoints (e.g., retrieving audit logs, reviewing approvals, updating policies) using the Swagger interface at:
+
+http://localhost:8000/docs
+🚀 The Easy Implementation Path: How to Integrate AegisGuard
+Integrating AegisGuard is incredibly simple and takes less than 5 minutes.
+
+Step 1: Boot up the AegisGuard Service
+You can run AegisGuard in a Docker container alongside your database:
+
+bash
+
+docker run -d -p 8000:8000 \
+  -e SECRET_KEY=your-production-secret-key \
+  dushyantzz/secure-mcp-server:latest
+Step 2: Hook up your AI Developer IDE or Client
+To connect Cursor, VS Code (Cline), or Claude Desktop, simply add the AegisGuard endpoint to your client configuration:
+
+json
+
+{
+  "mcpServers": {
+    "aegisguard": {
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+Step 3: Run your Custom AI App
+If you are building your own custom AI Agent platform (using LangChain, CrewAI, AutoGPT, or raw OpenAI API), simply run the agent's tool calls through the AegisGuard client:
+
+python
+
+import httpx
+# Connect to the AegisGuard API to run a tool
+async def run_governed_tool(session_token, tool_name, arguments):
+    headers = {"Authorization": f"Bearer {session_token}"}
+    payload = {"method": "tools/call", "params": {"name": tool_name, "arguments": arguments}}
+    
+    response = await httpx.post("http://localhost:8000/mcp", json=payload, headers=headers)
+    return response.json()
+That's it! Your agent is now fully secured, rate-limited, audited, and protected against attacks.
