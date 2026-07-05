@@ -1,17 +1,17 @@
-# 🛡️ AegisGuard
+# 🛡️ Runwall
 
 ### The Zero-Trust Execution Governance Platform for AI Agents
 
-AegisGuard is an intelligent security gateway that sits between your AI reasoning models and your real-world tools and infrastructure. It inspects every intent, parameter, and risk profile **before** execution, enforcing enterprise policy in real time — so your AI agents can move fast without becoming a liability.
+Runwall is an intelligent security gateway that sits between your AI reasoning models and your real-world tools and infrastructure. It inspects every intent, parameter, and risk profile **before** execution, enforcing enterprise policy in real time — so your AI agents can move fast without becoming a liability.
 
 > Traditional security asks: *"Can this user access this tool?"*
-> AegisGuard asks: *"Is this specific action, right now, under this policy, actually safe?"*
+> Runwall asks: *"Is this specific action, right now, under this policy, actually safe?"*
 
 ---
 
 ## Table of Contents
 
-1. [Why AegisGuard?](#-why-aegisguard)
+1. [Why Runwall?](#-why-runwall)
 2. [High-Level Architecture](#-high-level-architecture)
 3. [Core Features](#-core-features)
 4. [Key Workflows (Diagrams)](#-key-workflows)
@@ -23,7 +23,7 @@ AegisGuard is an intelligent security gateway that sits between your AI reasonin
 
 ---
 
-## 🌟 Why AegisGuard?
+## 🌟 Why Runwall?
 
 Everyone is wiring AI agents into production systems — Jira, Salesforce, internal databases, cloud providers, shell terminals — usually via protocols like the **Model Context Protocol (MCP)**. Unprotected, these connections behave like unlocked servers:
 
@@ -33,13 +33,13 @@ Everyone is wiring AI agents into production systems — Jira, Salesforce, inter
 | **Prompt Injection Threat** | A malicious instruction hidden in a webpage or document can hijack your agent into destructive actions (e.g. *"delete all users"*). |
 | **The Trust Gap** | Binary tool permissions can't express nuance — "read one record" and "bulk export the database" look identical to a naive ACL. |
 
-AegisGuard closes this gap with **intent-aware, risk-scored, policy-driven execution control.**
+Runwall closes this gap with **intent-aware, risk-scored, policy-driven execution control.**
 
 ---
 
 ## 🏗️ High-Level Architecture
 
-AegisGuard is deployed as a governance layer between your AI client (Claude Desktop, Cursor, VS Code/Cline, or a custom agent) and your actual tools/connectors.
+Runwall is deployed as a governance layer between your AI client (Claude Desktop, Cursor, VS Code/Cline, or a custom agent) and your actual tools/connectors.
 
 ```mermaid
 flowchart TB
@@ -49,7 +49,7 @@ flowchart TB
         A3[Custom Agent<br/>LangChain / CrewAI / AutoGPT]
     end
 
-    subgraph Aegis["🛡️ AegisGuard Gateway"]
+    subgraph Aegis["🛡️ Runwall Gateway"]
         direction TB
         Auth[Identity & Session Mgmt<br/>JWT + API Keys]
         Policy[Intent-Aware Policy Engine]
@@ -147,7 +147,7 @@ Upfront sandboxed boundaries for multi-step jobs, avoiding "approval fatigue." A
 ```
 
 ### 11. Connector & Tool Architecture
-Point AegisGuard at a database URL or OpenAPI spec and it auto-generates fully governed MCP tools:
+Point Runwall at a database URL or OpenAPI spec and it auto-generates fully governed MCP tools:
 - **RestAPIConnector** — turns HTTP endpoints into tools
 - **DatabaseConnector** — generates `sql_query` / `sql_execute` for Postgres/MySQL
 - **ShellConnector** — sandboxed bash/powershell execution
@@ -180,7 +180,7 @@ Every tool call — regardless of client — passes through the same governance 
 ```mermaid
 sequenceDiagram
     participant Agent as AI Agent
-    participant Aegis as AegisGuard Gateway
+    participant Aegis as Runwall Gateway
     participant Policy as Policy Engine (+ OPA)
     participant Tool as Target Tool/Connector
 
@@ -217,7 +217,7 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant Agent as AI Agent
-    participant Aegis as AegisGuard
+    participant Aegis as Runwall
     participant Admin as Human Admin
 
     Agent->>Aegis: Attempt high-risk action
@@ -259,9 +259,9 @@ flowchart LR
 
 ## 🚀 Quick Start
 
-### Step 1 — Boot the AegisGuard Service
+### Step 1 — Boot the Runwall Service
 
-Run AegisGuard in Docker:
+Run Runwall in Docker:
 
 ```bash
 docker run -d -p 8000:8000 \
@@ -271,19 +271,19 @@ docker run -d -p 8000:8000 \
 
 ### Step 2 — Connect Your AI Client
 
-Add the AegisGuard MCP endpoint to Cursor, VS Code (Cline), or Claude Desktop config:
+Add the Runwall MCP endpoint to Cursor, VS Code (Cline), or Claude Desktop config:
 
 ```json
 {
   "mcpServers": {
-    "aegisguard": {
+    "runwall": {
       "url": "http://localhost:8000/mcp"
     }
   }
 }
 ```
 
-### Step 3 — (Optional) Route a Custom Agent Through AegisGuard
+### Step 3 — (Optional) Route a Custom Agent Through Runwall
 
 ```python
 import httpx
@@ -309,13 +309,13 @@ That's it — your agent is now authenticated, rate-limited, taint-tracked, audi
 | Claude Desktop | Add `mcpServers` entry pointing to `http://localhost:8000/mcp` |
 | Cursor | Add `mcpServers` entry in Cursor settings |
 | VS Code (Cline) | Add `mcpServers` entry in Cline MCP config |
-| Custom Agents (LangChain, CrewAI, AutoGPT, raw OpenAI API) | Route tool calls through the AegisGuard REST/MCP client |
+| Custom Agents (LangChain, CrewAI, AutoGPT, raw OpenAI API) | Route tool calls through the Runwall REST/MCP client |
 
 ---
 
 ## 🧩 Custom Agent Integration (Python)
 
-Register a connector so AegisGuard auto-generates governed tools instead of hand-writing them:
+Register a connector so Runwall auto-generates governed tools instead of hand-writing them:
 
 ```python
 # Example: register a database connector
@@ -323,7 +323,7 @@ connector_config = {
     "type": "DatabaseConnector",
     "connection_string": "postgresql://user:pass@host:5432/db"
 }
-# AegisGuard auto-generates sql_query / sql_execute tools,
+# Runwall auto-generates sql_query / sql_execute tools,
 # each inheriting taint tracking, risk scoring, and rate limits.
 ```
 
@@ -331,7 +331,7 @@ connector_config = {
 
 ## 📡 REST API & Dashboard
 
-AegisGuard ships a FastAPI control plane with full Swagger documentation:
+Runwall ships a FastAPI control plane with full Swagger documentation:
 
 ```
 http://localhost:8000/docs
@@ -347,7 +347,7 @@ Common endpoints:
 
 ## 📄 License & Support
 
-AegisGuard is distributed as a Docker image (`dushyantzz/secure-mcp-server:latest`). For issues, feature requests, or policy authoring help, consult the in-app Swagger docs at `/docs` or your internal platform team.
+Runwall is distributed as a Docker image (`dushyantzz/secure-mcp-server:latest`). For issues, feature requests, or policy authoring help, consult the in-app Swagger docs at `/docs` or your internal platform team.
 
 ---
 
