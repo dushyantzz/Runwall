@@ -83,6 +83,10 @@ class IntentClassification(BaseModel):
     """Result of analysing what the caller *intends* to do."""
 
     tool_name: str = Field(..., description="Name of the tool being invoked")
+    taint_labels: List[str] = Field(
+        default_factory=list,
+        description="Taint labels associated with the session"
+    )
     intent_category: IntentCategory = Field(
         default=IntentCategory.UNKNOWN,
         description="Classified intent category",

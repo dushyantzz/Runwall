@@ -4,7 +4,8 @@ from .connection import DatabaseManager, get_db_manager, get_db_session, set_db_
 from .models import (
     Base, User, APIKey, Session, Tool, AuditLog,
     PolicyRule, PolicyDecisionLog, TokenRevocation,
-    ServiceAccount
+    ServiceAccount, PolicyBundle, ToolManifest,
+    ApprovalRequest, TaskContract, ReversibleExecutionLog
 )
 
 __all__ = [
@@ -22,4 +23,9 @@ __all__ = [
     'PolicyDecisionLog',
     'TokenRevocation',
     'ServiceAccount',
+    'PolicyBundle',
+    'ToolManifest',
+    'ApprovalRequest',
+    'TaskContract',
+    'ReversibleExecutionLog',
 ]

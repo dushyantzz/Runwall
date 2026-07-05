@@ -206,9 +206,13 @@ class AuthManager:
                 return None
                 
             # Check lockout
-            if user.locked_until and user.locked_until > now:
-                logger.warning("Login failed: Account locked", username=username)
-                return None
+            if user.locked_until:
+                locked_until = user.locked_until
+                if locked_until.tzinfo is None:
+                    locked_until = locked_until.replace(tzinfo=timezone.utc)
+                if locked_until > now:
+                    logger.warning("Login failed: Account locked", username=username)
+                    return None
                 
             if not self.verify_password(password, user.hashed_password):
                 # Increment failed attempts

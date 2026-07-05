@@ -8,6 +8,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/mcp_server
       - REDIS_URL=redis://redis:6379/0
+    command: python -m secure_mcp_server.main
     depends_on:
       - db
       - redis

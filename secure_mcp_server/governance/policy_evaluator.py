@@ -474,7 +474,7 @@ class PolicyEvaluator:
                         matched_rule_id=matched_rule.rule_id if matched_rule else None,
                         evaluation_chain=[rm.to_audit_dict() for rm in evaluation_chain],
                         explanation=explanation,
-                        taint_labels=intent.taint_labels
+                        taint_labels=getattr(intent, "taint_labels", [])
                     )
                     db_session.add(log)
                     await db_session.commit()
@@ -521,7 +521,7 @@ class PolicyEvaluator:
         # --- taint_labels --------------------------------------------------
         if "taint_labels" in conditions:
             required_taints = {t.lower() for t in conditions["taint_labels"]}
-            actual_taints = {t.lower() for t in intent.taint_labels}
+            actual_taints = {t.lower() for t in getattr(intent, "taint_labels", [])}
             if not required_taints.intersection(actual_taints):
                 return (
                     False,

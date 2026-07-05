@@ -10,9 +10,8 @@ import asyncio
 import structlog
 import os
 
-from secure_mcp_server.governance.intent_types import Intent, IntentCategory
-from secure_mcp_server.governance.risk_scorer import RiskAssessment
-from secure_mcp_server.database import get_db_manager, PolicyDecisionLog, PolicyDecisionType
+from secure_mcp_server.governance.intent_types import IntentClassification, IntentCategory, RiskScore, PolicyDecisionType
+from secure_mcp_server.database import get_db_manager, PolicyDecisionLog
 
 logger = structlog.get_logger(__name__)
 
@@ -39,8 +38,8 @@ class OPAPolicyEvaluator:
 
     async def evaluate(
         self,
-        intent: Intent,
-        risk: RiskAssessment,
+        intent: IntentClassification,
+        risk: RiskScore,
         user_context: Dict[str, Any],
         tool_metadata: Dict[str, Any] = None,
         simulation_mode: bool = False
@@ -60,7 +59,7 @@ class OPAPolicyEvaluator:
                 },
                 "user_context": user_context,
                 "tool_metadata": tool_metadata or {},
-                "taints": intent.taint_labels
+                "taints": getattr(intent, "taint_labels", [])
             }
         }
         
@@ -95,7 +94,7 @@ class OPAPolicyEvaluator:
             decision_str, explanation = self._fallback_evaluation(input_data["input"])
 
         # 3. Map to Python Enum
-        decision = PolicyDecisionType(decision_str.upper())
+        decision = PolicyDecisionType(decision_str.lower())
         
         # 4. Handle Simulation Mode
         if simulation_mode and decision != PolicyDecisionType.ALLOW:
@@ -113,9 +112,15 @@ class OPAPolicyEvaluator:
                 log_entry = PolicyDecisionLog(
                     tenant_id=user_context.get("tenant_id", "default"),
                     user_id=user_context.get("user_id"),
+                    session_id=user_context.get("session_id"),
+                    tool_name=intent.tool_name,
+                    intent_category=intent.intent_category.value,
+                    risk_score=risk.score,
+                    risk_level=risk.level.value,
                     decision=decision.value,
                     explanation=explanation,
-                    context_snapshot=input_data["input"]
+                    evaluation_chain={"opa_input": input_data["input"]},
+                    taint_labels=getattr(intent, "taint_labels", [])
                 )
                 db.add(log_entry)
                 await db.commit()
