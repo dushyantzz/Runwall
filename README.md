@@ -1,7 +1,3 @@
-<p align="center">
-  <span style="font-size: 72px;">🛡️</span>
-</p>
-
 <h1 align="center">Runwall</h1>
 
 <p align="center">
