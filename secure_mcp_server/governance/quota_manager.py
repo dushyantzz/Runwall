@@ -5,8 +5,10 @@ with an in-memory async fallback for local development.
 """
 import time
 import asyncio
+import secrets
 from typing import Optional, Dict, List
 import structlog
+import redis.asyncio as redis
 from secure_mcp_server.config import Settings
 
 logger = structlog.get_logger(__name__)
@@ -24,7 +26,7 @@ class QuotaManager:
     
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.redis = None # Stub for async redis client
+        self.redis = None
         
         # In-memory fallback if Redis is not configured or fails
         self._memory_store: Dict[str, List[float]] = {}
@@ -34,11 +36,12 @@ class QuotaManager:
         """Initialize connection to Redis if configured."""
         if self.settings.redis_url:
             try:
-                # Stub: import redis.asyncio as redis
-                # self.redis = redis.from_url(self.settings.redis_url)
-                logger.info("Redis configured for QuotaManager, but using in-memory fallback for local execution")
+                self.redis = redis.from_url(self.settings.redis_url, decode_responses=True)
+                # Test the connection
+                await self.redis.ping()
+                logger.info("Connected to Redis successfully for QuotaManager")
             except Exception as e:
-                logger.error("Failed to connect to Redis", error=str(e))
+                logger.error("Failed to connect to Redis, falling back to in-memory store", error=str(e))
                 self.redis = None
         else:
             logger.info("No REDIS_URL configured, using in-memory store for QuotaManager")
@@ -49,11 +52,31 @@ class QuotaManager:
         Returns True if allowed, False if quota exceeded.
         """
         now = time.time()
+        cutoff = now - window_seconds
         
         if self.redis:
-            # Redis implementation: ZREMRANGEBYSCORE, ZADD, ZCARD, EXPIRE
-            # Stubbed for now, falls back to memory.
-            pass
+            try:
+                # Use a pipeline for atomic sliding window evaluation
+                pipe = self.redis.pipeline()
+                pipe.zremrangebyscore(key, 0, cutoff)
+                pipe.zcard(key)
+                results = await pipe.execute()
+                current_count = results[1]
+                
+                if current_count >= limit:
+                    return False
+                
+                # Add unique element for this timestamp
+                member = f"{now}:{secrets.token_hex(4)}"
+                pipe = self.redis.pipeline()
+                pipe.zadd(key, {member: now})
+                pipe.expire(key, window_seconds)
+                await pipe.execute()
+                return True
+            except Exception as e:
+                logger.error("Redis quota check failed, falling back to memory", error=str(e))
+                # Fallback to in-memory store if Redis throws error during check
+                pass
             
         async with self._lock:
             # In-memory implementation

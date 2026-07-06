@@ -4,8 +4,9 @@ import {
   ChevronDown, Menu, X,
   Fingerprint, Building2, Puzzle, FileCode2,
   Radio, BarChart3, Route, GitBranch,
-  ClipboardList, RotateCcw, Gauge, Box
+  ClipboardList, RotateCcw, Gauge, Box, LogOut
 } from 'lucide-react';
+import { useAuth } from '../hooks/AuthContext';
 
 const featureLinks = [
   { to: '/features/identity-access-control', label: 'Identity & Access Control', icon: Fingerprint },
@@ -23,6 +24,7 @@ const featureLinks = [
 ];
 
 export default function Navbar() {
+  const { user, signOut } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
@@ -160,35 +162,72 @@ export default function Navbar() {
 
         {/* Right actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="desktop-nav">
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 13, color: 'var(--muted)' }}>
+                {user.email}
+              </span>
+              <button
+                onClick={signOut}
+                style={{
+                  background: 'none',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  color: 'var(--body)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  padding: '5px 10px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--accent)';
+                  e.currentTarget.style.color = 'var(--heading)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.color = 'var(--body)';
+                }}
+              >
+                <LogOut size={13} />
+                Logout
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login" style={{
+                color: '#b4b4b4',
+                textDecoration: 'none',
+                fontSize: 14,
+                fontWeight: 500,
+                transition: 'color 0.2s',
+              }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#b4b4b4')}
+              >
+                Login
+              </Link>
 
-          <Link to="/login" style={{
-            color: '#b4b4b4',
-            textDecoration: 'none',
-            fontSize: 14,
-            fontWeight: 500,
-            transition: 'color 0.2s',
-          }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#b4b4b4')}
-          >
-            Login
-          </Link>
-
-          <Link to="/signup" style={{
-            background: 'var(--accent)',
-            color: '#000000',
-            textDecoration: 'none',
-            fontSize: 14,
-            fontWeight: 600,
-            padding: '5px 12px',
-            borderRadius: '6px',
-            transition: 'opacity 0.2s',
-          }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-          >
-            Sign Up
-          </Link>
+              <Link to="/signup" style={{
+                background: 'var(--accent)',
+                color: '#000000',
+                textDecoration: 'none',
+                fontSize: 14,
+                fontWeight: 600,
+                padding: '5px 12px',
+                borderRadius: '6px',
+                transition: 'opacity 0.2s',
+              }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -240,7 +279,32 @@ export default function Navbar() {
           ))}
           <Link to="/docs" style={{ padding: '8px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 13 }}>Documentation</Link>
           <div style={{ borderTop: '1px solid #333333', margin: '8px 0' }} />
-          <Link to="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>Sign Up</Link>
+          {user ? (
+            <button 
+              onClick={signOut} 
+              className="btn btn-secondary" 
+              style={{ 
+                width: '100%', 
+                marginTop: 8, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: 6,
+                padding: '8px 10px',
+                background: 'none',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                color: 'var(--heading)',
+                fontSize: 13,
+                cursor: 'pointer'
+              }}
+            >
+              <LogOut size={14} />
+              Logout
+            </button>
+          ) : (
+            <Link to="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>Sign Up</Link>
+          )}
         </div>
       )}
 
