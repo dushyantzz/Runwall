@@ -361,4 +361,4 @@ Runwall is distributed as a Docker image (`dushyantzz/secure-mcp-server:latest`)
 
 ---
 
-*Built for the era of autonomous AI agents — because "can it access the tool" is no longer the right question.*
+*Built for the era of autonomous AI agents, because "can it access the tool" is no longer the right question.*
