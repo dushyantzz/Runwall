@@ -1,11 +1,25 @@
-# 🛡️ Runwall
+<p align="center">
+  <span style="font-size: 72px;">🛡️</span>
+</p>
 
-### The Zero-Trust Execution Governance Platform for AI Agents
+<h1 align="center">Runwall</h1>
 
-Runwall is an intelligent security gateway that sits between your AI reasoning models and your real-world tools and infrastructure. It inspects every intent, parameter, and risk profile **before** execution, enforcing enterprise policy in real time — so your AI agents can move fast without becoming a liability.
+<p align="center">
+  <strong>The Zero-Trust Execution Governance Platform for AI Agents</strong>
+</p>
 
-> Traditional security asks: *"Can this user access this tool?"*
-> Runwall asks: *"Is this specific action, right now, under this policy, actually safe?"*
+<p align="center">
+  An intelligent security gateway that sits between AI reasoning models and real-world tools, databases, and environments.
+</p>
+
+<p align="center">
+  <a href="https://github.com/dushyantzz/Runwall"><img src="https://img.shields.io/github/stars/dushyantzz/Runwall?style=for-the-badge&color=FFDA62&logo=github" alt="Github Stars" /></a>
+  <a href="https://github.com/dushyantzz/Runwall/blob/main/LICENSE"><img src="https://img.shields.io/github/license/dushyantzz/Runwall?style=for-the-badge" alt="License" /></a>
+</p>
+
+<p align="center">
+  <img src="Images/ChatGPT%20Image%20Jul%205,%202026,%2002_08_18%20PM.png" width="900" alt="Runwall Architecture" />
+</p>
 
 ---
 
