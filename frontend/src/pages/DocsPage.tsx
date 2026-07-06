@@ -354,24 +354,9 @@ function IntroductionDoc() {
 
 /* ── B. QUICK START DOC ── */
 function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
-  const localDevCmd = `fastmcp run server.py --transport streamable-http --host 0.0.0.0 --port 8000`;
-  
-  const dockerCmd = `docker run -d -p 8000:8000 \\
-  -e SECRET_KEY=your-production-secret-key \\
-  -e DATABASE_URL=postgresql+asyncpg://postgres:pass@host:5432/db \\
-  dushyantzz/secure-mcp-server:latest`;
-
-  const mcpConfigLocal = `{
-  "mcpServers": {
-    "runwall-local": {
-      "url": "http://localhost:8000/mcp"
-    }
-  }
-}`;
-
   const mcpConfigCloud = `{
   "mcpServers": {
-    "runwall-cloud": {
+    "runwall": {
       "url": "https://runwall-production.up.railway.app/mcp"
     }
   }
@@ -390,15 +375,15 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
       </h1>
 
       <p style={{ fontSize: '16px', lineHeight: '1.7' }}>
-        Configure the Runwall gateway in your local or cloud environment and hook it up to your favorite AI agent clients.
+        Configure the Runwall gateway and hook it up to your favorite AI agent clients in seconds.
       </p>
 
-      {/* Option A: Cloud Deployment */}
+      {/* Step 1: Cloud Connection */}
       <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
-        Option A — Connect to Live Cloud Gateway (Railway)
+        Step 1 — Connect to Secure Cloud Gateway (Railway)
       </h2>
       <p>
-        If you are using our hosted secure cloud infrastructure, you can bypass local setup entirely and connect directly to your cloud endpoint:
+        Add our secure execution gateway config block to your client's MCP configuration settings file:
       </p>
 
       <div style={{ position: 'relative' }}>
@@ -420,92 +405,12 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
         </pre>
       </div>
 
-      {/* Option B: Local Setup */}
+      {/* Step 2: Configuration Paths */}
       <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
-        Option B — Local Development Setup
-      </h2>
-      
-      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginTop: '8px' }}>
-        1. Run Locally via Python
-      </h3>
-      <p>
-        Install requirements and run the FastMCP engine locally on port 8000:
-      </p>
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={() => onCopy(localDevCmd)}
-          style={{
-            position: 'absolute', right: '12px', top: '12px',
-            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
-            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
-          }}
-        >
-          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Command
-        </button>
-        <pre style={{
-          background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
-          padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
-        }}>
-          <code>{localDevCmd}</code>
-        </pre>
-      </div>
-
-      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
-        2. Run Locally via Docker
-      </h3>
-      <p>
-        Deploy the official Runwall gateway container locally:
-      </p>
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={() => onCopy(dockerCmd)}
-          style={{
-            position: 'absolute', right: '12px', top: '12px',
-            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
-            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
-          }}
-        >
-          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Command
-        </button>
-        <pre style={{
-          background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
-          padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
-        }}>
-          <code>{dockerCmd}</code>
-        </pre>
-      </div>
-
-      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
-        3. Connect Local IDE
-      </h3>
-      <p>
-        Paste this block in your configuration files to connect locally:
-      </p>
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={() => onCopy(mcpConfigLocal)}
-          style={{
-            position: 'absolute', right: '12px', top: '12px',
-            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
-            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
-          }}
-        >
-          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Config
-        </button>
-        <pre style={{
-          background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
-          padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
-        }}>
-          <code>{mcpConfigLocal}</code>
-        </pre>
-      </div>
-
-      {/* Configuration Paths */}
-      <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
-        Step 3 — Locate Config Files
+        Step 2 — Locate Client Config Files
       </h2>
       <p>
-        Add your chosen configuration block to one of the following location files depending on your client application:
+        Add the configuration block into the settings file corresponding to your AI assistant application:
       </p>
       
       <table style={{
@@ -544,7 +449,7 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
 /* ── C. SERVER CONFIGURATION DOC ── */
 function ServerConfigurationDoc({ onCopy }: { onCopy: (t: string) => void }) {
   const envContent = `SECRET_KEY=your-production-secret-key
-DATABASE_URL=postgresql+asyncpg://postgres.catmnzhnxfmgayvnvszh:pass@host:5432/postgres
+DATABASE_URL=postgresql+asyncpg://username:password@db-host-domain:5432/database_name
 REDIS_URL=redis://localhost:6379/0
 ENABLE_RATE_LIMITING=true
 DEFAULT_TENANT_RPM=1000
