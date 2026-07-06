@@ -1,4 +1,36 @@
-Agent_Instructions.md/
-Execution_Governance_Platform_Blueprint.md/
-.env/
-.env.example/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Local configuration files (Do NOT commit sensitive keys)
+.env
+.env.local
+.env.*.local
+frontend/.env
+
+# Node / Frontend dependencies and builds
+node_modules/
+dist/
+dist-ssr/
+
+# SQLite databases
+*.db
+*.sqlite
+
+# IDEs & System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Project-specific ignored files/folders
+Agent_Instructions.md
+Execution_Governance_Platform_Blueprint.md
+Frontend prompts/
+Images/
