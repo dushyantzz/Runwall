@@ -33,7 +33,7 @@
 
 ---
 
-## 🌟 Why Runwall?
+##  Why Runwall?
 
 Everyone is wiring AI agents into production systems — Jira, Salesforce, internal databases, cloud providers, shell terminals — usually via protocols like the **Model Context Protocol (MCP)**. Unprotected, these connections behave like unlocked servers:
 
@@ -47,7 +47,7 @@ Runwall closes this gap with **intent-aware, risk-scored, policy-driven executio
 
 ---
 
-## 🏗️ High-Level Architecture
+##  High-Level Architecture
 
 Runwall is deployed as a governance layer between your AI client (Claude Desktop, Cursor, VS Code/Cline, or a custom agent) and your actual tools/connectors.
 
@@ -97,7 +97,7 @@ flowchart TB
 
 ---
 
-## 🛠️ Core Features
+##  Core Features
 
 ### 1. Intent-Aware Execution Policy Engine
 Reads the **semantic intent** of an agent's action, not just whether it has raw tool access. Actions are classified (`read`, `write`, `delete`, `export`) and scored `0.0` (safe) → `1.0` (dangerous). A single record read is auto-allowed; a bulk export triggers human approval.
@@ -181,7 +181,7 @@ A FastAPI server exposing full CRUD endpoints and Swagger docs, powering dashboa
 
 ---
 
-## 🔁 Key Workflows
+##  Key Workflows
 
 ### A. Standard Request Evaluation Flow
 
@@ -267,7 +267,7 @@ flowchart LR
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Step 1 — Boot the Runwall Service
 
@@ -312,7 +312,7 @@ That's it — your agent is now authenticated, rate-limited, taint-tracked, audi
 
 ---
 
-## 🔗 Client Integration
+##  Client Integration
 
 | Client | Integration Method |
 |---|---|
@@ -323,7 +323,7 @@ That's it — your agent is now authenticated, rate-limited, taint-tracked, audi
 
 ---
 
-## 🧩 Custom Agent Integration (Python)
+##  Custom Agent Integration (Python)
 
 Register a connector so Runwall auto-generates governed tools instead of hand-writing them:
 
@@ -339,7 +339,7 @@ connector_config = {
 
 ---
 
-## 📡 REST API & Dashboard
+##  REST API & Dashboard
 
 Runwall ships a FastAPI control plane with full Swagger documentation:
 
@@ -355,7 +355,7 @@ Common endpoints:
 
 ---
 
-## 📄 License & Support
+##  License & Support
 
 Runwall is distributed as a Docker image (`dushyantzz/secure-mcp-server:latest`). For issues, feature requests, or policy authoring help, consult the in-app Swagger docs at `/docs` or your internal platform team.
 
