@@ -5,6 +5,7 @@ import Footer from './Footer';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
+  const isDocs = pathname.startsWith('/docs');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -13,11 +14,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
-      <div className="content-frame" style={{ marginTop: 60, display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)' }}>
+      <div 
+        className={isDocs ? "" : "content-frame"} 
+        style={{ 
+          marginTop: 60, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          minHeight: 'calc(100vh - 60px)',
+          borderLeft: isDocs ? 'none' : undefined,
+          borderRight: isDocs ? 'none' : undefined,
+          maxWidth: isDocs ? 'none' : undefined,
+          margin: isDocs ? '0' : undefined
+        }}
+      >
         <main style={{ flex: 1 }}>
           {children}
         </main>
-        <Footer />
+        {!isDocs && <Footer />}
       </div>
     </>
   );
