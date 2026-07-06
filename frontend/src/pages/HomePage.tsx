@@ -58,8 +58,8 @@ function HeroSection({
     <section style={{
       position: 'relative',
       overflow: 'hidden',
-      paddingTop: 100,
-      paddingBottom: 80,
+      paddingTop: 160,
+      paddingBottom: 100,
       borderBottom: '1px solid #333333'
     }}>
       {/* Grid overlay */}
