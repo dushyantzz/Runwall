@@ -354,15 +354,25 @@ function IntroductionDoc() {
 
 /* ── B. QUICK START DOC ── */
 function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
+  const localDevCmd = `fastmcp run server.py --transport streamable-http --host 0.0.0.0 --port 8000`;
+  
   const dockerCmd = `docker run -d -p 8000:8000 \\
   -e SECRET_KEY=your-production-secret-key \\
   -e DATABASE_URL=postgresql+asyncpg://postgres:pass@host:5432/db \\
   dushyantzz/secure-mcp-server:latest`;
 
-  const mcpConfig = `{
+  const mcpConfigLocal = `{
   "mcpServers": {
-    "runwall": {
+    "runwall-local": {
       "url": "http://localhost:8000/mcp"
+    }
+  }
+}`;
+
+  const mcpConfigCloud = `{
+  "mcpServers": {
+    "runwall-cloud": {
+      "url": "https://runwall-production.up.railway.app/mcp"
     }
   }
 }`;
@@ -376,21 +386,76 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
         fontFamily: 'var(--font-display)',
         letterSpacing: '-0.02em',
       }}>
-        Quick Start
+        Quick Start Guide
       </h1>
 
       <p style={{ fontSize: '16px', lineHeight: '1.7' }}>
-        Learn how to get the Runwall gateway running locally or in your cloud environment in minutes.
+        Configure the Runwall gateway in your local or cloud environment and hook it up to your favorite AI agent clients.
       </p>
 
-      {/* Step 1 */}
+      {/* Option A: Cloud Deployment */}
       <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
-        Step 1 — Start the Runwall Container
+        Option A — Connect to Live Cloud Gateway (Railway)
       </h2>
       <p>
-        Deploy Runwall using our official Docker image. Provide your database connection string and secret key:
+        If you are using our hosted secure cloud infrastructure, you can bypass local setup entirely and connect directly to your cloud endpoint:
       </p>
 
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => onCopy(mcpConfigCloud)}
+          style={{
+            position: 'absolute', right: '12px', top: '12px',
+            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
+            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
+          }}
+        >
+          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Config
+        </button>
+        <pre style={{
+          background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
+          padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
+        }}>
+          <code>{mcpConfigCloud}</code>
+        </pre>
+      </div>
+
+      {/* Option B: Local Setup */}
+      <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
+        Option B — Local Development Setup
+      </h2>
+      
+      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginTop: '8px' }}>
+        1. Run Locally via Python
+      </h3>
+      <p>
+        Install requirements and run the FastMCP engine locally on port 8000:
+      </p>
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => onCopy(localDevCmd)}
+          style={{
+            position: 'absolute', right: '12px', top: '12px',
+            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
+            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
+          }}
+        >
+          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Command
+        </button>
+        <pre style={{
+          background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
+          padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
+        }}>
+          <code>{localDevCmd}</code>
+        </pre>
+      </div>
+
+      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
+        2. Run Locally via Docker
+      </h3>
+      <p>
+        Deploy the official Runwall gateway container locally:
+      </p>
       <div style={{ position: 'relative' }}>
         <button
           onClick={() => onCopy(dockerCmd)}
@@ -400,7 +465,7 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
             color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
           }}
         >
-          <Copy size={12} style={{ marginRight: '4px' }} /> Copy
+          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Command
         </button>
         <pre style={{
           background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
@@ -410,32 +475,68 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
         </pre>
       </div>
 
-      {/* Step 2 */}
-      <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
-        Step 2 — Connect to Your AI IDE
-      </h2>
+      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
+        3. Connect Local IDE
+      </h3>
       <p>
-        Connect your IDE (Cursor, VS Code/Cline, or Claude Desktop) directly to the SSE gateway by adding this block to your MCP config file:
+        Paste this block in your configuration files to connect locally:
       </p>
-
       <div style={{ position: 'relative' }}>
         <button
-          onClick={() => onCopy(mcpConfig)}
+          onClick={() => onCopy(mcpConfigLocal)}
           style={{
             position: 'absolute', right: '12px', top: '12px',
             background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
             color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
           }}
         >
-          <Copy size={12} style={{ marginRight: '4px' }} /> Copy
+          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Config
         </button>
         <pre style={{
           background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
           padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
         }}>
-          <code>{mcpConfig}</code>
+          <code>{mcpConfigLocal}</code>
         </pre>
       </div>
+
+      {/* Configuration Paths */}
+      <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
+        Step 3 — Locate Config Files
+      </h2>
+      <p>
+        Add your chosen configuration block to one of the following location files depending on your client application:
+      </p>
+      
+      <table style={{
+        width: '100%',
+        borderCollapse: 'collapse',
+        marginTop: '12px',
+        fontSize: '13px',
+        lineHeight: '1.6',
+        textAlign: 'left'
+      }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #1c1c1c' }}>
+            <th style={{ padding: '8px 12px', color: '#fff', fontWeight: 600 }}>Client</th>
+            <th style={{ padding: '8px 12px', color: '#fff', fontWeight: 600 }}>Configuration File Path</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Cursor</strong></td>
+            <td style={{ padding: '10px 12px' }}><code>%USERPROFILE%\.gemini\config\mcp_config.json</code></td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Claude Desktop</strong></td>
+            <td style={{ padding: '10px 12px' }}><code>%APPDATA%\Claude\claude_desktop_config.json</code></td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Cline (VS Code)</strong></td>
+            <td style={{ padding: '10px 12px' }}><code>%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json</code></td>
+          </tr>
+        </tbody>
+      </table>
     </article>
   );
 }
