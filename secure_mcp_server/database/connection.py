@@ -35,7 +35,7 @@ class DatabaseManager:
             connect_args=(
                 {"check_same_thread": False} 
                 if "sqlite" in self.database_url 
-                else {}
+                else {"statement_cache_size": 0}
             )
         )
         
