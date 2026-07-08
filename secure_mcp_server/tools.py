@@ -255,8 +255,13 @@ class ToolRegistry:
         policy_result: Optional[PolicyEvaluationResult] = None
         
         try:
-            # Get user context
-            user_context = getattr(request, 'user_context', {})
+            # Get user context with robust safety fallbacks
+            user_context = {}
+            if request is not None:
+                user_context = getattr(request, 'user_context', None)
+                if not user_context and hasattr(request, 'fastmcp_context') and request.fastmcp_context:
+                    user_context = getattr(request.fastmcp_context, 'user_context', {})
+            user_context = user_context or {}
             user_id = user_context.get('user_id', 'anonymous')
             
             # Validate tool exists

@@ -27,6 +27,8 @@ from .governance import (
     PolicyDecisionType,
 )
 
+
+
 # Configure structured logging
 structlog.configure(
     processors=[
@@ -106,6 +108,7 @@ class SecureMCPServer:
         # Define middleware functions
         async def auth_middleware(request, call_next):
             """Authentication middleware for all MCP requests."""
+            self.mcp.current_request = request
             # Extract user context from request if available
             user_context = await self.auth_manager.get_user_context(request)
             
@@ -174,6 +177,11 @@ class SecureMCPServer:
         from secure_mcp_server.admin import register_admin_tools
         register_admin_tools(self.mcp)
         
+        @self.mcp.tool()
+        async def ping() -> str:
+            """Simple health check tool with zero dependencies."""
+            return "pong"
+
         @self.mcp.tool()
         async def echo(text: str) -> Dict[str, Any]:
             """Echo back the provided text."""
