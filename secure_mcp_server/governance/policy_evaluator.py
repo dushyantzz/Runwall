@@ -343,6 +343,8 @@ class PolicyEvaluator:
         intent: IntentClassification,
         risk: RiskScore,
         user_context: Dict[str, Any],
+        tool_metadata: Optional[Dict[str, Any]] = None,
+        simulation_mode: bool = False,
     ) -> PolicyEvaluationResult:
         """
         Evaluate all rules in priority order and return the first match.

@@ -248,7 +248,7 @@ def register_admin_tools(mcp: FastMCP):
         }
 
     @mcp.tool()
-    async def rollback_action(log_id: str) -> Dict[str, Any]:
+    async def rollback_action(execution_id: str) -> Dict[str, Any]:
         """
         Rollback a previously executed action using its ReversibleExecutionLog ID.
         """
@@ -256,7 +256,7 @@ def register_admin_tools(mcp: FastMCP):
         user_id = user_ctx.get("user_id")
         int_user_id = int(user_id) if user_id and user_id.isdigit() else None
         
-        result = await compensation_registry.rollback_execution(log_id, user_id=int_user_id)
+        result = await compensation_registry.rollback_execution(execution_id, user_id=int_user_id)
         if not result.get("success", False):
             raise ValueError(result.get("error", "Rollback failed"))
         return result

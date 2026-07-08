@@ -270,6 +270,8 @@ class ToolRegistry:
             
             # Check permissions
             if not self.security_manager.validate_tool_access(user_context, tool_name):
+                if tool_name == "system_info":
+                    raise PermissionError("Admin privileges required for this operation.")
                 raise PermissionError(f"Access denied to tool '{tool_name}'")
             
             # Check rate limiting / quotas
