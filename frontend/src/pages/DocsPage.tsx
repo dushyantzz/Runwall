@@ -357,7 +357,7 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
   const mcpConfigCloud = `{
   "mcpServers": {
     "runwall": {
-      "url": "https://runwall-production.up.railway.app/mcp"
+      "url": "https://runwall.onrender.com/sse"
     }
   }
 }`;
