@@ -118,8 +118,12 @@ class SecureMCPServer:
                     request_ip = getattr(request, "headers", {}).get("x-forwarded-for", "").split(",")[0].strip() or None
                 await self.security_manager.check_key_anomaly(token, request_ip)
             
-            # Add user context to request
-            request.user_context = user_context
+            # Add user context to request context if available
+            try:
+                request.user_context = user_context
+            except Exception:
+                if hasattr(request, 'fastmcp_context') and request.fastmcp_context is not None:
+                    request.fastmcp_context.user_context = user_context
             
             # Log request
             logger.info(
@@ -249,7 +253,7 @@ class SecureMCPServer:
         async def get_server_config() -> str:
             """Get server configuration (admin only)."""
             # Check admin privileges
-            user_context = getattr(self.mcp.current_request, 'user_context', {})
+            user_context = self._get_current_user_context()
             if not user_context.get('is_admin', False):
                 raise Exception("Admin privileges required")
             
@@ -266,7 +270,7 @@ class SecureMCPServer:
         async def get_metrics() -> str:
             """Get current metrics (admin only)."""
             # Check admin privileges
-            user_context = getattr(self.mcp.current_request, 'user_context', {})
+            user_context = self._get_current_user_context()
             if not user_context.get('is_admin', False):
                 raise Exception("Admin privileges required")
             
@@ -283,7 +287,7 @@ class SecureMCPServer:
         ) -> List[Dict[str, Any]]:
             """Generate security audit prompt with recent security events."""
             # Check admin privileges
-            user_context = getattr(self.mcp.current_request, 'user_context', {})
+            user_context = self._get_current_user_context()
             if not user_context.get('is_admin', False):
                 raise Exception("Admin privileges required")
             
@@ -323,6 +327,16 @@ class SecureMCPServer:
                 }
             ]
     
+    def _get_current_user_context(self) -> Dict[str, Any]:
+        """Extract user context from current request."""
+        req = self.mcp.current_request
+        if not req:
+            return {}
+        user_ctx = getattr(req, "user_context", None)
+        if not user_ctx and hasattr(req, "fastmcp_context") and req.fastmcp_context:
+            user_ctx = getattr(req.fastmcp_context, "user_context", {})
+        return user_ctx or {}
+
     async def initialize(self):
         """Initialize all server components."""
         logger.info("Initializing server components")

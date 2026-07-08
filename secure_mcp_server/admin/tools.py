@@ -17,7 +17,10 @@ logger = structlog.get_logger(__name__)
 
 def _require_admin(request):
     """Ensure the requester is an admin."""
-    user_ctx = getattr(request, "user_context", {})
+    user_ctx = getattr(request, "user_context", None)
+    if not user_ctx and hasattr(request, "fastmcp_context") and request.fastmcp_context:
+        user_ctx = getattr(request.fastmcp_context, "user_context", {})
+    user_ctx = user_ctx or {}
     if not user_ctx.get("is_admin", False):
         raise PermissionError("Admin privileges required for this operation.")
     return user_ctx
