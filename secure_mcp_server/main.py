@@ -398,6 +398,10 @@ async def amain():
         logger.info("Starting server")
         await server.start()
         
+        # Mount MCP SSE application onto API app to expose /sse and /messages
+        logger.info("Mounting MCP SSE app onto REST API app")
+        api_app.mount("/", server.mcp.http_app(transport="sse"))
+        
         # Start API server in the background
         logger.info("Starting REST API Control Plane on port 8000")
         config = uvicorn.Config(api_app, host="0.0.0.0", port=8000, log_level="info")
