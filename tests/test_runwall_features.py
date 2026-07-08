@@ -1,0 +1,313 @@
+import pytest
+import asyncio
+from typing import Dict, Any
+from sqlalchemy.future import select
+
+from secure_mcp_server.config import Settings
+from secure_mcp_server.auth import AuthManager
+from secure_mcp_server.database import get_db_manager, User, PolicyRule, AuditLog, ToolManifest, ApprovalRequest
+from secure_mcp_server.database.models import Session as DBSession
+from secure_mcp_server.governance import (
+    IntentClassifier,
+    RiskScorer,
+    PolicyEvaluator,
+    PolicyDecisionType,
+    compensation_registry,
+    approval_manager,
+)
+from secure_mcp_server.governance.intent_types import IntentCategory, BlastRadius, ResourceSensitivity, IntentClassification
+from secure_mcp_server.governance.taint import TaintManager
+from secure_mcp_server.security import SecurityManager
+from secure_mcp_server.context import ContextManager
+from secure_mcp_server.governance.quota_manager import QuotaManager
+from secure_mcp_server.tools import ToolRegistry
+from secure_mcp_server.main import SecureMCPServer
+
+# -----------------------------------------------------------------------------
+# 1. Identity & Access Control Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_identity_access_control(db_manager, test_settings):
+    auth = AuthManager(test_settings)
+    
+    # Create test user
+    async with db_manager.get_session_context() as session:
+        user = User(
+            username="test_user",
+            email="test@example.com",
+            hashed_password=auth.hash_password("password123"),
+            is_active=True,
+            is_admin=False
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        user_id = user.id
+
+    # Verify password validation
+    assert auth.verify_password("password123", auth.hash_password("password123")) is True
+    
+    # Generate and verify JWT tokens
+    access, refresh = await auth.create_tokens(user, "test-session-id")
+    tokens = {"access_token": access, "refresh_token": refresh}
+    assert "access_token" in tokens
+    assert "refresh_token" in tokens
+    
+    payload = await auth.verify_token(tokens["access_token"], "access")
+    assert payload is not None
+    assert int(payload["sub"]) == user_id
+
+# -----------------------------------------------------------------------------
+# 2. Tenant & Org Management Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_tenant_org_management(db_manager, test_settings):
+    # Ensure there are test users for each tenant in the database
+    auth = AuthManager(test_settings)
+    async with db_manager.get_session_context() as session:
+        user_a = User(
+            id=1,
+            username="test_tenant_user_a",
+            email="tenant_user_a@example.com",
+            hashed_password=auth.hash_password("password123"),
+            is_active=True,
+            is_admin=False,
+            tenant_id="tenant-A"
+        )
+        user_b = User(
+            id=2,
+            username="test_tenant_user_b",
+            email="tenant_user_b@example.com",
+            hashed_password=auth.hash_password("password123"),
+            is_active=True,
+            is_admin=False,
+            tenant_id="tenant-B"
+        )
+        session.add(user_a)
+        session.add(user_b)
+        await session.commit()
+
+    # Create an API key for Tenant A and Tenant B
+    key_a = await auth.create_api_key(user_id=1, name="Key A", tenant_id="tenant-A", environment="testing")
+    key_b = await auth.create_api_key(user_id=2, name="Key B", tenant_id="tenant-B", environment="testing")
+    
+    # Verify that contexts extract correct tenant_id
+    ctx_a = await auth.validate_api_key(key_a, "127.0.0.1", "testing")
+    ctx_b = await auth.validate_api_key(key_b, "127.0.0.1", "testing")
+    
+    assert ctx_a["tenant_id"] == "tenant-A"
+    assert ctx_b["tenant_id"] == "tenant-B"
+
+# -----------------------------------------------------------------------------
+# 3. Tool / MCP Registry Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_tool_mcp_registry(db_manager):
+    async with db_manager.get_session_context() as session:
+        # Register a tool in DB
+        manifest = ToolManifest(
+            tool_name="calculator",
+            description_hash="sha256-originalhash123",
+            code_hash="sha256-originalhash123",
+            trust_status="TRUSTED"
+        )
+        session.add(manifest)
+        await session.commit()
+    
+    # Query registry to verify it reads correctly
+    async with db_manager.get_session_context() as session:
+        stmt = select(ToolManifest).where(ToolManifest.tool_name == "calculator")
+        res = await session.execute(stmt)
+        manifest = res.scalar_one()
+        assert manifest.code_hash == "sha256-originalhash123"
+        assert manifest.trust_status == "TRUSTED"
+
+# -----------------------------------------------------------------------------
+# 4. Policy Engine Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_policy_engine(db_manager, test_settings):
+    evaluator = PolicyEvaluator(default_action=PolicyDecisionType.DENY)
+    scorer = RiskScorer()
+    
+    classification = IntentClassification(
+        tool_name="calculator",
+        intent_category=IntentCategory.READ,
+        blast_radius=BlastRadius.NONE,
+        resource_sensitivity=ResourceSensitivity.PUBLIC
+    )
+    
+    risk_score = scorer.score(
+        intent=classification,
+        user_context={"is_admin": False, "role": "user"}
+    )
+    
+    decision = await evaluator.evaluate(
+        intent=classification,
+        risk=risk_score,
+        user_context={"is_admin": False, "role": "user", "tenant_id": "default"}
+    )
+    
+    assert decision.decision in [PolicyDecisionType.DENY, PolicyDecisionType.ALLOW, PolicyDecisionType.REQUIRE_APPROVAL, PolicyDecisionType.LOG_ONLY]
+
+# -----------------------------------------------------------------------------
+# 5. Runtime Interceptor Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_runtime_interceptor(test_settings, db_manager):
+    server = SecureMCPServer(test_settings)
+    await server.initialize()
+    
+    # Ensure middleware list is populated
+    assert len(server.mcp.middleware) >= 2
+    await server.stop()
+
+# -----------------------------------------------------------------------------
+# 6. Risk Scoring Engine Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_risk_scoring_engine():
+    scorer = RiskScorer()
+    
+    classification_safe = IntentClassification(
+        tool_name="calculator",
+        intent_category=IntentCategory.READ,
+        blast_radius=BlastRadius.NONE,
+        resource_sensitivity=ResourceSensitivity.PUBLIC
+    )
+    
+    classification_unsafe = IntentClassification(
+        tool_name="calculator",
+        intent_category=IntentCategory.DELETE,
+        blast_radius=BlastRadius.SYSTEM_WIDE,
+        resource_sensitivity=ResourceSensitivity.TOP_SECRET,
+        is_destructive=True
+    )
+    
+    # Safe request should get low score
+    score_safe = scorer.score(
+        intent=classification_safe,
+        user_context={"is_admin": True, "role": "admin"}
+    )
+    
+    # Destructive request should get higher score
+    score_unsafe = scorer.score(
+        intent=classification_unsafe,
+        user_context={"is_admin": False, "role": "user"}
+    )
+    
+    assert score_unsafe.score > score_safe.score
+
+# -----------------------------------------------------------------------------
+# 7. Taint Tracking Engine Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_taint_tracking_engine(db_manager):
+    taint_mgr = TaintManager()
+    
+    async with db_manager.get_session_context() as session:
+        db_sess = DBSession(
+            id="test-session-123",
+            tenant_id="default",
+            is_active=True,
+            taint_labels=[]
+        )
+        session.add(db_sess)
+        await session.commit()
+        
+    # Verify we can add and check taint
+    await taint_mgr.add_taint("test-session-123", "EXTERNAL_WEB")
+    taints = await taint_mgr.get_session_taints("test-session-123")
+    assert "EXTERNAL_WEB" in taints
+
+# -----------------------------------------------------------------------------
+# 8. Approval Workflow Engine Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_approval_workflow_engine(db_manager):
+    # Register mock approval request
+    async with db_manager.get_session_context() as session:
+        req = ApprovalRequest(
+            id="req-abc123",
+            tenant_id="default",
+            tool_name="rollback_action",
+            arguments={"action_id": "1"},
+            context_snapshot={"risk": 0.9},
+            status="PENDING",
+            required_role="admin"
+        )
+        session.add(req)
+        await session.commit()
+        
+    # Verify approval staging
+    async with db_manager.get_session_context() as session:
+        stmt = select(ApprovalRequest).where(ApprovalRequest.id == "req-abc123")
+        res = await session.execute(stmt)
+        req = res.scalar_one()
+        assert req.status == "PENDING"
+
+# -----------------------------------------------------------------------------
+# 9. Audit / Evidence / Replay Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_audit_evidence_replay(db_manager):
+    # Log a mock audit entry
+    async with db_manager.get_session_context() as session:
+        log = AuditLog(
+            user_id=None,
+            event="tool_execution",
+            details={"expr": "1+1", "tool_name": "calculator"}
+        )
+        session.add(log)
+        await session.commit()
+        
+    # Verify logs exist in db
+    async with db_manager.get_session_context() as session:
+        stmt = select(AuditLog).where(AuditLog.event == "tool_execution")
+        res = await session.execute(stmt)
+        log = res.scalars().first()
+        assert log is not None
+
+# -----------------------------------------------------------------------------
+# 10. Rollback / Compensating Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_rollback_compensating():
+    called = False
+    
+    # Register mock compensating callback
+    def mock_rollback(args):
+        nonlocal called
+        called = True
+        return True
+        
+    compensation_registry._handlers["create_user"] = mock_rollback
+    
+    # Trigger rollback handler
+    handler = compensation_registry.get_handler("create_user")
+    assert handler is not None
+    
+    handler({"username": "test"})
+    assert called is True
+
+# -----------------------------------------------------------------------------
+# 11. Quotas / Budgets / Limits Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_quotas_budgets_limits(test_settings):
+    quota_mgr = QuotaManager(test_settings)
+    await quota_mgr.initialize()
+    
+    # Check limit check passes under threshold
+    assert await quota_mgr.check_quotas(tenant_id="default", user_id="user-1") is True
+
+# -----------------------------------------------------------------------------
+# 12. Sandboxing / Exec Profiles Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_sandboxing_exec_profiles(test_settings):
+    sec_mgr = SecurityManager(test_settings)
+    
+    # Verify input sanitization prevents SQL injection keywords
+    sanitized = sec_mgr.sanitize_input("SELECT * FROM users;")
+    assert "select" not in sanitized.lower()

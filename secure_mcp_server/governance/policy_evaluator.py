@@ -374,25 +374,25 @@ class PolicyEvaluator:
             # Fallback if DB manager isn't initialized yet
             pass
             
-            # Convert to domain objects
-            rules = []
-            for dbr in db_rules:
-                action_type = PolicyDecisionType.DENY
-                try:
-                    action_type = PolicyDecisionType(dbr.action.lower())
-                except ValueError:
-                    pass
-                    
-                rules.append(PolicyRule(
-                    rule_id=dbr.id,
-                    name=dbr.name,
-                    description=dbr.description or "",
-                    priority=dbr.priority,
-                    conditions=dbr.conditions or {},
-                    action=action_type,
-                    action_params=dbr.action_params or {},
-                    tenant_id=dbr.tenant_id
-                ))
+        # Convert to domain objects
+        rules = []
+        for dbr in db_rules:
+            action_type = PolicyDecisionType.DENY
+            try:
+                action_type = PolicyDecisionType(dbr.action.lower())
+            except ValueError:
+                pass
+                
+            rules.append(PolicyRule(
+                rule_id=dbr.id,
+                name=dbr.name,
+                description=dbr.description or "",
+                priority=dbr.priority,
+                conditions=dbr.conditions or {},
+                action=action_type,
+                action_params=dbr.action_params or {},
+                tenant_id=dbr.tenant_id
+            ))
 
         for rule in rules:
             # Skip rules scoped to a different tenant
