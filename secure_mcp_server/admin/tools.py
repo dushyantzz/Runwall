@@ -15,6 +15,51 @@ from secure_mcp_server.governance import compensation_registry, ToolTrustManager
 logger = structlog.get_logger(__name__)
 
 
+def validate_rego_syntax(rego_content: str) -> Optional[str]:
+    """
+    Validate Rego syntax locally.
+    Returns an error message if invalid, or None if valid.
+    """
+    if not rego_content or not rego_content.strip():
+        return "Rego content is empty"
+        
+    lines = rego_content.splitlines()
+    has_package = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("package "):
+            has_package = True
+            break
+            
+    if not has_package:
+        return "Missing 'package' declaration at the top of the file."
+        
+    stack = []
+    pairs = {
+        '}': '{',
+        ']': '[',
+        ')': '('
+    }
+    for line_num, line in enumerate(lines, 1):
+        if line.strip().startswith("#"):
+            continue
+        for char in line:
+            if char in pairs.values():
+                stack.append((char, line_num))
+            elif char in pairs.keys():
+                if not stack:
+                    return f"Mismatched closing bracket '{char}' at line {line_num}"
+                top, top_line = stack.pop()
+                if top != pairs[char]:
+                    return f"Mismatched bracket '{char}' at line {line_num} (opened with '{top}' at line {top_line})"
+                    
+    if stack:
+        top, top_line = stack.pop()
+        return f"Unclosed bracket '{top}' opened at line {top_line}"
+        
+    return None
+
+
 def _require_admin(request):
     """Ensure the requester is an admin."""
     user_ctx = getattr(request, "user_context", None)
@@ -203,14 +248,17 @@ def register_admin_tools(mcp: FastMCP):
         }
 
     @mcp.tool()
-    async def rollback_action(execution_id: str) -> Dict[str, Any]:
+    async def rollback_action(log_id: str) -> Dict[str, Any]:
         """
         Rollback a previously executed action using its ReversibleExecutionLog ID.
         """
         user_ctx = _require_admin(mcp.current_request)
         user_id = user_ctx.get("user_id")
+        int_user_id = int(user_id) if user_id and user_id.isdigit() else None
         
-        result = await compensation_registry.rollback_execution(execution_id, user_id=user_id)
+        result = await compensation_registry.rollback_execution(log_id, user_id=int_user_id)
+        if not result.get("success", False):
+            raise ValueError(result.get("error", "Rollback failed"))
         return result
 
     @mcp.tool()
@@ -293,14 +341,18 @@ def register_admin_tools(mcp: FastMCP):
         user_id = user_ctx.get("user_id")
         
         if not user_id:
-            return {"success": False, "error": "User ID missing from context"}
+            raise ValueError("User ID missing from context")
+            
+        int_user_id = int(user_id) if user_id and user_id.isdigit() else None
             
         result = await approval_manager.review_request(
             request_id=approval_id,
             decision=decision,
-            reviewer_id=user_id,
+            reviewer_id=int_user_id,
             reason=reason
         )
+        if not result.get("success", False):
+            raise ValueError(result.get("error", "Review failed"))
         return result
 
     @mcp.tool()
@@ -309,6 +361,12 @@ def register_admin_tools(mcp: FastMCP):
         Deploy a new OPA/Rego PolicyBundle version.
         """
         user_ctx = _require_admin(mcp.current_request)
+        
+        # Validate Rego syntax before saving
+        syntax_error = validate_rego_syntax(rego_content)
+        if syntax_error:
+            raise ValueError(f"Invalid OPA/Rego syntax: {syntax_error}")
+            
         tenant_id = user_ctx.get("tenant_id", "default")
         
         async with get_db_manager().get_session_context() as db:

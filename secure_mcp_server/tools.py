@@ -698,7 +698,9 @@ class ToolRegistry:
         sandbox: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Echo tool implementation."""
-        text = args.get("text", "")
+        text = args.get("text")
+        if text is None:
+            raise ValueError("Missing required parameter: text")
         return {
             "echoed_text": text,
             "length": len(text),
@@ -712,7 +714,9 @@ class ToolRegistry:
         sandbox: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Safe calculator tool implementation."""
-        expression = args.get("expression", "")
+        expression = args.get("expression")
+        if expression is None:
+            raise ValueError("Missing required parameter: expression")
         
         try:
             # Safe evaluation using limited namespace
@@ -752,8 +756,12 @@ class ToolRegistry:
         sandbox: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Text processing tool implementation."""
-        text = args.get("text", "")
-        operation = args.get("operation", "uppercase")
+        text = args.get("text")
+        if text is None:
+            raise ValueError("Missing required parameter: text")
+        operation = args.get("operation")
+        if operation is None:
+            raise ValueError("Missing required parameter: operation")
         
         operations = {
             "uppercase": lambda t: t.upper(),

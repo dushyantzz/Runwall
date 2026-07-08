@@ -311,3 +311,31 @@ async def test_sandboxing_exec_profiles(test_settings):
     # Verify input sanitization prevents SQL injection keywords
     sanitized = sec_mgr.sanitize_input("SELECT * FROM users;")
     assert "select" not in sanitized.lower()
+
+
+# -----------------------------------------------------------------------------
+# 13. Additional Production-Grade Tests for Access Control & Input Validations
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_access_control_and_validations(test_settings):
+    sec_mgr = SecurityManager(test_settings)
+    
+    # 1. Access Control: Basic tools must be allowed for anonymous (empty) user context
+    assert sec_mgr.validate_tool_access({}, "echo") is True
+    assert sec_mgr.validate_tool_access(None, "calculator") is True
+    assert sec_mgr.validate_tool_access(None, "ping") is True
+    
+    # 2. Access Control: System/Admin tools must be denied for anonymous / standard users
+    assert sec_mgr.validate_tool_access({}, "system_info") is False
+    assert sec_mgr.validate_tool_access({"is_admin": False}, "system_info") is False
+    assert sec_mgr.validate_tool_access({"is_admin": True}, "system_info") is True
+
+    # 3. Rego Syntax Validator checks
+    from secure_mcp_server.admin.tools import validate_rego_syntax
+    # Missing package
+    assert "Missing 'package'" in validate_rego_syntax("default allow = true")
+    # Mismatched bracket
+    err = validate_rego_syntax("package test\nallow { { }")
+    assert "Mismatched" in err or "Unclosed" in err
+    # Valid syntax
+    assert validate_rego_syntax("package secure_mcp.governance\nallow = true") is None

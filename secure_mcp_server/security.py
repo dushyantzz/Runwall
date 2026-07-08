@@ -112,28 +112,32 @@ class SecurityManager:
     
     def validate_tool_access(self, user_context: Dict[str, Any], tool_name: str) -> bool:
         """Validate if user can access a specific tool."""
-        if not user_context:
-            return False
+        user_context = user_context or {}
         
         # Admin can access all tools
         if user_context.get("is_admin", False):
             return True
         
-        # Check tool-specific permissions
-        user_permissions = user_context.get("permissions", [])
-        
+        # Allow basic utility tools for everyone (including anonymous/unauthenticated users)
+        basic_tools = [
+            "ping", "echo", "calculator", "text_processor", 
+            "secure_hash", "uuid_generator", "datetime_info", "context_summary"
+        ]
+        if tool_name in basic_tools:
+            return True
+            
+        # For non-basic/privileged tools, we require authentication
+        if not user_context:
+            return False
+            
         # System tools require admin access
         admin_only_tools = ["system_info"]
         if tool_name in admin_only_tools:
             return user_context.get("is_admin", False)
-        
-        # Default: allow basic tools for authenticated users
-        basic_tools = [
-            "echo", "calculator", "text_processor", 
-            "secure_hash", "uuid_generator", "datetime_info"
-        ]
-        
-        return tool_name in basic_tools
+            
+        # Check tool-specific permissions
+        user_permissions = user_context.get("permissions", [])
+        return "*" in user_permissions or tool_name in user_permissions
     
     def create_sandbox_context(self) -> Dict[str, Any]:
         """Create a sandboxed execution context for tools."""

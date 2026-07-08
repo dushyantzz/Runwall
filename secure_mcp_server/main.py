@@ -183,7 +183,7 @@ class SecureMCPServer:
             return "pong"
 
         @self.mcp.tool()
-        async def echo(text: str) -> Dict[str, Any]:
+        async def echo(text: Optional[str] = None) -> Dict[str, Any]:
             """Echo back the provided text."""
             return await self.tool_registry.execute_tool(
                 'echo', 
@@ -192,7 +192,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def calculator(expression: str) -> Dict[str, Any]:
+        async def calculator(expression: Optional[str] = None) -> Dict[str, Any]:
             """Perform mathematical calculations safely."""
             return await self.tool_registry.execute_tool(
                 'calculator', 
@@ -201,7 +201,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def text_processor(text: str, operation: str) -> Dict[str, Any]:
+        async def text_processor(text: Optional[str] = None, operation: Optional[str] = None) -> Dict[str, Any]:
             """Process text with various operations."""
             return await self.tool_registry.execute_tool(
                 'text_processor', 
