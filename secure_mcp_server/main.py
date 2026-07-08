@@ -145,8 +145,9 @@ class SecureMCPServer:
                 self.metrics_collector.record_rate_limit_hit()
                 raise Exception("Rate limit exceeded")
             
-            # Input sanitization
-            if hasattr(request, 'params'):
+            # Input sanitization: Only sanitize parameters for tool executions
+            method = getattr(request, 'method', '')
+            if method == 'tools/call' and hasattr(request, 'params'):
                 request.params = self.security_manager.sanitize_input(request.params)
             
             response = await call_next(request)
