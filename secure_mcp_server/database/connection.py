@@ -50,6 +50,34 @@ class DatabaseManager:
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         
+        # Seed default policy rules if table is empty
+        async with self.session_factory() as session:
+            from sqlalchemy import select, func
+            from .models import PolicyRule as DBPolicyRule
+            stmt = select(func.count()).select_from(DBPolicyRule)
+            res = await session.execute(stmt)
+            count = res.scalar()
+            if count == 0:
+                logger.info("Database is empty. Seeding default policy rules.")
+                from secure_mcp_server.governance.policy_evaluator import get_default_policy_rules
+                default_rules = get_default_policy_rules()
+                for r in default_rules:
+                    db_rule = DBPolicyRule(
+                        id=r.rule_id,
+                        name=r.name,
+                        description=r.description,
+                        priority=r.priority,
+                        conditions=r.conditions,
+                        action=r.action.value,
+                        action_params=r.action_params,
+                        is_active=r.is_active,
+                        tenant_id=r.tenant_id or "default",
+                        version=r.version
+                    )
+                    session.add(db_rule)
+                await session.commit()
+                logger.info("Successfully seeded default policy rules.")
+        
         logger.info("Database initialized successfully")
     
     async def cleanup(self):
