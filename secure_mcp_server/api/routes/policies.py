@@ -8,7 +8,7 @@ from secure_mcp_server.database import get_db_manager, PolicyBundle
 
 router = APIRouter()
 
-@router.post("/", status_code=201)
+@router.post("", status_code=201)
 async def deploy_policy(request: PolicyBundleDeployRequest):
     """Deploy a new OPA/Rego PolicyBundle version."""
     tenant_id = "default" # Normally extracted from auth dependency
@@ -37,7 +37,7 @@ async def deploy_policy(request: PolicyBundleDeployRequest):
         
         return {"success": True, "bundle_id": bundle.id, "version": request.version}
 
-@router.get("/")
+@router.get("")
 async def list_policies():
     """List all deployed policy bundles."""
     async with get_db_manager().get_session_context() as db:

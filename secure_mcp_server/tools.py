@@ -725,12 +725,14 @@ class ToolRegistry:
             allowed_names = {
                 "__builtins__": {},
                 "abs": abs, "round": round, "min": min, "max": max,
-                "sum": sum, "pow": pow,
+                "sum": sum, "pow": pow, "int": int, "float": float,
+                "sqrt": math.sqrt, "sin": math.sin, "cos": math.cos,
+                "tan": math.tan, "log": math.log, "exp": math.exp,
                 "math": math
             }
             
-            # Remove dangerous characters
-            safe_chars = set('0123456789+-*/.() abcdefghijklmnopqrstuvwxyz')
+            # Remove dangerous characters (added %, &, |, ^ for bitwise and modulo)
+            safe_chars = set('0123456789+-*/%&|^.() abcdefghijklmnopqrstuvwxyz')
             cleaned_expr = ''.join(c for c in expression.lower() if c in safe_chars)
             
             if not cleaned_expr.strip():

@@ -60,12 +60,8 @@ class SecurityManager:
                 # Remove or escape the dangerous content
                 text = pattern.sub('', text)
         
-        # HTML entity encoding for basic XSS prevention
-        text = text.replace('&', '&amp;')
-        text = text.replace('<', '&lt;')
-        text = text.replace('>', '&gt;')
-        text = text.replace('"', '&quot;')
-        text = text.replace("'", '&#x27;')
+        # HTML entity encoding removed to prevent data mangling in API responses.
+        # Sanitization is kept to dangerous pattern filtering and length limiting.
         
         # Limit length to prevent DoS
         max_length = 10000

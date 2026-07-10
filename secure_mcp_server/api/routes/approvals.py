@@ -7,7 +7,7 @@ from secure_mcp_server.governance import approval_manager
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("")
 async def get_pending_approvals():
     """List all pending approval requests."""
     async with get_db_manager().get_session_context() as db:
