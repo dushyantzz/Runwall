@@ -354,7 +354,9 @@ class PolicyEvaluator:
         matched_rule: Optional[PolicyRule] = None
         matched_rm: Optional[PolicyRuleMatch] = None
         
-        tenant_id = user_context.get("tenant_id", "default")
+        # Normalize tenant_id to fallback to 'default' if None or empty
+        tenant_id = user_context.get("tenant_id") or "default"
+        user_context = {**user_context, "tenant_id": tenant_id}
         
         # Load rules from DB
         db_rules = []
