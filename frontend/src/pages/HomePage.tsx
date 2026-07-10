@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Check, Star, Lock, Database, Play, FileText,
@@ -33,13 +32,11 @@ const testimonials = [
    ════════════════════════════════════════════════════════════ */
 
 export default function HomePage() {
-  const [activeToggle, setActiveToggle] = useState<'human' | 'agent'>('human');
-
   return (
     <div style={{ background: '#000000', color: '#b4b4b4', minHeight: '100vh' }}>
-      <HeroSection activeToggle={activeToggle} setActiveToggle={setActiveToggle} />
+      <HeroSection />
       <FeatureBentoGrid />
-      <BranchingWorkflowSection activeToggle={activeToggle} setActiveToggle={setActiveToggle} />
+      <BranchingWorkflowSection />
       <TestimonialSection />
       <CTASection />
     </div>
@@ -47,13 +44,7 @@ export default function HomePage() {
 }
 
 /* ── 1. HERO SECTION ── */
-function HeroSection({
-  activeToggle: _,
-  setActiveToggle: __
-}: {
-  activeToggle: 'human' | 'agent';
-  setActiveToggle: (val: 'human' | 'agent') => void;
-}) {
+function HeroSection() {
   return (
     <section style={{
       position: 'relative',
@@ -521,14 +512,7 @@ function BentoCard({
   );
 }
 
-/* ── 3. BRANCHING WORKFLOW SECTION ── */
-function BranchingWorkflowSection({
-  activeToggle,
-  setActiveToggle
-}: {
-  activeToggle: 'human' | 'agent';
-  setActiveToggle: (val: 'human' | 'agent') => void;
-}) {
+function BranchingWorkflowSection() {
   const ref = useScrollAnimation();
 
   return (
