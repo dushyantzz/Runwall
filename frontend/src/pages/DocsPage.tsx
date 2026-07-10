@@ -348,7 +348,10 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
   const mcpConfig = `{
   "mcpServers": {
     "runwall": {
-      "url": "https://runwall.onrender.com/sse"
+      "url": "https://runwall.onrender.com/sse",
+      "headers": {
+        "Authorization": "Bearer <your-api-key>"
+      }
     }
   }
 }`;
