@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Body
+from fastapi import APIRouter, HTTPException, Depends, Body, Header
 from sqlalchemy.future import select
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
@@ -90,9 +90,30 @@ async def get_service_accounts():
         ]
 
 @router.get("/identity/keys")
-async def get_api_keys():
+async def get_api_keys(x_user_email: Optional[str] = Header(None)):
     async with get_db_manager().get_session_context() as db:
-        stmt = select(APIKey)
+        if x_user_email:
+            # Get or create user
+            stmt = select(User).where(User.email == x_user_email)
+            res = await db.execute(stmt)
+            user = res.scalar_one_or_none()
+            if not user:
+                username = x_user_email.split('@')[0]
+                user = User(
+                    username=username,
+                    email=x_user_email,
+                    full_name=username,
+                    is_active=True,
+                    is_admin=False
+                )
+                db.add(user)
+                await db.commit()
+                await db.refresh(user)
+            
+            stmt = select(APIKey).where(APIKey.user_id == user.id)
+        else:
+            stmt = select(APIKey)
+            
         res = await db.execute(stmt)
         keys = res.scalars().all()
         return [
@@ -110,12 +131,32 @@ async def get_api_keys():
         ]
 
 @router.post("/identity/keys", status_code=201)
-async def generate_api_key(req: APIKeyCreateRequest):
+async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str] = Header(None)):
     settings = get_settings()
     auth_manager = AuthManager(settings)
     
-    # Verify service account exists
+    # Resolve user
+    user_id = None
     async with get_db_manager().get_session_context() as db:
+        if x_user_email:
+            stmt = select(User).where(User.email == x_user_email)
+            res = await db.execute(stmt)
+            user = res.scalar_one_or_none()
+            if not user:
+                username = x_user_email.split('@')[0]
+                user = User(
+                    username=username,
+                    email=x_user_email,
+                    full_name=username,
+                    is_active=True,
+                    is_admin=False
+                )
+                db.add(user)
+                await db.commit()
+                await db.refresh(user)
+            user_id = user.id
+
+        # Verify service account exists
         stmt = select(ServiceAccount).where(ServiceAccount.id == req.service_account_id)
         res = await db.execute(stmt)
         sa = res.scalar_one_or_none()
@@ -125,6 +166,7 @@ async def generate_api_key(req: APIKeyCreateRequest):
     # Generate API key
     raw_key = await auth_manager.create_api_key(
         name=req.name,
+        user_id=user_id,
         service_account_id=req.service_account_id,
         allowed_ips=req.allowed_ips,
         environment=req.environment

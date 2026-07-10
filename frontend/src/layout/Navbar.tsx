@@ -45,9 +45,13 @@ export default function Navbar() {
   const fetchModalData = async () => {
     setLoading(true);
     try {
+      const headers: Record<string, string> = {};
+      if (user?.email) {
+        headers['X-User-Email'] = user.email;
+      }
       const [saRes, kRes] = await Promise.all([
-        fetch(`${API_BASE}/dashboard/identity/service-accounts`),
-        fetch(`${API_BASE}/dashboard/identity/keys`)
+        fetch(`${API_BASE}/dashboard/identity/service-accounts`, { headers }),
+        fetch(`${API_BASE}/dashboard/identity/keys`, { headers })
       ]);
       if (saRes.ok) setServiceAccounts(await saRes.json());
       if (kRes.ok) setApiKeys(await kRes.json());
@@ -63,9 +67,13 @@ export default function Navbar() {
     if (!newKeyName || !newKeySvcAcct) return;
     setLoading(true);
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (user?.email) {
+        headers['X-User-Email'] = user.email;
+      }
       const res = await fetch(`${API_BASE}/dashboard/identity/keys`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           name: newKeyName,
           service_account_id: parseInt(newKeySvcAcct)
@@ -77,7 +85,7 @@ export default function Navbar() {
         notify('success', 'API Key generated successfully.');
         setNewKeyName('');
         // Re-fetch keys
-        const kRes = await fetch(`${API_BASE}/dashboard/identity/keys`);
+        const kRes = await fetch(`${API_BASE}/dashboard/identity/keys`, { headers });
         if (kRes.ok) setApiKeys(await kRes.json());
       } else {
         notify('error', data.detail || 'Failed to generate API key.');

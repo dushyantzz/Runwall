@@ -93,49 +93,6 @@ function HeroSection({
           Every component built for AI autonomous agents to operate safely end-to-end through CLI and tools.
         </p>
 
-        {/* Cute retro robot */}
-        <div className="animate-fade-up delay-200" style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: 32
-        }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2
-          }}>
-            <div style={{
-              width: 20,
-              height: 6,
-              background: '#777777',
-              borderRadius: '2px 2px 0 0',
-              transform: 'rotate(-10deg) translate(-2px, 0px)'
-            }} />
-            <div style={{
-              background: 'var(--accent)',
-              width: 24,
-              height: 18,
-              borderRadius: '4px',
-              position: 'relative',
-              border: '2px solid #000',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-around',
-              padding: '0 2px'
-            }}>
-              <div style={{ width: 4, height: 4, background: '#000', borderRadius: '50%' }} />
-              <div style={{ width: 4, height: 4, background: '#000', borderRadius: '50%' }} />
-            </div>
-            <div style={{
-              display: 'flex',
-              gap: 4
-            }}>
-              <div style={{ width: 4, height: 6, background: 'var(--accent)', borderRadius: '1px' }} />
-              <div style={{ width: 4, height: 6, background: 'var(--accent)', borderRadius: '1px' }} />
-            </div>
-          </div>
-        </div>
 
         {/* Action Buttons */}
         <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 64 }}>
@@ -719,12 +676,12 @@ function BranchingWorkflowSection({
           {/* Upper Branch components */}
           <div style={{
             position: 'absolute',
-            left: '27%',
-            top: '2%',
+            left: '23%',
+            top: '16%',
             zIndex: 4,
             display: 'flex',
             alignItems: 'center',
-            gap: 12
+            gap: 8
           }}>
             {/* Added Rego Check Pill */}
             <div style={{
@@ -758,39 +715,55 @@ function BranchingWorkflowSection({
               <span style={{ fontSize: 8, opacity: 0.6, border: '1px solid rgba(0,0,0,0.15)', padding: '1px 3px', borderRadius: 2 }}>DRY RUN</span>
               policy-dryrun
             </div>
+          </div>
 
-            {/* Test Passed circle with label */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-              <span style={{ position: 'absolute', bottom: '24px', fontSize: 9, color: '#777', whiteSpace: 'nowrap' }}>Simulation Passed</span>
-              <div style={{
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                background: '#201a08',
-                border: '1.5px solid #FFDA62',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Check size={11} color="#FFDA62" strokeWidth={3} />
-              </div>
+          {/* Test Passed circle with label */}
+          <div style={{
+            position: 'absolute',
+            left: '52%',
+            top: '12%',
+            zIndex: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            <span style={{ fontSize: 9, color: '#777', marginBottom: 4, whiteSpace: 'nowrap' }}>Simulation Passed</span>
+            <div style={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              background: '#201a08',
+              border: '1.5px solid #FFDA62',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Check size={11} color="#FFDA62" strokeWidth={3} />
             </div>
+          </div>
 
-            {/* Push to Prod circle with label */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-              <span style={{ position: 'absolute', bottom: '24px', fontSize: 9, color: '#777', whiteSpace: 'nowrap' }}>Promote to Enforced</span>
-              <div style={{
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                background: '#201a08',
-                border: '1.5px solid #FFDA62',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <ArrowRight size={11} color="#FFDA62" strokeWidth={3} style={{ transform: 'rotate(-45deg)' }} />
-              </div>
+          {/* Push to Prod circle with label */}
+          <div style={{
+            position: 'absolute',
+            left: '70%',
+            top: '38%',
+            zIndex: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            <span style={{ fontSize: 9, color: '#777', marginBottom: 4, whiteSpace: 'nowrap' }}>Promote to Enforced</span>
+            <div style={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              background: '#201a08',
+              border: '1.5px solid #FFDA62',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <ArrowRight size={11} color="#FFDA62" strokeWidth={3} style={{ transform: 'rotate(-45deg)' }} />
             </div>
           </div>
 
@@ -814,12 +787,12 @@ function BranchingWorkflowSection({
 
           <div style={{
             position: 'absolute',
-            left: '25%',
-            bottom: '4%',
+            left: '21%',
+            bottom: '18%',
             zIndex: 4,
             display: 'flex',
             alignItems: 'center',
-            gap: 12
+            gap: 8
           }}>
             {/* Agent call: db_write Pill */}
             <div style={{
@@ -853,40 +826,56 @@ function BranchingWorkflowSection({
               <span style={{ fontSize: 8, opacity: 0.6, border: '1px solid rgba(0,0,0,0.15)', padding: '1px 3px', borderRadius: 2 }}>INTERCEPT</span>
               eval-risk
             </div>
+          </div>
 
-            {/* Test Failed circle with label */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-              <span style={{ position: 'absolute', top: '24px', fontSize: 9, color: '#777', whiteSpace: 'nowrap' }}>Risk Score: 0.95</span>
-              <div style={{
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                background: '#450a0a',
-                border: '1.5px solid #ef4444',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <AlertTriangle size={11} color="#ef4444" strokeWidth={3} />
-              </div>
+          {/* Test Failed circle with label */}
+          <div style={{
+            position: 'absolute',
+            left: '46%',
+            bottom: '14%',
+            zIndex: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            <div style={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              background: '#450a0a',
+              border: '1.5px solid #ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <AlertTriangle size={11} color="#ef4444" strokeWidth={3} />
             </div>
+            <span style={{ fontSize: 9, color: '#777', marginTop: 4, whiteSpace: 'nowrap' }}>Risk Score: 0.95</span>
+          </div>
 
-            {/* Close Branch circle with label */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-              <span style={{ position: 'absolute', top: '24px', fontSize: 9, color: '#777', whiteSpace: 'nowrap' }}>Access Blocked</span>
-              <div style={{
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                background: '#450a0a',
-                border: '1.5px solid #ef4444',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <X size={11} color="#ef4444" strokeWidth={3} />
-              </div>
+          {/* Close Branch circle with label */}
+          <div style={{
+            position: 'absolute',
+            left: '58%',
+            bottom: '36%',
+            zIndex: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            <div style={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              background: '#450a0a',
+              border: '1.5px solid #ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <X size={11} color="#ef4444" strokeWidth={3} />
             </div>
+            <span style={{ fontSize: 9, color: '#777', marginTop: 4, whiteSpace: 'nowrap' }}>Access Blocked</span>
           </div>
 
           {/* Lower Branch 2: taint-lineage */}
@@ -910,12 +899,12 @@ function BranchingWorkflowSection({
 
           <div style={{
             position: 'absolute',
-            left: '62%',
-            bottom: '4%',
+            left: '60%',
+            bottom: '18%',
             zIndex: 4,
             display: 'flex',
             alignItems: 'center',
-            gap: 12
+            gap: 8
           }}>
             {/* Agent call: external_api Pill */}
             <div style={{
@@ -949,74 +938,35 @@ function BranchingWorkflowSection({
               <span style={{ fontSize: 8, opacity: 0.6, border: '1px solid rgba(0,0,0,0.15)', padding: '1px 3px', borderRadius: 2 }}>LINEAGE</span>
               taint-lineage
             </div>
-
-            {/* Taint indicator with label */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-              <span style={{ position: 'absolute', top: '24px', fontSize: 9, color: '#777', whiteSpace: 'nowrap' }}>Redacted Flow</span>
-              <div style={{
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                background: '#0a2f4c',
-                border: '1.5px solid #38bdf8',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Check size={11} color="#38bdf8" strokeWidth={3} />
-              </div>
-            </div>
           </div>
 
-        </div>
-
-        {/* Human Agent Toggle Pill at bottom */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginTop: 40
-        }}>
+          {/* Taint indicator with label */}
           <div style={{
-            display: 'inline-flex',
-            background: '#0f0f0f',
-            border: '1px solid #1c1c1c',
-            borderRadius: '20px',
-            padding: 2,
+            position: 'absolute',
+            left: '84%',
+            bottom: '14%',
+            zIndex: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
           }}>
-            <button
-              onClick={() => setActiveToggle('human')}
-              style={{
-                background: activeToggle === 'human' ? 'var(--accent)' : 'transparent',
-                color: activeToggle === 'human' ? '#000' : '#777',
-                border: 'none',
-                borderRadius: '20px',
-                padding: '4px 14px',
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              HUMAN
-            </button>
-            <button
-              onClick={() => setActiveToggle('agent')}
-              style={{
-                background: activeToggle === 'agent' ? 'var(--accent)' : 'transparent',
-                color: activeToggle === 'agent' ? '#000' : '#777',
-                border: 'none',
-                borderRadius: '20px',
-                padding: '4px 14px',
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              AGENT
-            </button>
+            <div style={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              background: '#0a2f4c',
+              border: '1.5px solid #38bdf8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Check size={11} color="#38bdf8" strokeWidth={3} />
+            </div>
+            <span style={{ fontSize: 9, color: '#777', marginTop: 4, whiteSpace: 'nowrap' }}>Redacted Flow</span>
           </div>
+
         </div>
+
       </div>
     </section>
   );
