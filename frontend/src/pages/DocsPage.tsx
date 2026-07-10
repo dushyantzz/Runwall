@@ -480,6 +480,177 @@ async with ClientSession(r, w) as s:
           </tr>
         </tbody>
       </table>
+
+      {/* Step 3: Function Reference */}
+      <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '24px' }}>
+        Step 3 — Runwall MCP Function Inventory & Explanations
+      </h2>
+      <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#b4b4b4', marginBottom: '16px' }}>
+        Runwall MCP exposes administrative tools, utility target functions, prompts, and resources. Here is a complete breakdown of each function and its security purpose:
+      </p>
+
+      {/* Category A: Governance & Administrative Tools */}
+      <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent)', marginTop: '16px', marginBottom: '8px' }}>
+        🔒 Governance & Administrative Tools (Admin Privileges Required)
+      </h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', lineHeight: '1.6', textAlign: 'left', marginBottom: '16px' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #222' }}>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600, width: '220px' }}>Function / Tool Name</th>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600, width: '220px' }}>Why it is there</th>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600 }}>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>manage_policy</code></td>
+            <td>To customize governance rules.</td>
+            <td>Allows admins to perform CRUD operations on execution policies (allow/deny rules) directly through the MCP interface.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>explore_audit_logs</code></td>
+            <td>For compliance and security review.</td>
+            <td>Fetches chronological execution history logs, showing which tools were called, execution duration, and caller identities.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>get_decision_logs</code></td>
+            <td>To inspect policy evaluation context.</td>
+            <td>Retrieves a list of historical policy decisions (ALLOW/DENY/APPROVAL) with complete context snapshots for explanation.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>view_tool_inventory</code></td>
+            <td>To audit registered tool properties.</td>
+            <td>Lists all tools currently registered with the FastMCP server, showing their parameter schemas and metadata.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>rollback_action</code></td>
+            <td>To undo unsafe write operations.</td>
+            <td>Triggers compensating transactions to revert state changes made by modifying tools (uses ReversibleExecutionLog).</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>approve_tool_trust_state</code></td>
+            <td>To verify trust of external tools.</td>
+            <td>Enables administrators to elevate or lower a tool's verification status, bypassing strict runtime checks.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>get_pending_approvals</code></td>
+            <td>For human-in-the-loop workflows.</td>
+            <td>Lists tool calls flagged as high-risk that are waiting for human authorization before they can proceed.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>review_approval</code></td>
+            <td>To authorize flagged tool calls.</td>
+            <td>Lets managers approve or reject a pending tool execution request with a logged justification.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>deploy_policy_version</code></td>
+            <td>To roll out policy changes.</td>
+            <td>Deploys new OPA/Rego policy packages to the policy evaluation engine with custom rollout ratios.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>run_policy_simulation</code></td>
+            <td>To dry-run rules.</td>
+            <td>Evaluates Rego policies against simulated payloads to confirm correctness before deploying them.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Category B: Utility & Standard Tools */}
+      <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent)', marginTop: '24px', marginBottom: '8px' }}>
+        ⚙️ Utility & Playground Tools (Low-Risk Target Tools)
+      </h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', lineHeight: '1.6', textAlign: 'left', marginBottom: '16px' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #222' }}>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600, width: '220px' }}>Function / Tool Name</th>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600, width: '220px' }}>Why it is there</th>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600 }}>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>ping</code></td>
+            <td>For connection keep-alives.</td>
+            <td>Performs a quick server availability check, returning a standard "pong" response.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>echo</code></td>
+            <td>To verify input parameters.</td>
+            <td>Echoes back input strings. Used to check that interceptors are correctly receiving client parameters.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>calculator</code></td>
+            <td>To test input risk scoring.</td>
+            <td>Evaluates math expressions. Used to test how the Risk Engine blocks SQL/system injections inside equations.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>text_processor</code></td>
+            <td>To test basic manipulation.</td>
+            <td>Transforms text (uppercase, word count). Acts as a standard data processing tool for agents.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>secure_hash</code></td>
+            <td>To verify integrity of payloads.</td>
+            <td>Calculates SHA-256 or MD5 hashes of input text to verify data integrity.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>uuid_generator</code></td>
+            <td>To create unique identifiers.</td>
+            <td>Generates UUID v1 or v4 strings for session ids or tracking variables.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>datetime_info</code></td>
+            <td>To provide time context.</td>
+            <td>Returns the current time in ISO or readable string format to assist agent scheduling.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>system_info</code></td>
+            <td>To demonstrate role enforcement.</td>
+            <td>Returns server resource stats. Requires Admin roles, allowing testing of guest-vs-admin permissions.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>context_summary</code></td>
+            <td>To inspect current session state.</td>
+            <td>Fetches session metadata, tenant constraints, and current rate limits for the active agent.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Category C: Prompts & Resources */}
+      <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent)', marginTop: '24px', marginBottom: '8px' }}>
+        📝 Prompts & Resources (Telemetry & Templates)
+      </h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', lineHeight: '1.6', textAlign: 'left' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #222' }}>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600, width: '220px' }}>Function / Resource Name</th>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600, width: '220px' }}>Why it is there</th>
+            <th style={{ padding: '8px', color: '#fff', fontWeight: 600 }}>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>security-audit</code> <span style={{ fontSize: '10px', color: '#888' }}>(Prompt)</span></td>
+            <td>To trigger automated audits.</td>
+            <td>Provides a pre-configured LLM prompt template populated with recent security logs to analyze threat trends.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>performance-analysis</code> <span style={{ fontSize: '10px', color: '#888' }}>(Prompt)</span></td>
+            <td>To analyze performance stats.</td>
+            <td>Provides a prompt template populated with CPU/Memory metrics to analyze performance bottlenecks.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>get_server_config</code> <span style={{ fontSize: '10px', color: '#888' }}>(Resource)</span></td>
+            <td>To read live config parameters.</td>
+            <td>Exposes settings values (timeout, session limit) to the dashboard for system validation.</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '8px', color: '#fff' }}><code>get_metrics</code> <span style={{ fontSize: '10px', color: '#888' }}>(Resource)</span></td>
+            <td>To read real-time telemetry.</td>
+            <td>Exposes live performance metrics (request rates, error counts) for real-time monitoring.</td>
+          </tr>
+        </tbody>
+      </table>
     </article>
   );
 }
