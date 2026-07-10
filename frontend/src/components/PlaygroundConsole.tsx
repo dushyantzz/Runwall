@@ -28,67 +28,6 @@ export default function PlaygroundConsole({ title }: { title: string }) {
   const [newKeySvcAcct, setNewKeySvcAcct] = useState('');
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
 
-  // -------------------------------------------------------------------------
-  // 13. Security Process Card Verification State
-  // -------------------------------------------------------------------------
-  const [testRunning, setTestRunning] = useState(false);
-  const [testResults, setTestResults] = useState<any[] | null>(null);
-  const [overallPassed, setOverallPassed] = useState(0);
-  const [overallTotal, setOverallTotal] = useState(0);
-
-  const handleRunSecurityTests = async () => {
-    setTestRunning(true);
-    const baselineCases = [
-      { id: "identity", name: "Identity & Access Control Check", status: "running", duration_ms: 0, error: null },
-      { id: "tenancy", name: "Multi-Tenant Isolation Check", status: "pending", duration_ms: 0, error: null },
-      { id: "mcp_registry", name: "Tool & MCP Server Registry Check", status: "pending", duration_ms: 0, error: null },
-      { id: "policy_engine", name: "OPA / Rego Policy Check", status: "pending", duration_ms: 0, error: null },
-      { id: "interceptor", name: "Runtime Interceptor Check", status: "pending", duration_ms: 0, error: null },
-      { id: "risk_scoring", name: "Risk Scoring Engine Check", status: "pending", duration_ms: 0, error: null },
-      { id: "taint_tracking", name: "Dynamic Taint Tracking Check", status: "pending", duration_ms: 0, error: null },
-      { id: "approval_workflow", name: "Approval Workflow Engine Check", status: "pending", duration_ms: 0, error: null },
-      { id: "audit_logs", name: "Audit Logging & Evidence Check", status: "pending", duration_ms: 0, error: null },
-      { id: "rollbacks", name: "Rollback & Compensation Check", status: "pending", duration_ms: 0, error: null },
-      { id: "quotas", name: "Adaptive Quotas & Limits Check", status: "pending", duration_ms: 0, error: null },
-      { id: "sandboxing", name: "Sandboxing Execution Containment Check", status: "pending", duration_ms: 0, error: null },
-      { id: "validation", name: "Utility Access Policy Check", status: "pending", duration_ms: 0, error: null }
-    ];
-    setTestResults(baselineCases);
-    
-    try {
-      const res = await fetch(`${API_BASE}/dashboard/tests/run`, { method: 'POST' });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        for (let i = 0; i < data.results.length; i++) {
-          await new Promise(resolve => setTimeout(resolve, 120));
-          setTestResults(prev => {
-            if (!prev) return prev;
-            const updated = [...prev];
-            updated[i] = {
-              ...data.results[i],
-              status: data.results[i].status
-            };
-            if (i + 1 < updated.length) {
-              updated[i + 1] = {
-                ...updated[i + 1],
-                status: 'running'
-              };
-            }
-            return updated;
-          });
-        }
-        setOverallPassed(data.passed);
-        setOverallTotal(data.total);
-        notify('success', `Verification complete. ${data.passed}/${data.total} security checks passed.`);
-      } else {
-        notify('error', 'Security verification failed.');
-      }
-    } catch (err) {
-      notify('error', 'Could not connect to the safeguard agent.');
-    } finally {
-      setTestRunning(false);
-    }
-  };
 
   const fetchIdentityData = async () => {
     setLoading(true);
@@ -585,7 +524,7 @@ allow if {
         )}
 
         {/* -------------------------------------------------------------------
-            0. SECURITY & COMPLIANCE VERIFICATION PROCESS CARD
+            0. HOW TO CONNECT RUNWALL MCP GUIDE
             ------------------------------------------------------------------- */}
         <div style={{
           border: '1px solid #222222',
@@ -595,133 +534,97 @@ allow if {
           marginBottom: 24,
           boxShadow: '0 4px 20px rgba(0,0,0,0.8)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div>
-              <span className="mono-label" style={{ color: 'var(--accent)', fontSize: 10, display: 'block', marginBottom: 4 }}>System Guardrails</span>
-              <h4 style={{ color: '#ffffff', margin: 0, fontSize: 15, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Shield size={16} color="var(--accent)" /> Execution Safeguard Verification Suite
-              </h4>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {testResults && (
-                <span style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  background: overallPassed === overallTotal && overallTotal > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
-                  border: `1px solid ${overallPassed === overallTotal && overallTotal > 0 ? '#10b981' : '#f59e0b'}`,
-                  color: overallPassed === overallTotal && overallTotal > 0 ? '#10b981' : '#f59e0b',
-                  padding: '4px 10px',
-                  borderRadius: 20
-                }}>
-                  {testRunning ? 'Verifying Agents...' : `${overallPassed}/${overallTotal} Checks Passed`}
-                </span>
-              )}
-              
-              <button 
-                onClick={handleRunSecurityTests}
-                disabled={testRunning}
-                className="btn btn-primary"
-                style={{
-                  padding: '6px 14px',
-                  fontSize: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6
-                }}
-              >
-                {testRunning ? (
-                  <>
-                    <RefreshCw size={12} className="animate-spin" /> Verifying...
-                  </>
-                ) : (
-                  <>
-                    <Play size={12} /> Verify Safeguards
-                  </>
-                )}
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <Server size={18} color="var(--accent)" />
+            <h4 style={{ color: '#ffffff', margin: 0, fontSize: 14, fontWeight: 500 }}>
+              How to Connect Runwall MCP to your Agent
+            </h4>
           </div>
-
-          <p style={{ fontSize: 12, color: '#777777', margin: '0 0 16px 0', lineHeight: 1.4 }}>
-            Before assigning execution capabilities to autonomous agents, Runwall enforces boundary tests across all security engines. Run the check suite to verify identity context, OPA policies, and sandboxing limits.
+          
+          <p style={{ fontSize: 12, color: '#888888', margin: '0 0 16px 0', lineHeight: 1.4 }}>
+            Connect this secure governance MCP server to your AI coding environment or custom agent framework.
           </p>
 
-          {/* Verification checklists */}
-          {testResults && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 12,
-              borderTop: '1px solid #1a1a1a',
-              paddingTop: 16,
-              animation: 'fadeIn 0.3s ease-out'
-            }}>
-              {testResults.map(tc => {
-                const isPassed = tc.status === 'passed';
-                const isFailed = tc.status === 'failed';
-                const isRunning = tc.status === 'running';
-                
-                return (
-                  <div key={tc.id} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    background: isRunning ? 'rgba(0,180,216,0.03)' : '#000000',
-                    border: `1px solid ${
-                      isRunning ? 'rgba(0,180,216,0.3)' : 
-                      isPassed ? 'rgba(16,185,129,0.1)' : 
-                      isFailed ? 'rgba(239,68,68,0.3)' : '#111111'
-                    }`,
-                    borderRadius: 6,
-                    fontSize: 12
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-                      {isRunning ? (
-                        <RefreshCw size={12} className="animate-spin" style={{ color: '#00b4d8' }} />
-                      ) : isPassed ? (
-                        <CheckCircle size={12} style={{ color: '#10b981' }} />
-                      ) : isFailed ? (
-                        <AlertTriangle size={12} style={{ color: '#ef4444' }} />
-                      ) : (
-                        <div style={{ width: 12, height: 12, borderRadius: '50%', border: '1px solid #444444' }} />
-                      )}
-                      <span style={{
-                        color: isRunning ? '#ffffff' : isPassed ? '#b4b4b4' : isFailed ? '#ef4444' : '#666666',
-                        fontWeight: isRunning ? 500 : 400,
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden'
-                      }}>
-                        {tc.name}
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {tc.duration_ms > 0 && (
-                        <span style={{ fontSize: 10, color: '#555555', fontFamily: 'monospace' }}>
-                          {tc.duration_ms}ms
-                        </span>
-                      )}
-                      
-                      {isPassed && (
-                        <span style={{ color: '#10b981', fontSize: 10, fontWeight: 600 }}>PASSED</span>
-                      )}
-                      {isFailed && (
-                        <span 
-                          title={tc.error || 'Check failed'}
-                          style={{ color: '#ef4444', fontSize: 10, fontWeight: 600, cursor: 'help', textDecoration: 'underline' }}
-                        >
-                          FAILED
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+            {/* Cursor IDE Integration */}
+            <div style={{ background: '#000000', border: '1px solid #1c1c1c', borderRadius: 6, padding: 16 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: 6 }}>1. Cursor IDE</span>
+              <p style={{ fontSize: 10, color: '#777777', margin: '0 0 10px 0', lineHeight: 1.3 }}>
+                Configure under <strong>Settings &gt; Models &gt; MCP</strong> as a new command tool.
+              </p>
+              <div style={{ position: 'relative' }}>
+                <code style={{ 
+                  fontSize: 9, 
+                  color: '#00b4d8', 
+                  background: '#070707', 
+                  padding: '8px 10px', 
+                  borderRadius: 4, 
+                  display: 'block', 
+                  fontFamily: 'monospace',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                  border: '1px solid #111111'
+                }}>
+                  Type: command<br/>
+                  Cmd: npx -y secure-mcp
+                </code>
+              </div>
             </div>
-          )}
+
+            {/* Claude Desktop Integration */}
+            <div style={{ background: '#000000', border: '1px solid #1c1c1c', borderRadius: 6, padding: 16 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: 6 }}>2. Claude Desktop</span>
+              <p style={{ fontSize: 10, color: '#777777', margin: '0 0 10px 0', lineHeight: 1.3 }}>
+                Add to your global <code>claude_desktop_config.json</code> under the <code>mcpServers</code> section.
+              </p>
+              <div style={{ position: 'relative' }}>
+                <code style={{ 
+                  fontSize: 9, 
+                  color: '#00b4d8', 
+                  background: '#070707', 
+                  padding: '8px 10px', 
+                  borderRadius: 4, 
+                  display: 'block', 
+                  fontFamily: 'monospace',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                  border: '1px solid #111111'
+                }}>
+                  "secure-mcp": &#123;<br/>
+                  &nbsp;&nbsp;"command": "npx",<br/>
+                  &nbsp;&nbsp;"args": ["-y", "secure-mcp"]<br/>
+                  &#125;
+                </code>
+              </div>
+            </div>
+
+            {/* Python / Node Agents */}
+            <div style={{ background: '#000000', border: '1px solid #1c1c1c', borderRadius: 6, padding: 16 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: 6 }}>3. Custom AI Agents</span>
+              <p style={{ fontSize: 10, color: '#777777', margin: '0 0 10px 0', lineHeight: 1.3 }}>
+                Connect programmatically using the official Python SDK client session.
+              </p>
+              <div style={{ position: 'relative' }}>
+                <code style={{ 
+                  fontSize: 9, 
+                  color: '#00b4d8', 
+                  background: '#070707', 
+                  padding: '8px 10px', 
+                  borderRadius: 4, 
+                  display: 'block', 
+                  fontFamily: 'monospace',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                  border: '1px solid #111111'
+                }}>
+                  from mcp import ClientSession<br/>
+                  # Wrap connection stream<br/>
+                  async with ClientSession(read, write) as session:<br/>
+                  &nbsp;&nbsp;await session.initialize()
+                </code>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* -------------------------------------------------------------------
