@@ -35,8 +35,7 @@ interface DocSection {
 
 const CATEGORIES = [
   { id: 'getting-started', label: 'Getting Started' },
-  { id: 'features', label: 'Core Features' },
-  { id: 'api-config', label: 'APIs & Configuration' }
+  { id: 'features', label: 'Core Features' }
 ];
 
 export default function DocsPage() {
@@ -45,8 +44,7 @@ export default function DocsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     'getting-started': true,
-    'features': true,
-    'api-config': true
+    'features': true
   });
 
   const toggleCategory = (catId: string) => {
@@ -89,20 +87,7 @@ export default function DocsPage() {
     { id: 'audit-evidence-replay', title: 'Audit / Evidence / Replay', icon: ClipboardList, category: 'features', component: <AuditEvidenceReplay /> },
     { id: 'rollback-compensating', title: 'Rollback / Compensating', icon: RotateCcw, category: 'features', component: <RollbackCompensating /> },
     { id: 'quotas-budgets-rate-limits', title: 'Quotas / Budgets / Limits', icon: Gauge, category: 'features', component: <QuotasBudgetsRateLimits /> },
-    { id: 'sandboxing-execution-profiles', title: 'Sandboxing / Exec Profiles', icon: Box, category: 'features', component: <SandboxingExecutionProfiles /> },
-    // APIs & Config
-    {
-      id: 'server-configuration',
-      title: 'Server Configuration',
-      category: 'api-config',
-      component: <ServerConfigurationDoc onCopy={copyToClipboard} />
-    },
-    {
-      id: 'rest-api',
-      title: 'REST API Control Plane',
-      category: 'api-config',
-      component: <RestApiDoc onCopy={copyToClipboard} />
-    }
+    { id: 'sandboxing-execution-profiles', title: 'Sandboxing / Exec Profiles', icon: Box, category: 'features', component: <SandboxingExecutionProfiles /> }
   ];
 
   const activeDoc = docSections.find(d => d.id === pageId) || docSections[0];
