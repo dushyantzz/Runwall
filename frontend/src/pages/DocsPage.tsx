@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   BookOpen, ChevronRight, ChevronDown, Search,
-  Copy, Info,
+  Info,
   Fingerprint, Building2, Puzzle, FileCode2, Radio, BarChart3,
   Route, GitBranch, ClipboardList, RotateCcw, Gauge, Box
 } from 'lucide-react';
