@@ -354,13 +354,6 @@ function IntroductionDoc() {
 
 /* ── B. QUICK START DOC ── */
 function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
-  const mcpConfigCloud = `{
-  "mcpServers": {
-    "runwall": {
-      "url": "https://runwall.onrender.com/sse"
-    }
-  }
-}`;
 
   return (
     <article style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} id="quickstart">
@@ -378,31 +371,76 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
         Configure the Runwall gateway and hook it up to your favorite AI agent clients in seconds.
       </p>
 
-      {/* Step 1: Cloud Connection */}
+      {/* Step 1: Connect to Secure Gateway */}
       <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
-        Step 1 — Connect to Secure Cloud Gateway (Railway)
+        Step 1 — Connect your Client to Runwall MCP Server
       </h2>
-      <p>
-        Add our secure execution gateway config block to your client's MCP configuration settings file:
+      <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#b4b4b4' }}>
+        Choose your environment below to connect your agent client to the secure Runwall governance layer:
       </p>
 
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={() => onCopy(mcpConfigCloud)}
-          style={{
-            position: 'absolute', right: '12px', top: '12px',
-            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
-            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer'
-          }}
-        >
-          <Copy size={12} style={{ marginRight: '4px' }} /> Copy Config
-        </button>
-        <pre style={{
-          background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
-          padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
-        }}>
-          <code>{mcpConfigCloud}</code>
-        </pre>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginTop: '8px' }}>
+        {/* Cursor IDE */}
+        <div style={{ background: '#080808', border: '1px solid #1c1c1c', borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <h4 style={{ color: '#ffffff', margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600 }}>1. Cursor IDE</h4>
+            <p style={{ fontSize: '12px', color: '#888888', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Add a new command tool under <strong>Settings &gt; Models &gt; MCP</strong> to protect your active workspace.
+            </p>
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#555555', fontFamily: 'monospace' }}>CONFIG TYPE: COMMAND</span>
+              <button onClick={() => onCopy("npx -y secure-mcp")} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '11px', cursor: 'pointer', padding: 0 }}>Copy Command</button>
+            </div>
+            <pre style={{ background: '#020202', border: '1px solid #111111', borderRadius: '4px', padding: '10px', margin: 0, fontSize: '11px', color: '#00b4d8', fontFamily: 'monospace' }}>
+              npx -y secure-mcp
+            </pre>
+          </div>
+        </div>
+
+        {/* Claude Desktop */}
+        <div style={{ background: '#080808', border: '1px solid #1c1c1c', borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <h4 style={{ color: '#ffffff', margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600 }}>2. Claude Desktop</h4>
+            <p style={{ fontSize: '12px', color: '#888888', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Paste the following configuration chunk into your global <code>claude_desktop_config.json</code> server settings block.
+            </p>
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#555555', fontFamily: 'monospace' }}>JSON SERVER BLOCK</span>
+              <button onClick={() => onCopy(JSON.stringify({"secure-mcp": {"command": "npx", "args": ["-y", "secure-mcp"]}}, null, 2))} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '11px', cursor: 'pointer', padding: 0 }}>Copy JSON</button>
+            </div>
+            <pre style={{ background: '#020202', border: '1px solid #111111', borderRadius: '4px', padding: '10px', margin: 0, fontSize: '10px', color: '#00b4d8', fontFamily: 'monospace', whiteSpace: 'pre' }}>
+{`"secure-mcp": {
+  "command": "npx",
+  "args": ["-y", "secure-mcp"]
+}`}
+            </pre>
+          </div>
+        </div>
+
+        {/* Custom AI Agents */}
+        <div style={{ background: '#080808', border: '1px solid #1c1c1c', borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <h4 style={{ color: '#ffffff', margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600 }}>3. Custom AI Agents</h4>
+            <p style={{ fontSize: '12px', color: '#888888', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+              Connect programmatically using Python SDK's standard client session to secure custom agents.
+            </p>
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#555555', fontFamily: 'monospace' }}>PYTHON SDK IMPLEMENTATION</span>
+              <button onClick={() => onCopy("from mcp import ClientSession\nasync with ClientSession(read, write) as session:\n    await session.initialize()")} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '11px', cursor: 'pointer', padding: 0 }}>Copy Python</button>
+            </div>
+            <pre style={{ background: '#020202', border: '1px solid #111111', borderRadius: '4px', padding: '10px', margin: 0, fontSize: '9px', color: '#00b4d8', fontFamily: 'monospace', whiteSpace: 'pre' }}>
+{`from mcp import ClientSession
+async with ClientSession(r, w) as s:
+    await s.initialize()`}
+            </pre>
+          </div>
+        </div>
       </div>
 
       {/* Step 2: Configuration Paths */}

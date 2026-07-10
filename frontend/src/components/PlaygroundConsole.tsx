@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Fingerprint, Key, Users, Shield, ShieldAlert, ShieldCheck, 
+  Users, Shield, ShieldAlert, ShieldCheck, 
   Play, RefreshCw, AlertTriangle, CheckCircle, 
   Plus, Settings, Database, Clock, Server, Activity
 } from 'lucide-react';
@@ -22,53 +22,14 @@ export default function PlaygroundConsole({ title }: { title: string }) {
   // 1. Identity & Access Control State
   // -------------------------------------------------------------------------
   const [users, setUsers] = useState<any[]>([]);
-  const [serviceAccounts, setServiceAccounts] = useState<any[]>([]);
-  const [apiKeys, setApiKeys] = useState<any[]>([]);
-  const [newKeyName, setNewKeyName] = useState('');
-  const [newKeySvcAcct, setNewKeySvcAcct] = useState('');
-  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
-
 
   const fetchIdentityData = async () => {
     setLoading(true);
     try {
       const uRes = await fetch(`${API_BASE}/dashboard/identity/users`);
-      const saRes = await fetch(`${API_BASE}/dashboard/identity/service-accounts`);
-      const kRes = await fetch(`${API_BASE}/dashboard/identity/keys`);
       if (uRes.ok) setUsers(await uRes.json());
-      if (saRes.ok) setServiceAccounts(await saRes.json());
-      if (kRes.ok) setApiKeys(await kRes.json());
     } catch (err: any) {
       setError('Could not connect to FastAPI server. Please ensure the backend is running.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGenerateKey = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newKeyName || !newKeySvcAcct) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/dashboard/identity/keys`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newKeyName,
-          service_account_id: parseInt(newKeySvcAcct)
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setGeneratedKey(data.api_key);
-        notify('success', 'API Key generated successfully.');
-        setNewKeyName('');
-        fetchIdentityData();
-      } else {
-        notify('error', data.detail || 'Failed to generate API key.');
-      }
-    } catch (err) {
-      notify('error', 'Network error generating API key.');
     } finally {
       setLoading(false);
     }
@@ -523,183 +484,13 @@ allow if {
           </div>
         )}
 
-        {/* -------------------------------------------------------------------
-            0. HOW TO CONNECT RUNWALL MCP GUIDE
-            ------------------------------------------------------------------- */}
-        <div style={{
-          border: '1px solid #222222',
-          borderRadius: 8,
-          padding: 20,
-          background: 'linear-gradient(135deg, #090909 0%, #030303 100%)',
-          marginBottom: 24,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.8)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <Server size={18} color="var(--accent)" />
-            <h4 style={{ color: '#ffffff', margin: 0, fontSize: 14, fontWeight: 500 }}>
-              How to Connect Runwall MCP to your Agent
-            </h4>
-          </div>
-          
-          <p style={{ fontSize: 12, color: '#888888', margin: '0 0 16px 0', lineHeight: 1.4 }}>
-            Connect this secure governance MCP server to your AI coding environment or custom agent framework.
-          </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-            {/* Cursor IDE Integration */}
-            <div style={{ background: '#000000', border: '1px solid #1c1c1c', borderRadius: 6, padding: 16 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: 6 }}>1. Cursor IDE</span>
-              <p style={{ fontSize: 10, color: '#777777', margin: '0 0 10px 0', lineHeight: 1.3 }}>
-                Configure under <strong>Settings &gt; Models &gt; MCP</strong> as a new command tool.
-              </p>
-              <div style={{ position: 'relative' }}>
-                <code style={{ 
-                  fontSize: 9, 
-                  color: '#00b4d8', 
-                  background: '#070707', 
-                  padding: '8px 10px', 
-                  borderRadius: 4, 
-                  display: 'block', 
-                  fontFamily: 'monospace',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                  border: '1px solid #111111'
-                }}>
-                  Type: command<br/>
-                  Cmd: npx -y secure-mcp
-                </code>
-              </div>
-            </div>
-
-            {/* Claude Desktop Integration */}
-            <div style={{ background: '#000000', border: '1px solid #1c1c1c', borderRadius: 6, padding: 16 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: 6 }}>2. Claude Desktop</span>
-              <p style={{ fontSize: 10, color: '#777777', margin: '0 0 10px 0', lineHeight: 1.3 }}>
-                Add to your global <code>claude_desktop_config.json</code> under the <code>mcpServers</code> section.
-              </p>
-              <div style={{ position: 'relative' }}>
-                <code style={{ 
-                  fontSize: 9, 
-                  color: '#00b4d8', 
-                  background: '#070707', 
-                  padding: '8px 10px', 
-                  borderRadius: 4, 
-                  display: 'block', 
-                  fontFamily: 'monospace',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                  border: '1px solid #111111'
-                }}>
-                  "secure-mcp": &#123;<br/>
-                  &nbsp;&nbsp;"command": "npx",<br/>
-                  &nbsp;&nbsp;"args": ["-y", "secure-mcp"]<br/>
-                  &#125;
-                </code>
-              </div>
-            </div>
-
-            {/* Python / Node Agents */}
-            <div style={{ background: '#000000', border: '1px solid #1c1c1c', borderRadius: 6, padding: 16 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: 6 }}>3. Custom AI Agents</span>
-              <p style={{ fontSize: 10, color: '#777777', margin: '0 0 10px 0', lineHeight: 1.3 }}>
-                Connect programmatically using the official Python SDK client session.
-              </p>
-              <div style={{ position: 'relative' }}>
-                <code style={{ 
-                  fontSize: 9, 
-                  color: '#00b4d8', 
-                  background: '#070707', 
-                  padding: '8px 10px', 
-                  borderRadius: 4, 
-                  display: 'block', 
-                  fontFamily: 'monospace',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                  border: '1px solid #111111'
-                }}>
-                  from mcp import ClientSession<br/>
-                  # Wrap connection stream<br/>
-                  async with ClientSession(read, write) as session:<br/>
-                  &nbsp;&nbsp;await session.initialize()
-                </code>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* -------------------------------------------------------------------
             1. IDENTITY & ACCESS CONTROL
             ------------------------------------------------------------------- */}
         {title === 'Identity & Access Control' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-              {/* Form block */}
-              <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
-                <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                  <Key size={14} color="var(--accent)" /> Generate Enterprise API Key
-                </h4>
-                <form onSubmit={handleGenerateKey} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, color: '#777777', marginBottom: 4 }}>Key Label Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. SalesSyncAgentKey" 
-                      value={newKeyName} 
-                      onChange={e => setNewKeyName(e.target.value)}
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#ffffff' }}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, color: '#777777', marginBottom: 4 }}>Target Service Account</label>
-                    <select 
-                      value={newKeySvcAcct} 
-                      onChange={e => setNewKeySvcAcct(e.target.value)}
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#ffffff' }}
-                      required
-                    >
-                      <option value="">-- Select Account --</option>
-                      {serviceAccounts.map(sa => (
-                        <option key={sa.id} value={sa.id}>{sa.name} (Tenant: {sa.tenant_id})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '10px 0', fontSize: 13 }} disabled={loading}>
-                    Generate Token
-                  </button>
-                </form>
-
-                {generatedKey && (
-                  <div style={{ marginTop: 16, border: '1px dashed #10b981', borderRadius: 6, padding: 12, background: 'rgba(16,185,129,0.03)' }}>
-                    <span style={{ fontSize: 10, color: '#10b981', display: 'block', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Secret API Key Generated</span>
-                    <code style={{ fontSize: 11, wordBreak: 'break-all', color: '#ffffff' }}>{generatedKey}</code>
-                    <p style={{ fontSize: 10, color: '#777777', margin: '6px 0 0 0' }}>Make sure to copy this token now. It will not be shown again.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* API Keys list */}
-              <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000', display: 'flex', flexDirection: 'column' }}>
-                <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                  <Fingerprint size={14} color="var(--accent)" /> Active API Keys
-                </h4>
-                <div style={{ flex: 1, overflowY: 'auto', maxHeight: 220 }}>
-                  {apiKeys.length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 20 }}>No API Keys generated yet.</div>
-                  ) : (
-                    apiKeys.map(k => (
-                      <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #333333' }}>
-                        <div>
-                          <div style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>{k.name}</div>
-                          <div style={{ fontSize: 10, color: '#777777' }}>Prefix: <code>{k.prefix}</code> • Env: {k.environment}</div>
-                        </div>
-                        <span style={{ fontSize: 9, background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>ACTIVE</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
 
             {/* Users / Identities list */}
             <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
