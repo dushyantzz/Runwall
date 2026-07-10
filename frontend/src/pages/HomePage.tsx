@@ -20,6 +20,7 @@ export default function HomePage() {
       <HeroSection />
       <FeatureBentoGrid />
       <BranchingWorkflowSection />
+      <PricingSection />
       <CTASection />
     </div>
   );
@@ -934,6 +935,213 @@ function BranchingWorkflowSection() {
         </div>
 
       </div>
+    </section>
+  );
+}
+
+
+/* ── 5. PRICING SECTION ── */
+function PricingSection() {
+  const ref = useScrollAnimation();
+
+  return (
+    <section className="section section-border-top" ref={ref} style={{ background: '#000000', paddingBottom: 96 }}>
+      <div className="container">
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>TRANSPARENT PLANS</span>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 300, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 16 }}>
+            Simple, Scale-Ready Pricing
+          </h2>
+          <p style={{ color: '#777777', fontSize: 14, maxWidth: 500, margin: '0 auto', lineHeight: 1.6 }}>
+            Runwall secures agent tool calls on any budget. Start securing integrations for free, then upgrade as you scale.
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 24,
+          maxWidth: 960,
+          margin: '0 auto'
+        }} className="pricing-grid">
+          {/* Plan 1: Free */}
+          <div style={{
+            background: '#040404',
+            border: '1px solid #1c1c1c',
+            borderRadius: '8px',
+            padding: '40px 32px',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative'
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 8 }}>Free</h3>
+            <p style={{ fontSize: '12px', color: '#777', marginBottom: 24, minHeight: 32 }}>Best for testing and local agent development workflows.</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 28 }}>
+              <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>$0</span>
+              <span style={{ fontSize: '12px', color: '#777' }}>/ month</span>
+            </div>
+            
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: 12, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                <strong>15 requests / week</strong>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                60 RPM rate limit
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="#333" style={{ opacity: 0.5 }} />
+                <span style={{ color: '#555' }}>No custom OPA policies</span>
+              </li>
+            </ul>
+
+            <Link to="/signup" style={{
+              textAlign: 'center',
+              background: 'transparent',
+              color: '#fff',
+              border: '1px solid #333',
+              borderRadius: '6px',
+              padding: '10px 16px',
+              fontSize: '13px',
+              fontWeight: 600,
+              textDecoration: 'none',
+              transition: 'all 0.2s ease'
+            }}>
+              Get Started Free
+            </Link>
+          </div>
+
+          {/* Plan 2: Pro */}
+          <div style={{
+            background: '#070707',
+            border: '1px solid var(--accent)',
+            borderRadius: '8px',
+            padding: '40px 32px',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            boxShadow: '0 0 16px rgba(255, 218, 98, 0.05)'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              background: 'var(--accent)',
+              color: '#000',
+              fontSize: '9px',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '12px',
+              fontFamily: 'var(--font-mono)'
+            }}>
+              POPULAR
+            </div>
+            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 8 }}>Pro</h3>
+            <p style={{ fontSize: '12px', color: '#777', marginBottom: 24, minHeight: 32 }}>Designed for production autonomous agent applications.</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 28 }}>
+              <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>$7</span>
+              <span style={{ fontSize: '12px', color: '#777' }}>/ month</span>
+            </div>
+            
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: 12, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                <strong>2,000 requests / month</strong>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                500 RPM rate limit
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                Custom OPA policy engine
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                Email support
+              </li>
+            </ul>
+
+            <Link to="/signup" style={{
+              textAlign: 'center',
+              background: 'var(--accent)',
+              color: '#000',
+              borderRadius: '6px',
+              padding: '10px 16px',
+              fontSize: '13px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              transition: 'opacity 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              Go Pro
+            </Link>
+          </div>
+
+          {/* Plan 3: Enterprise */}
+          <div style={{
+            background: '#040404',
+            border: '1px solid #1c1c1c',
+            borderRadius: '8px',
+            padding: '40px 32px',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative'
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 8 }}>Enterprise</h3>
+            <p style={{ fontSize: '12px', color: '#777', marginBottom: 24, minHeight: 32 }}>Custom setups, SLA, and isolated governance clusters.</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 28 }}>
+              <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>Custom</span>
+            </div>
+            
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: 12, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                <strong>Custom limits & volume</strong>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                Unlimited RPM / Dedicated nodes
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                24/7 Dedicated Slack support
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={14} color="var(--accent)" />
+                SLA & compliance reporting
+              </li>
+            </ul>
+
+            <Link to="/contact" style={{
+              textAlign: 'center',
+              background: 'transparent',
+              color: '#fff',
+              border: '1px solid #333',
+              borderRadius: '6px',
+              padding: '10px 16px',
+              fontSize: '13px',
+              fontWeight: 600,
+              textDecoration: 'none',
+              transition: 'all 0.2s ease'
+            }}>
+              Contact Sales
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .pricing-grid {
+            grid-template-columns: 1fr !important;
+            padding: 0 16px;
+          }
+        }
+      `}</style>
     </section>
   );
 }
