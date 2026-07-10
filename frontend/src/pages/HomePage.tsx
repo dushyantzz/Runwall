@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, Check, Star, Lock, Database, Play, FileText,
+  ArrowRight, Check, Lock, Database, Play, FileText,
   Clock, AlertTriangle, ArrowUpRight, X
 } from 'lucide-react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
@@ -9,23 +9,6 @@ import { useScrollAnimation } from '../hooks/useScrollAnimation';
    DATA
    ════════════════════════════════════════════════════════════ */
 
-const testimonials = [
-  {
-    quote: "Runwall gave us the confidence to deploy autonomous agents in production. The policy engine alone saved us months of custom development.",
-    author: "Sarah Chen",
-    role: "VP of Engineering, Meridian AI",
-  },
-  {
-    quote: "The audit trail and replay capabilities are exactly what our compliance team needed. We passed our SOC 2 audit with flying colors.",
-    author: "Marcus Rivera",
-    role: "CISO, Nexus Financial",
-  },
-  {
-    quote: "Runtime interception with sub-millisecond overhead. We process 50M agent actions daily without breaking a sweat.",
-    author: "Dr. Priya Patel",
-    role: "CTO, Autonomous Systems Corp",
-  },
-];
 
 /* ════════════════════════════════════════════════════════════
    COMPONENT
@@ -37,7 +20,6 @@ export default function HomePage() {
       <HeroSection />
       <FeatureBentoGrid />
       <BranchingWorkflowSection />
-      <TestimonialSection />
       <CTASection />
     </div>
   );
@@ -952,60 +934,6 @@ function BranchingWorkflowSection() {
         </div>
 
       </div>
-    </section>
-  );
-}
-/* ── 4. TESTIMONIAL SECTION ── */
-function TestimonialSection() {
-  const ref = useScrollAnimation();
-
-  return (
-    <section className="section section-border-top" ref={ref} style={{ background: '#000000', borderBottom: '1px solid #333333' }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>Trusted By Teams</span>
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 300, color: '#ffffff' }}>What engineers are saying</h2>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 16,
-        }}>
-          {testimonials.map((t) => (
-            <div key={t.author} style={{
-              border: '1px solid #333333',
-              borderRadius: 8,
-              padding: '32px 24px',
-              background: '#050505',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 16,
-            }}>
-              <div style={{ display: 'flex', gap: 2 }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={12} fill="var(--accent)" color="var(--accent)" />
-                ))}
-              </div>
-              <p style={{ fontSize: 13, color: '#b4b4b4', lineHeight: 1.6, flex: 1, margin: 0 }}>
-                "{t.quote}"
-              </p>
-              <div style={{ borderTop: '1px solid #333333', paddingTop: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#ffffff' }}>{t.author}</div>
-                <div style={{ fontSize: 11, color: '#777777', fontFamily: 'var(--font-mono)' }}>{t.role}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .container > div:last-child {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }
