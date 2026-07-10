@@ -411,13 +411,14 @@ class AuthManager:
                 result = await db_session.execute(stmt)
                 sa = result.scalar_one_or_none()
                 if sa:
+                    is_sa_admin = "admin" in sa.name.lower()
                     return {
                         "user_id": f"sa_{sa.id}",
                         "username": sa.name,
-                        "is_admin": False,
+                        "is_admin": is_sa_admin,
                         "tenant_id": sa.tenant_id,
-                        "role": "service_account",
-                        "permissions": key_record.permissions,
+                        "role": "admin" if is_sa_admin else "service_account",
+                        "permissions": ["*"] if is_sa_admin else key_record.permissions,
                         "api_key_permissions": key_record.permissions
                     }
             

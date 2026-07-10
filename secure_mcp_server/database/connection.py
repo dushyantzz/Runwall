@@ -96,8 +96,14 @@ class DatabaseManager:
                     description="Production M2M Gateway Account",
                     tenant_id="default"
                 )
+                demo_sa3 = DBServiceAccount(
+                    name="admin-gateway-sa",
+                    description="Admin M2M Service Account with elevated privileges",
+                    tenant_id="default"
+                )
                 session.add(demo_sa1)
                 session.add(demo_sa2)
+                session.add(demo_sa3)
                 await session.commit()
                 logger.info("Successfully seeded default service accounts.")
         
