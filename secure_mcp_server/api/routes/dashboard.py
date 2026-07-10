@@ -380,3 +380,94 @@ async def get_sandbox_profiles():
             "status": "ready"
         }
     ]
+
+
+@router.post("/tests/run")
+async def run_compliance_tests():
+    import time
+    import asyncio
+    import tests.test_runwall_features as trf
+    from secure_mcp_server.database import DatabaseManager, set_db_manager, get_db_manager
+    from secure_mcp_server.config import get_settings
+    
+    settings = get_settings()
+    try:
+        original_db = get_db_manager()
+    except RuntimeError:
+        original_db = None
+    
+    results = []
+    
+    test_cases = [
+        {"id": "identity", "name": "Identity & Access Control Check", "fn": trf.test_identity_access_control, "args": ["db", "settings"]},
+        {"id": "tenancy", "name": "Multi-Tenant Isolation Check", "fn": trf.test_tenant_org_management, "args": ["db", "settings"]},
+        {"id": "mcp_registry", "name": "Tool & MCP Server Registry Check", "fn": trf.test_tool_mcp_registry, "args": ["db"]},
+        {"id": "policy_engine", "name": "OPA / Rego Policy Check", "fn": trf.test_policy_engine, "args": ["db", "settings"]},
+        {"id": "interceptor", "name": "Runtime Interceptor Check", "fn": trf.test_runtime_interceptor, "args": ["settings", "db"]},
+        {"id": "risk_scoring", "name": "Risk Scoring Engine Check", "fn": trf.test_risk_scoring_engine, "args": []},
+        {"id": "taint_tracking", "name": "Dynamic Taint Tracking Check", "fn": trf.test_taint_tracking_engine, "args": ["db"]},
+        {"id": "approval_workflow", "name": "Approval Workflow Engine Check", "fn": trf.test_approval_workflow_engine, "args": ["db"]},
+        {"id": "audit_logs", "name": "Audit Logging & Evidence Check", "fn": trf.test_audit_evidence_replay, "args": ["db"]},
+        {"id": "rollbacks", "name": "Rollback & Compensation Check", "fn": trf.test_rollback_compensating, "args": []},
+        {"id": "quotas", "name": "Adaptive Quotas & Limits Check", "fn": trf.test_quotas_budgets_limits, "args": ["settings"]},
+        {"id": "sandboxing", "name": "Sandboxing Execution Containment Check", "fn": trf.test_sandboxing_exec_profiles, "args": ["settings"]},
+        {"id": "validation", "name": "Utility Access Policy Check", "fn": trf.test_access_control_and_validations, "args": ["settings"]}
+    ]
+    
+    try:
+        for tc in test_cases:
+            start = time.time()
+            # Create a separate, isolated database for each test case
+            case_db = DatabaseManager("sqlite+aiosqlite:///:memory:")
+            await case_db.initialize()
+            set_db_manager(case_db)
+            
+            try:
+                # Build test args
+                args = []
+                for arg_name in tc["args"]:
+                    if arg_name == "db":
+                        args.append(case_db)
+                    elif arg_name == "settings":
+                        args.append(settings)
+                
+                # Execute test function
+                if asyncio.iscoroutinefunction(tc["fn"]):
+                    await tc["fn"](*args)
+                else:
+                    tc["fn"](*args)
+                    
+                results.append({
+                    "id": tc["id"],
+                    "name": tc["name"],
+                    "status": "passed",
+                    "duration_ms": int((time.time() - start) * 1000),
+                    "error": None
+                })
+            except Exception as e:
+                import traceback
+                error_trace = traceback.format_exc()
+                logger.error("Test case failed during execution", test_id=tc["id"], error=str(e), traceback=error_trace)
+                results.append({
+                    "id": tc["id"],
+                    "name": tc["name"],
+                    "status": "failed",
+                    "duration_ms": int((time.time() - start) * 1000),
+                    "error": str(e)
+                })
+            finally:
+                # Cleanup the case database
+                await case_db.cleanup()
+    finally:
+        # Restore global db manager
+        set_db_manager(original_db)
+        
+    passed_count = sum(1 for r in results if r["status"] == "passed")
+    return {
+        "success": True,
+        "results": results,
+        "total": len(results),
+        "passed": passed_count,
+        "failed": len(results) - passed_count,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
