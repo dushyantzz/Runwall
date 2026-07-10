@@ -77,6 +77,29 @@ class DatabaseManager:
                     session.add(db_rule)
                 await session.commit()
                 logger.info("Successfully seeded default policy rules.")
+
+        # Seed default service accounts if table is empty
+        async with self.session_factory() as session:
+            from .models import ServiceAccount as DBServiceAccount
+            stmt = select(func.count()).select_from(DBServiceAccount)
+            res = await session.execute(stmt)
+            count = res.scalar()
+            if count == 0:
+                logger.info("Database is empty. Seeding default service accounts.")
+                demo_sa1 = DBServiceAccount(
+                    name="default-agent-sa",
+                    description="Default Service Account for Automated Agents",
+                    tenant_id="default"
+                )
+                demo_sa2 = DBServiceAccount(
+                    name="production-gateway-sa",
+                    description="Production M2M Gateway Account",
+                    tenant_id="default"
+                )
+                session.add(demo_sa1)
+                session.add(demo_sa2)
+                await session.commit()
+                logger.info("Successfully seeded default service accounts.")
         
         logger.info("Database initialized successfully")
     
