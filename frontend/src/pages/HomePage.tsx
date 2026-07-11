@@ -33,7 +33,7 @@ function HeroSection() {
       position: 'relative',
       overflow: 'hidden',
       paddingTop: 160,
-      paddingBottom: 100,
+      paddingBottom: 0,
       borderBottom: '1px solid #333333'
     }}>
       {/* Grid overlay */}
@@ -69,7 +69,7 @@ function HeroSection() {
 
 
         {/* Action Buttons */}
-        <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 64 }}>
+        <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 48 }}>
           <Link to="/signup" className="btn-trendy-primary">
             Start Building Today
           </Link>
@@ -77,7 +77,32 @@ function HeroSection() {
             Read Docs
           </Link>
         </div>
+      </div>
 
+      {/* Compatibility Ticker */}
+      <div className="ticker-container">
+        <div className="ticker-title">Works perfectly with</div>
+        <div className="ticker-wrap">
+          <div className="ticker-move">
+            <span className="ticker-item">🤖 Copilot</span>
+            <span className="ticker-item">⚡ Codex</span>
+            <span className="ticker-item">💻 Cline</span>
+            <span className="ticker-item">🌀 Windsurf</span>
+            <span className="ticker-item">🪐 Google Antigravity</span>
+            <span className="ticker-item">👻 Kiro</span>
+            <span className="ticker-item">🛠️ Trae</span>
+            <span className="ticker-item">🔍 Qodo</span>
+            {/* Duplicated for seamless infinite loop */}
+            <span className="ticker-item">🤖 Copilot</span>
+            <span className="ticker-item">⚡ Codex</span>
+            <span className="ticker-item">💻 Cline</span>
+            <span className="ticker-item">🌀 Windsurf</span>
+            <span className="ticker-item">🪐 Google Antigravity</span>
+            <span className="ticker-item">👻 Kiro</span>
+            <span className="ticker-item">🛠️ Trae</span>
+            <span className="ticker-item">🔍 Qodo</span>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -926,145 +951,205 @@ function PricingSection() {
           </p>
         </div>
 
+        {/* InsForge-Style Unified Pricing Container */}
         <div style={{
+          maxWidth: 960,
+          margin: '0 auto',
+          background: '#040404',
+          border: '1px solid #141414',
+          borderRadius: '8px',
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 24,
-          maxWidth: 960,
-          margin: '0 auto'
+          overflow: 'hidden'
         }} className="pricing-grid">
+
           {/* Plan 1: Free */}
           <div style={{
-            background: '#040404',
-            border: '1px solid #1c1c1c',
-            borderRadius: '8px',
-            padding: '40px 32px',
+            padding: '48px 32px',
             display: 'flex',
             flexDirection: 'column',
-            position: 'relative'
-          }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 8 }}>Free</h3>
-            <p style={{ fontSize: '12px', color: '#777', marginBottom: 24, minHeight: 32 }}>Best for testing and local agent development workflows.</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 28 }}>
-              <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>$0</span>
-              <span style={{ fontSize: '12px', color: '#777' }}>/ month</span>
+            borderRight: '1px solid #141414'
+          }} className="pricing-col">
+            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Free</h3>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
+              <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>$0</span>
+              <span style={{ fontSize: '13px', color: '#34d399', fontWeight: 500 }}>/ month</span>
             </div>
+            <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
+              For prototypes, demos, and side projects.
+            </p>
+
+            <Link to="/signup" style={{
+              textAlign: 'center',
+              background: '#34d399',
+              color: '#000000',
+              borderRadius: '6px',
+              padding: '12px 16px',
+              fontSize: '14px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              transition: 'opacity 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              Start for Free
+            </Link>
+
+            <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Get started with:
+            </p>
             
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: 12, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                <strong>15 requests / week</strong>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span><strong>15 requests / week</strong></span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                60 RPM rate limit
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>60 RPM rate limit</span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="#333" style={{ opacity: 0.5 }} />
-                <span style={{ color: '#555' }}>No custom OPA policies</span>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>Standard tool execution logs</span>
               </li>
             </ul>
 
-            <Link to="/signup" className="btn-trendy-secondary">
-              Get Started Free
-            </Link>
+            <p style={{ fontSize: '11px', color: '#444444', marginTop: 32, margin: 0 }}>
+              Free API keys are capped at 15 requests/week.
+            </p>
           </div>
 
           {/* Plan 2: Pro */}
           <div style={{
-            background: '#070707',
-            border: '1px solid var(--accent)',
-            borderRadius: '8px',
-            padding: '40px 32px',
+            padding: '48px 32px',
             display: 'flex',
             flexDirection: 'column',
-            position: 'relative',
-            boxShadow: '0 0 16px rgba(255, 218, 98, 0.05)'
-          }}>
+            borderRight: '1px solid #141414',
+            background: '#070707',
+            position: 'relative'
+          }} className="pricing-col">
             <div style={{
               position: 'absolute',
-              top: 16,
-              right: 16,
-              background: 'var(--accent)',
-              color: '#000',
-              fontSize: '9px',
+              top: 20,
+              right: 20,
+              background: '#ffffff',
+              color: '#000000',
+              fontSize: '10px',
               fontWeight: 700,
-              padding: '3px 8px',
-              borderRadius: '12px',
-              fontFamily: 'var(--font-mono)'
+              padding: '4px 10px',
+              borderRadius: '20px',
             }}>
-              POPULAR
-            </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 8 }}>Pro</h3>
-            <p style={{ fontSize: '12px', color: '#777', marginBottom: 24, minHeight: 32 }}>Designed for production autonomous agent applications.</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 28 }}>
-              <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>$7</span>
-              <span style={{ fontSize: '12px', color: '#777' }}>/ month</span>
+              Most Popular
             </div>
             
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: 12, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                <strong>2,000 requests / month</strong>
+            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Pro</h3>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
+              <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>$7</span>
+              <span style={{ fontSize: '13px', color: '#34d399', fontWeight: 500 }}>/ month</span>
+            </div>
+            <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
+              For production apps that need to scale. <br />
+              <span style={{ color: '#34d399', fontSize: '12px' }}>$10 in test credits included</span>
+            </p>
+
+            <Link to="/signup" style={{
+              textAlign: 'center',
+              background: '#34d399',
+              color: '#000000',
+              borderRadius: '6px',
+              padding: '12px 16px',
+              fontSize: '14px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              transition: 'opacity 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              Get Pro
+            </Link>
+
+            <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Everything in Free, plus:
+            </p>
+            
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span><strong>2,000 requests / month</strong></span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                500 RPM rate limit
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>500 RPM rate limit</span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                Custom OPA policy engine
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>Custom OPA policy engine</span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                Email support
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>Email & Slack community support</span>
               </li>
             </ul>
-
-            <Link to="/signup" className="btn-trendy-primary">
-              Go Pro
-            </Link>
           </div>
 
           {/* Plan 3: Enterprise */}
           <div style={{
-            background: '#040404',
-            border: '1px solid #1c1c1c',
-            borderRadius: '8px',
-            padding: '40px 32px',
+            padding: '48px 32px',
             display: 'flex',
-            flexDirection: 'column',
-            position: 'relative'
-          }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 8 }}>Enterprise</h3>
-            <p style={{ fontSize: '12px', color: '#777', marginBottom: 24, minHeight: 32 }}>Custom setups, SLA, and isolated governance clusters.</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 28 }}>
-              <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>Custom</span>
+            flexDirection: 'column'
+          }} className="pricing-col">
+            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Enterprise</h3>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
+              <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>Custom</span>
             </div>
+            <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
+              For organizations with security and compliance needs.
+            </p>
+
+            <Link to="/contact" style={{
+              textAlign: 'center',
+              background: '#1a1a1a',
+              color: '#ffffff',
+              border: '1px solid #2d2d2d',
+              borderRadius: '6px',
+              padding: '12px 16px',
+              fontSize: '14px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              transition: 'background 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#222222'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#1a1a1a'}
+            >
+              Contact Us
+            </Link>
+
+            <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Everything in Pro, plus:
+            </p>
             
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: 12, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                <strong>Custom limits & volume</strong>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span><strong>Custom limits & volume</strong></span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                Unlimited RPM / Dedicated nodes
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>Unlimited RPM / Dedicated nodes</span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                24/7 Dedicated Slack support
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>24/7 Dedicated engineering SLA</span>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} color="var(--accent)" />
-                SLA & compliance reporting
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span>SOC2 & HIPAA reporting</span>
               </li>
             </ul>
-
-            <Link to="/contact" className="btn-trendy-secondary">
-              Contact Sales
-            </Link>
           </div>
+
         </div>
       </div>
 
@@ -1072,7 +1157,13 @@ function PricingSection() {
         @media (max-width: 768px) {
           .pricing-grid {
             grid-template-columns: 1fr !important;
-            padding: 0 16px;
+          }
+          .pricing-col {
+            border-right: none !important;
+            border-bottom: 1px solid #141414;
+          }
+          .pricing-col:last-child {
+            border-bottom: none;
           }
         }
       `}</style>

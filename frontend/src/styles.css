@@ -539,6 +539,61 @@ pre {
   transform: translateY(0);
 }
 
+/* ── TICKER MARQUEE ── */
+.ticker-container {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-top: 1px solid #141414;
+  border-bottom: 1px solid #141414;
+  background: #030303;
+  padding: 14px 24px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.ticker-title {
+  color: #777777;
+  font-weight: 600;
+  white-space: nowrap;
+  border-right: 1px solid #1c1c1c;
+  padding-right: 24px;
+  margin-right: 24px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ticker-wrap {
+  overflow: hidden;
+  flex: 1;
+}
+
+.ticker-move {
+  display: inline-flex;
+  gap: 60px;
+  white-space: nowrap;
+  animation: ticker-slide 30s linear infinite;
+}
+
+@keyframes ticker-slide {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.ticker-item {
+  color: #b4b4b4;
+  font-family: var(--font-display);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ── TAILWIND v4 THEME EXTENSIONS ── */
 @theme {
   --color-bg: #000000;
