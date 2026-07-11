@@ -106,6 +106,36 @@ class DatabaseManager:
                 session.add(demo_sa3)
                 await session.commit()
                 logger.info("Successfully seeded default service accounts.")
+
+        # Seed default admin API Key if not present (linked to admin-gateway-sa)
+        async with self.session_factory() as session:
+            from .models import APIKey as DBAPIKey, ServiceAccount as DBServiceAccount
+            from sqlalchemy import select
+            
+            stmt = select(DBServiceAccount).where(DBServiceAccount.name == "admin-gateway-sa")
+            res = await session.execute(stmt)
+            admin_sa = res.scalar_one_or_none()
+            if admin_sa:
+                target_hash = "410bc0546b169c040351d308aad277364bb5f3f8df9379bd4b97663a8043e7ab"
+                stmt = select(DBAPIKey).where(DBAPIKey.key_hash == target_hash)
+                res = await session.execute(stmt)
+                existing_key = res.scalar_one_or_none()
+                if not existing_key:
+                    logger.info("Seeding default admin API key.")
+                    new_key = DBAPIKey(
+                        tenant_id="default",
+                        service_account_id=admin_sa.id,
+                        name="Default Admin Key",
+                        key_hash=target_hash,
+                        prefix="mcp_",
+                        permissions=["*"],
+                        allowed_ips=["0.0.0.0/0", "::/0"],
+                        environment="*",
+                        is_active=True
+                    )
+                    session.add(new_key)
+                    await session.commit()
+                    logger.info("Successfully seeded default admin API key.")
         
         logger.info("Database initialized successfully")
     
