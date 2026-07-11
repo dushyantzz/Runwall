@@ -33,6 +33,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      if (error) {
+        setError(error.message);
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred during Google Sign-In.');
+    }
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -226,6 +243,62 @@ export default function LoginPage() {
             {!loading && <ArrowRight size={16} />}
           </button>
         </form>
+
+        {/* Divider */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          margin: '20px 0',
+          color: 'var(--muted, #777777)',
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          fontFamily: 'var(--font-body)',
+        }}>
+          <div style={{ flex: 1, height: '1px', background: '#262626' }} />
+          <span>or</span>
+          <div style={{ flex: 1, height: '1px', background: '#262626' }} />
+        </div>
+
+        {/* Google OAuth Button */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          style={{
+            width: '100%',
+            background: '#0a0a0a',
+            color: '#ffffff',
+            border: '1px solid #262626',
+            borderRadius: '6px',
+            padding: '12px',
+            fontSize: '14px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            transition: 'background-color 0.2s, border-color 0.2s',
+            fontFamily: 'var(--font-body)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#111111';
+            e.currentTarget.style.borderColor = '#444444';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#0a0a0a';
+            e.currentTarget.style.borderColor = '#262626';
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12 5.04c1.63 0 3.09.56 4.24 1.66L19.39 3.5C17.38 1.63 14.88.5 12 .5 7.42.5 3.52 3.12 1.65 6.94l3.96 3.07C6.54 7.07 9.04 5.04 12 5.04z"/>
+            <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.47h6.44c-.28 1.47-1.11 2.72-2.36 3.56l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.15z"/>
+            <path fill="#FBBC05" d="M5.61 14.73a7.22 7.22 0 010-4.46L1.65 7.2a11.96 11.96 0 000 9.6l3.96-3.07z"/>
+            <path fill="#34A853" d="M12 23.5c3.24 0 5.97-1.07 7.96-2.92l-3.66-2.84c-1.01.68-2.31 1.08-4.3 1.08-2.96 0-5.46-2.03-6.36-4.97L1.69 16.9a11.96 11.96 0 0010.31 6.6z"/>
+          </svg>
+          Continue with Google
+        </button>
 
         {/* Signup Redirect */}
         <div style={{
