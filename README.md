@@ -9,11 +9,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/dushyantzz/Runwall"><img src="https://img.shields.io/github/stars/dushyantzz/Runwall?style=for-the-badge&color=FFDA62&logo=github" alt="Github Stars" /></a>
-  <a href="https://github.com/dushyantzz/Runwall/blob/main/LICENSE"><img src="https://img.shields.io/github/license/dushyantzz/Runwall?style=for-the-badge" alt="License" /></a>
-</p>
-
-<p align="center">
   <img src="Images/ChatGPT%20Image%20Jul%205,%202026,%2002_08_18%20PM.png" width="900" alt="Runwall Architecture" />
 </p>
 
