@@ -107,7 +107,7 @@ class DatabaseManager:
                 await session.commit()
                 logger.info("Successfully seeded default service accounts.")
 
-        # Seed default admin API Key if not present (linked to admin-gateway-sa)
+        # Seed default admin API Keys if not present (linked to admin-gateway-sa)
         async with self.session_factory() as session:
             from .models import APIKey as DBAPIKey, ServiceAccount as DBServiceAccount
             from sqlalchemy import select
@@ -116,26 +116,30 @@ class DatabaseManager:
             res = await session.execute(stmt)
             admin_sa = res.scalar_one_or_none()
             if admin_sa:
-                target_hash = "410bc0546b169c040351d308aad277364bb5f3f8df9379bd4b97663a8043e7ab"
-                stmt = select(DBAPIKey).where(DBAPIKey.key_hash == target_hash)
-                res = await session.execute(stmt)
-                existing_key = res.scalar_one_or_none()
-                if not existing_key:
-                    logger.info("Seeding default admin API key.")
-                    new_key = DBAPIKey(
-                        tenant_id="default",
-                        service_account_id=admin_sa.id,
-                        name="Default Admin Key",
-                        key_hash=target_hash,
-                        prefix="mcp_",
-                        permissions=["*"],
-                        allowed_ips=["0.0.0.0/0", "::/0"],
-                        environment="*",
-                        is_active=True
-                    )
-                    session.add(new_key)
-                    await session.commit()
-                    logger.info("Successfully seeded default admin API key.")
+                target_hashes = [
+                    "410bc0546b169c040351d308aad277364bb5f3f8df9379bd4b97663a8043e7ab",  # EtG7h...
+                    "81ce5dbc4eab84c4f773ddec7ed8ed04c55f35a5422553d514c7d5acafdae79b"   # Hs3FO...
+                ]
+                for th in target_hashes:
+                    stmt = select(DBAPIKey).where(DBAPIKey.key_hash == th)
+                    res = await session.execute(stmt)
+                    existing_key = res.scalar_one_or_none()
+                    if not existing_key:
+                        logger.info("Seeding default admin API key", hash=th)
+                        new_key = DBAPIKey(
+                            tenant_id="default",
+                            service_account_id=admin_sa.id,
+                            name="Default Admin Key",
+                            key_hash=th,
+                            prefix="mcp_",
+                            permissions=["*"],
+                            allowed_ips=["0.0.0.0/0", "::/0"],
+                            environment="*",
+                            is_active=True
+                        )
+                        session.add(new_key)
+                await session.commit()
+                logger.info("Successfully seeded default admin API keys.")
         
         logger.info("Database initialized successfully")
     
