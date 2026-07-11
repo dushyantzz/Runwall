@@ -113,9 +113,20 @@ class SecureMCPServer:
             user_context = await self.auth_manager.get_user_context(request)
             
             # Anomaly detection for API keys
+            token = None
             auth_header = getattr(request, "headers", {}).get("Authorization", "")
             if auth_header.startswith("Bearer mcp_"):
                 token = auth_header[7:]
+            else:
+                query_params = getattr(request, "query_params", {})
+                q_token = query_params.get("token") or query_params.get("api_key") or query_params.get("apiKey") or query_params.get("authorization")
+                if q_token:
+                    if q_token.startswith("Bearer "):
+                        q_token = q_token[7:]
+                    if q_token.startswith("mcp_"):
+                        token = q_token
+
+            if token:
                 request_ip = getattr(request, "client", [None])[0] if hasattr(request, "client") else None
                 if not request_ip:
                     request_ip = getattr(request, "headers", {}).get("x-forwarded-for", "").split(",")[0].strip() or None
@@ -262,7 +273,7 @@ class SecureMCPServer:
             """Get server configuration (admin only)."""
             # Check admin privileges
             user_context = self._get_current_user_context()
-            if not user_context.get('is_admin', False):
+            if not self._check_admin_access(user_context):
                 raise Exception("Admin privileges required")
             
             config = {
@@ -279,7 +290,7 @@ class SecureMCPServer:
             """Get current metrics (admin only)."""
             # Check admin privileges
             user_context = self._get_current_user_context()
-            if not user_context.get('is_admin', False):
+            if not self._check_admin_access(user_context):
                 raise Exception("Admin privileges required")
             
             metrics = await self.metrics_collector.get_current_metrics()
@@ -296,7 +307,7 @@ class SecureMCPServer:
             """Generate security audit prompt with recent security events."""
             # Check admin privileges
             user_context = self._get_current_user_context()
-            if not user_context.get('is_admin', False):
+            if not self._check_admin_access(user_context):
                 raise Exception("Admin privileges required")
             
             events = await self.security_manager.get_audit_events(
@@ -344,6 +355,16 @@ class SecureMCPServer:
         if not user_ctx and hasattr(req, "fastmcp_context") and req.fastmcp_context:
             user_ctx = getattr(req.fastmcp_context, "user_context", {})
         return user_ctx or {}
+
+    def _check_admin_access(self, user_context: Dict[str, Any]) -> bool:
+        """Check if user context represents an admin or has admin permissions."""
+        if not user_context:
+            return False
+        if user_context.get("is_admin", False):
+            return True
+        # Check permissions list
+        permissions = user_context.get("permissions", [])
+        return "*" in permissions or "admin" in permissions or "admin-gateway" in permissions
 
     async def initialize(self):
         """Initialize all server components."""

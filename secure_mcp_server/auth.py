@@ -480,21 +480,28 @@ class AuthManager:
 
     async def get_user_context(self, request) -> Optional[Dict[str, Any]]:
         """
-        Extract user context from MCP request headers/tokens.
-        In production, parse Authorization header.
+        Extract user context from MCP request headers/tokens/query params.
         """
-        # Note: Depending on FastMCP request object, we look for token
-        # For now we simulate parsing a passed-in token or fallback to None.
-        # This will be invoked by SecurityManager / ToolRegistry.
+        token = None
+        auth_header = getattr(request, "headers", {}).get("Authorization") if request else None
         
-        auth_header = getattr(request, "headers", {}).get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header[7:]
-            
+        elif request:
+            # Fallback to query parameters (needed for SSE/EventSource which doesn't support headers)
+            query_params = getattr(request, "query_params", {})
+            token = (
+                query_params.get("token") 
+                or query_params.get("api_key") 
+                or query_params.get("apiKey") 
+                or query_params.get("authorization")
+            )
+            if token and token.startswith("Bearer "):
+                token = token[7:]
+
+        if token:
             # Check if it's an API key
             if token.startswith("mcp_"):
-                # FastMCP doesn't give us client IP easily in middleware without underlying ASGI scope, 
-                # but we can try to extract from headers (e.g., X-Forwarded-For)
                 request_ip = getattr(request, "client", [None])[0] if hasattr(request, "client") else None
                 if not request_ip:
                     forwarded = getattr(request, "headers", {}).get("x-forwarded-for")
@@ -521,6 +528,24 @@ class AuthManager:
                         if user and user.is_active:
                             return self._build_context(user)
         
+        # Fallback to local admin ONLY if running locally without HTTP headers/query params (e.g. true local stdio)
+        # If it's an HTTP request (has headers or query_params) but authentication failed/missing, do NOT grant admin.
+        is_http = False
+        if request:
+            has_headers = bool(getattr(request, "headers", None))
+            has_query = bool(getattr(request, "query_params", None))
+            is_http = has_headers or has_query
+
+        if not is_http:
+            return {
+                "user_id": "local_admin",
+                "username": "local_admin",
+                "is_admin": True,
+                "tenant_id": "default",
+                "role": "admin",
+                "permissions": ["*"]
+            }
+            
         return None
 
     def _build_context(self, user: User) -> Dict[str, Any]:
