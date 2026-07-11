@@ -5,6 +5,29 @@ import {
 } from 'lucide-react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
+// Platform Logo Assets
+import kiroLogo from '../assets/kiro.svg';
+import traeLogo from '../assets/trae.svg';
+import qoderLogo from '../assets/qoder.svg';
+import cursorLogo from '../assets/cursor.svg';
+import claudeLogo from '../assets/claude_code.svg';
+import copilotLogo from '../assets/copilot.svg';
+import codexLogo from '../assets/codex.svg';
+import clineLogo from '../assets/cline.svg';
+import windsurfLogo from '../assets/windsurf.svg';
+
+const tickerItems = [
+  { name: 'KIRO', logo: kiroLogo, invert: false },
+  { name: 'TRAE', logo: traeLogo, invert: true },
+  { name: 'Qoder', logo: qoderLogo, invert: true },
+  { name: 'CURSOR', logo: cursorLogo, invert: false },
+  { name: 'Claude', logo: claudeLogo, invert: true },
+  { name: 'Copilot', logo: copilotLogo, invert: true },
+  { name: 'Codex', logo: codexLogo, invert: false },
+  { name: 'Cline', logo: clineLogo, invert: true },
+  { name: 'Windsurf', logo: windsurfLogo, invert: true },
+];
+
 /* ════════════════════════════════════════════════════════════
    DATA
    ════════════════════════════════════════════════════════════ */
@@ -18,6 +41,7 @@ export default function HomePage() {
   return (
     <div style={{ background: '#000000', color: '#b4b4b4', minHeight: '100vh' }}>
       <HeroSection />
+      <CompatibilityTicker />
       <FeatureBentoGrid />
       <BranchingWorkflowSection />
       <PricingSection />
@@ -33,7 +57,7 @@ function HeroSection() {
       position: 'relative',
       overflow: 'hidden',
       paddingTop: 160,
-      paddingBottom: 0,
+      paddingBottom: 100,
       borderBottom: '1px solid #333333'
     }}>
       {/* Grid overlay */}
@@ -78,33 +102,35 @@ function HeroSection() {
           </Link>
         </div>
       </div>
+    </section>
+  );
+}
 
-      {/* Compatibility Ticker */}
-      <div className="ticker-container">
-        <div className="ticker-title">Works perfectly with</div>
-        <div className="ticker-wrap">
-          <div className="ticker-move">
-            <span className="ticker-item">🤖 Copilot</span>
-            <span className="ticker-item">⚡ Codex</span>
-            <span className="ticker-item">💻 Cline</span>
-            <span className="ticker-item">🌀 Windsurf</span>
-            <span className="ticker-item">🪐 Google Antigravity</span>
-            <span className="ticker-item">👻 Kiro</span>
-            <span className="ticker-item">🛠️ Trae</span>
-            <span className="ticker-item">🔍 Qodo</span>
-            {/* Duplicated for seamless infinite loop */}
-            <span className="ticker-item">🤖 Copilot</span>
-            <span className="ticker-item">⚡ Codex</span>
-            <span className="ticker-item">💻 Cline</span>
-            <span className="ticker-item">🌀 Windsurf</span>
-            <span className="ticker-item">🪐 Google Antigravity</span>
-            <span className="ticker-item">👻 Kiro</span>
-            <span className="ticker-item">🛠️ Trae</span>
-            <span className="ticker-item">🔍 Qodo</span>
-          </div>
+/* ── 1.1 COMPATIBILITY TICKER ── */
+function CompatibilityTicker() {
+  return (
+    <div className="ticker-container" style={{ padding: '32px 24px', fontSize: '17px' }}>
+      <div className="ticker-title" style={{ fontSize: '15px' }}>Works perfectly with</div>
+      <div className="ticker-wrap">
+        <div className="ticker-move" style={{ gap: '96px' }}>
+          {tickerItems.concat(tickerItems).map((item, idx) => (
+            <span className="ticker-item" key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <img 
+                src={item.logo} 
+                alt={item.name} 
+                style={{ 
+                  width: '26px', 
+                  height: '26px', 
+                  objectFit: 'contain',
+                  filter: item.invert ? 'brightness(0) invert(0.85)' : 'none' 
+                }} 
+              />
+              <span style={{ fontSize: '16px', fontWeight: 600 }}>{item.name}</span>
+            </span>
+          ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -973,7 +999,7 @@ function PricingSection() {
             <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Free</h3>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
               <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>$0</span>
-              <span style={{ fontSize: '13px', color: '#34d399', fontWeight: 500 }}>/ month</span>
+              <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 500 }}>/ month</span>
             </div>
             <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
               For prototypes, demos, and side projects.
@@ -981,7 +1007,7 @@ function PricingSection() {
 
             <Link to="/signup" style={{
               textAlign: 'center',
-              background: '#34d399',
+              background: 'var(--accent)',
               color: '#000000',
               borderRadius: '6px',
               padding: '12px 16px',
@@ -1002,15 +1028,15 @@ function PricingSection() {
             
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span><strong>15 requests / week</strong></span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>60 RPM rate limit</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>Standard tool execution logs</span>
               </li>
             </ul>
@@ -1046,16 +1072,16 @@ function PricingSection() {
             <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Pro</h3>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
               <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>$7</span>
-              <span style={{ fontSize: '13px', color: '#34d399', fontWeight: 500 }}>/ month</span>
+              <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 500 }}>/ month</span>
             </div>
             <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
               For production apps that need to scale. <br />
-              <span style={{ color: '#34d399', fontSize: '12px' }}>$10 in test credits included</span>
+              <span style={{ color: 'var(--accent)', fontSize: '12px' }}>$10 in test credits included</span>
             </p>
 
             <Link to="/signup" style={{
               textAlign: 'center',
-              background: '#34d399',
+              background: 'var(--accent)',
               color: '#000000',
               borderRadius: '6px',
               padding: '12px 16px',
@@ -1076,19 +1102,19 @@ function PricingSection() {
             
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span><strong>2,000 requests / month</strong></span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>500 RPM rate limit</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>Custom OPA policy engine</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>Email & Slack community support</span>
               </li>
             </ul>
@@ -1132,19 +1158,19 @@ function PricingSection() {
             
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span><strong>Custom limits & volume</strong></span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>Unlimited RPM / Dedicated nodes</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>24/7 Dedicated engineering SLA</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
                 <span>SOC2 & HIPAA reporting</span>
               </li>
             </ul>

@@ -546,22 +546,22 @@ pre {
   overflow: hidden;
   border-top: 1px solid #141414;
   border-bottom: 1px solid #141414;
-  background: #030303;
-  padding: 14px 24px;
+  background: #000000;
+  padding: 16px 24px;
   font-size: 13px;
   width: 100%;
+  position: relative;
+  z-index: 20;
 }
 
 .ticker-title {
-  color: #777777;
-  font-weight: 600;
+  color: #888888;
+  font-weight: 400;
   white-space: nowrap;
-  border-right: 1px solid #1c1c1c;
+  border-right: 1px solid #141414;
   padding-right: 24px;
   margin-right: 24px;
   font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .ticker-wrap {
