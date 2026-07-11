@@ -70,41 +70,10 @@ function HeroSection() {
 
         {/* Action Buttons */}
         <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 64 }}>
-          <Link to="/signup" style={{
-            background: '#ffffff',
-            color: '#000000',
-            fontWeight: 600,
-            fontSize: 15,
-            padding: '12px 32px',
-            borderRadius: '6px',
-            textDecoration: 'none',
-            transition: 'opacity 0.2s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-          >
+          <Link to="/signup" className="btn-trendy-primary">
             Start Building Today
           </Link>
-          <Link to="/docs" style={{
-            background: '#000000',
-            color: '#ffffff',
-            border: '1px solid #ffffff',
-            fontWeight: 500,
-            fontSize: 15,
-            padding: '12px 32px',
-            borderRadius: '6px',
-            textDecoration: 'none',
-            transition: 'border-color 0.2s, background 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#ffffff';
-            e.currentTarget.style.background = '#111';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#ffffff';
-            e.currentTarget.style.background = '#000';
-          }}
-          >
+          <Link to="/docs" className="btn-trendy-secondary">
             Read Docs
           </Link>
         </div>
@@ -996,18 +965,7 @@ function PricingSection() {
               </li>
             </ul>
 
-            <Link to="/signup" style={{
-              textAlign: 'center',
-              background: 'transparent',
-              color: '#fff',
-              border: '1px solid #333',
-              borderRadius: '6px',
-              padding: '10px 16px',
-              fontSize: '13px',
-              fontWeight: 600,
-              textDecoration: 'none',
-              transition: 'all 0.2s ease'
-            }}>
+            <Link to="/signup" className="btn-trendy-secondary">
               Get Started Free
             </Link>
           </div>
@@ -1063,20 +1021,7 @@ function PricingSection() {
               </li>
             </ul>
 
-            <Link to="/signup" style={{
-              textAlign: 'center',
-              background: 'var(--accent)',
-              color: '#000',
-              borderRadius: '6px',
-              padding: '10px 16px',
-              fontSize: '13px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              transition: 'opacity 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-            >
+            <Link to="/signup" className="btn-trendy-primary">
               Go Pro
             </Link>
           </div>
@@ -1116,18 +1061,7 @@ function PricingSection() {
               </li>
             </ul>
 
-            <Link to="/contact" style={{
-              textAlign: 'center',
-              background: 'transparent',
-              color: '#fff',
-              border: '1px solid #333',
-              borderRadius: '6px',
-              padding: '10px 16px',
-              fontSize: '13px',
-              fontWeight: 600,
-              textDecoration: 'none',
-              transition: 'all 0.2s ease'
-            }}>
+            <Link to="/contact" className="btn-trendy-secondary">
               Contact Sales
             </Link>
           </div>
@@ -1171,27 +1105,10 @@ function CTASection() {
           Start free, scale to millions of agent actions.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-          <Link to="/signup" style={{
-            background: '#ffffff',
-            color: '#000000',
-            fontWeight: 600,
-            fontSize: 15,
-            padding: '12px 32px',
-            borderRadius: '6px',
-            textDecoration: 'none',
-          }}>
+          <Link to="/signup" className="btn-trendy-primary">
             Get Started Free
           </Link>
-          <Link to="/contact" style={{
-            background: 'transparent',
-            color: '#ffffff',
-            border: '1px solid #ffffff',
-            fontWeight: 500,
-            fontSize: 15,
-            padding: '12px 32px',
-            borderRadius: '6px',
-            textDecoration: 'none',
-          }}>
+          <Link to="/contact" className="btn-trendy-secondary">
             Talk to Sales
           </Link>
         </div>

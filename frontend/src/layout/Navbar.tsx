@@ -223,19 +223,10 @@ export default function Navbar() {
                 Login
               </Link>
 
-              <Link to="/signup" style={{
-                background: 'var(--accent)',
-                color: '#000000',
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: 600,
-                padding: '5px 12px',
-                borderRadius: '6px',
-                transition: 'opacity 0.2s',
-              }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-              >
+              <Link to="/signup" className="btn-trendy-primary" style={{
+                padding: '6px 16px',
+                fontSize: 13,
+              }}>
                 Sign Up
               </Link>
             </>

@@ -481,6 +481,64 @@ pre {
   color: var(--heading);
 }
 
+/* ── TRENDY BUTTONS ── */
+.btn-trendy-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #000000 !important;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  text-decoration: none !important;
+  box-shadow: 0 0 16px rgba(255, 218, 98, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-trendy-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 24px rgba(255, 218, 98, 0.45);
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.btn-trendy-primary:active {
+  transform: translateY(0);
+}
+
+.btn-trendy-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  color: #ffffff !important;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-trendy-secondary:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+}
+
+.btn-trendy-secondary:active {
+  transform: translateY(0);
+}
+
 /* ── TAILWIND v4 THEME EXTENSIONS ── */
 @theme {
   --color-bg: #000000;
