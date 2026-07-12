@@ -64,6 +64,13 @@ function HeroSection() {
       <div className="grid-overlay" style={{ opacity: 0.8 }} />
 
       <div className="container" style={{ position: 'relative', textAlign: 'center', zIndex: 10 }}>
+        {/* Product Hunt Badge */}
+        <div className="animate-fade-up" style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          <a href="https://www.producthunt.com/products/runwall?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-runwall" target="_blank" rel="noopener noreferrer">
+            <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1193799&amp;theme=light&amp;t=1783834347535" alt="Runwall - The firewall and execution governance gateway for AI agents | Product Hunt" style={{ width: 200, height: 43 }} width="200" height="43" />
+          </a>
+        </div>
+
         {/* Headline */}
         <h1 className="animate-fade-up delay-100" style={{
           fontSize: '3.75rem',
