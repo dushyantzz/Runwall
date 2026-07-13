@@ -442,8 +442,13 @@ async def amain():
         logger.info("Starting server")
         await server.start()
         
-        # Mount MCP SSE application onto API app to expose /sse and /messages
-        logger.info("Mounting MCP SSE app onto REST API app")
+        # Mount MCP Streamable HTTP at /mcp (primary, per MCP spec)
+        logger.info("Mounting MCP Streamable HTTP app at /mcp")
+        api_app.mount("/mcp", server.mcp.http_app(transport="streamable-http"))
+
+        # Mount MCP SSE application at root to expose /sse and /messages
+        # (legacy compatibility for older MCP clients)
+        logger.info("Mounting MCP SSE app onto REST API app (legacy)")
         api_app.mount("/", server.mcp.http_app(transport="sse"))
         
         # Start API server in the background

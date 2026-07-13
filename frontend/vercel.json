@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    { "source": "/mcp", "destination": "http://54.234.174.237:8000/mcp" },
+    { "source": "/sse", "destination": "http://54.234.174.237:8000/sse" },
+    { "source": "/messages", "destination": "http://54.234.174.237:8000/messages" },
+    { "source": "/health", "destination": "http://54.234.174.237:8000/health" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

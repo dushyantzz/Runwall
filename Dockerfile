@@ -33,5 +33,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 CMD if [ "$MODE" = "api" ]; then \
         uvicorn mcp_server.main:app --host 0.0.0.0 --port 8000; \
     else \
-        fastmcp run server.py --transport streamable-http --host 0.0.0.0 --port 8000; \
+        python -m secure_mcp_server.main; \
     fi

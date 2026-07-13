@@ -1,0 +1,32 @@
+{
+  "name": "@runwall/mcp",
+  "version": "1.0.0",
+  "description": "Runwall MCP client — governance-aware execution gateway for AI agents. Connects local MCP clients (Claude Desktop, VS Code, etc.) to the hosted Runwall platform.",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "runwall-mcp": "./index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "governance",
+    "execution-policy",
+    "claude",
+    "runwall"
+  ],
+  "author": "Runwall",
+  "license": "MIT",
+  "homepage": "https://runwall.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dushyantzz/secure-mcp-server-framework"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  }
+}

@@ -268,42 +268,99 @@ flowchart LR
 
 ##  Quick Start
 
-### Step 1 — Boot the Runwall Service
+### Option A — Use Hosted Runwall (Recommended)
 
-Run Runwall in Docker:
+No setup required. Connect your AI client directly to the hosted Runwall endpoint.
 
-```bash
-docker run -d -p 8000:8000 \
-  -e SECRET_KEY=your-production-secret-key \
-  dushyantzz/secure-mcp-server:latest
+**Runwall MCP Endpoint**
+
+```
+URL:       https://mcp.runwall.dev/mcp
+Transport: Streamable HTTP
+Auth:      API Key (Bearer token)
 ```
 
-### Step 2 — Connect Your AI Client
-
-Add the Runwall MCP endpoint to Cursor, VS Code (Cline), or Claude Desktop config:
+**Claude Desktop / Cursor / VS Code — Remote URL**
 
 ```json
 {
   "mcpServers": {
     "runwall": {
-      "url": "http://localhost:8000/mcp"
+      "url": "https://mcp.runwall.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
     }
   }
 }
 ```
 
-### Step 3 — (Optional) Route a Custom Agent Through Runwall
+**Claude Desktop / Cursor / VS Code — Local stdio wrapper**
+
+```json
+{
+  "mcpServers": {
+    "runwall": {
+      "command": "npx",
+      "args": ["-y", "@runwall/mcp"],
+      "env": {
+        "RUNWALL_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+**Claude API / Hosted Agent Platforms**
+
+```json
+{
+  "mcp_servers": [
+    {
+      "type": "url",
+      "name": "runwall",
+      "url": "https://mcp.runwall.dev/mcp",
+      "authorization_token": "YOUR_API_KEY"
+    }
+  ],
+  "tools": [
+    {
+      "type": "mcp_toolset",
+      "mcp_server_name": "runwall"
+    }
+  ]
+}
+```
+
+### Option B — Self-Hosted
+
+Run Runwall on your own infrastructure:
+
+```bash
+docker run -d -p 8000:8000 \
+  -e SECRET_KEY=your-production-secret-key \
+  -e DATABASE_URL=your-database-url \
+  dushyantzz/secure-mcp-server:latest
+```
+
+Then connect your client to `http://localhost:8000/mcp` (or put it behind HTTPS with a reverse proxy).
+
+### Route a Custom Agent Through Runwall
 
 ```python
 import httpx
 
-async def run_governed_tool(session_token, tool_name, arguments):
-    headers = {"Authorization": f"Bearer {session_token}"}
+async def run_governed_tool(api_key, tool_name, arguments):
+    headers = {"Authorization": f"Bearer {api_key}"}
     payload = {
         "method": "tools/call",
         "params": {"name": tool_name, "arguments": arguments}
     }
-    response = await httpx.post("http://localhost:8000/mcp", json=payload, headers=headers)
+    response = await httpx.post(
+        "https://mcp.runwall.dev/mcp",
+        json=payload,
+        headers=headers,
+    )
     return response.json()
 ```
 
@@ -313,12 +370,17 @@ That's it — your agent is now authenticated, rate-limited, taint-tracked, audi
 
 ##  Client Integration
 
-| Client | Integration Method |
-|---|---|
-| Claude Desktop | Add `mcpServers` entry pointing to `http://localhost:8000/mcp` |
-| Cursor | Add `mcpServers` entry in Cursor settings |
-| VS Code (Cline) | Add `mcpServers` entry in Cline MCP config |
-| Custom Agents (LangChain, CrewAI, AutoGPT, raw OpenAI API) | Route tool calls through the Runwall REST/MCP client |
+| Client | Recommended Method | Config Key |
+|---|---|---|
+| **Claude Web / API** | Remote URL (Streamable HTTP) | `url: https://mcp.runwall.dev/mcp` |
+| **Claude Desktop** | `npx @runwall/mcp` (stdio) or remote URL | See Quick Start above |
+| **Cursor** | Remote URL in MCP settings | `url: https://mcp.runwall.dev/mcp` |
+| **VS Code (Cline)** | Remote URL in MCP config | `url: https://mcp.runwall.dev/mcp` |
+| **Custom Agents** | HTTP POST to `/mcp` endpoint | `Authorization: Bearer YOUR_KEY` |
+
+**Transport Support:**
+- **Primary**: Streamable HTTP at `/mcp` (recommended)
+- **Legacy**: SSE at `/sse` (backward compatible, deprecated)
 
 ---
 

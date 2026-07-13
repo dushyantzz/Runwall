@@ -1,0 +1,37 @@
+version: '3.8'
+
+# Local development compose with Cloudflare Tunnel sidecar
+# Usage:
+#   1. Set TUNNEL_TOKEN env variable with your Cloudflare Tunnel token
+#   2. docker-compose -f docker-compose.yml -f cloudflare/docker-compose.tunnel.yml up
+
+services:
+  mcp-server:
+    build: ..
+    ports:
+      - "8000:8000"
+    environment:
+      - MODE=mcp
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    restart: unless-stopped
+    # In docker-compose, use the service name to reach the app
+    environment:
+      - TUNNEL_URL=http://mcp-server:8000
