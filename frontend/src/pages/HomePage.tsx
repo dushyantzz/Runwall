@@ -4,6 +4,7 @@ import {
   Clock, AlertTriangle, ArrowUpRight, X
 } from 'lucide-react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { useAuth } from '../hooks/AuthContext';
 
 // Platform Logo Assets
 import kiroLogo from '../assets/kiro.svg';
@@ -52,6 +53,8 @@ export default function HomePage() {
 
 /* ── 1. HERO SECTION ── */
 function HeroSection() {
+  const { user } = useAuth();
+
   return (
     <section style={{
       position: 'relative',
@@ -101,9 +104,15 @@ function HeroSection() {
 
         {/* Action Buttons */}
         <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 48 }}>
-          <Link to="/signup" className="btn-trendy-primary">
-            Start Building Today
-          </Link>
+          {user ? (
+            <Link to="/docs" className="btn-trendy-primary">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link to="/signup" className="btn-trendy-primary">
+              Start Building Today
+            </Link>
+          )}
           <Link to="/docs" className="btn-trendy-secondary">
             Read Docs
           </Link>
@@ -970,6 +979,7 @@ function BranchingWorkflowSection() {
 /* ── 5. PRICING SECTION ── */
 function PricingSection() {
   const ref = useScrollAnimation();
+  const { user } = useAuth();
 
   return (
     <section className="section section-border-top" ref={ref} style={{ background: '#000000', paddingBottom: 96 }}>
@@ -1012,22 +1022,41 @@ function PricingSection() {
               For prototypes, demos, and side projects.
             </p>
 
-            <Link to="/signup" style={{
-              textAlign: 'center',
-              background: 'var(--accent)',
-              color: '#000000',
-              borderRadius: '6px',
-              padding: '12px 16px',
-              fontSize: '14px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              transition: 'opacity 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-            >
-              Start for Free
-            </Link>
+            {user ? (
+              <Link to="/docs" style={{
+                textAlign: 'center',
+                background: 'var(--accent)',
+                color: '#000000',
+                borderRadius: '6px',
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                transition: 'opacity 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                Go to Dashboard (Active)
+              </Link>
+            ) : (
+              <Link to="/signup" style={{
+                textAlign: 'center',
+                background: 'var(--accent)',
+                color: '#000000',
+                borderRadius: '6px',
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                transition: 'opacity 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                Start for Free
+              </Link>
+            )}
 
             <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Get started with:
@@ -1086,22 +1115,41 @@ function PricingSection() {
               <span style={{ color: 'var(--accent)', fontSize: '12px' }}>$10 in test credits included</span>
             </p>
 
-            <Link to="/signup" style={{
-              textAlign: 'center',
-              background: 'var(--accent)',
-              color: '#000000',
-              borderRadius: '6px',
-              padding: '12px 16px',
-              fontSize: '14px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              transition: 'opacity 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-            >
-              Get Pro
-            </Link>
+            {user ? (
+              <Link to="/docs" style={{
+                textAlign: 'center',
+                background: 'var(--accent)',
+                color: '#000000',
+                borderRadius: '6px',
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                transition: 'opacity 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                Upgrade to Pro
+              </Link>
+            ) : (
+              <Link to="/signup" style={{
+                textAlign: 'center',
+                background: 'var(--accent)',
+                color: '#000000',
+                borderRadius: '6px',
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                transition: 'opacity 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                Get Pro
+              </Link>
+            )}
 
             <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Everything in Free, plus:
@@ -1207,6 +1255,8 @@ function PricingSection() {
 
 /* ── 6. CTA SECTION ── */
 function CTASection() {
+  const { user } = useAuth();
+
   return (
     <section className="section section-border-top" style={{ position: 'relative', overflow: 'hidden', background: '#000000' }}>
       <div className="grid-overlay" />
@@ -1229,9 +1279,15 @@ function CTASection() {
           Start free, scale to millions of agent actions.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-          <Link to="/signup" className="btn-trendy-primary">
-            Get Started Free
-          </Link>
+          {user ? (
+            <Link to="/docs" className="btn-trendy-primary">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link to="/signup" className="btn-trendy-primary">
+              Get Started Free
+            </Link>
+          )}
           <Link to="/contact" className="btn-trendy-secondary">
             Talk to Sales
           </Link>
