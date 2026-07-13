@@ -24,6 +24,7 @@ rl.on('line', async (line) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
         'Authorization': `Bearer ${apiKey}`
       },
       body: line
