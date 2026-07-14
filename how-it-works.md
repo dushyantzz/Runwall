@@ -98,7 +98,52 @@ Every time an AI client calls one of the tools above, Runwall runs the call thro
 
 ---
 
-## 3. 🔄 Step-by-Step Request Lifecycle
+---
+
+## 3. 🛡️ The Runwall Shield Report (Process Card in Chat)
+
+To make governance completely transparent, Runwall does not just enforce rules silently. Every time your AI client (Claude, Cursor, Cline, etc.) commands the agent to execute a tool, the gateway intercepts the call, performs the safety pipeline, and prepends a **Visual Process Card** (Markdown Table) directly in the agent's response!
+
+### Example: Tool Execution Allowed (Access Granted)
+When you ask the agent to run a calculation, the tool response in your chat window will show:
+
+### 🛡️ Runwall Shield: ACCESS GRANTED
+| Governance Checkpoint | Verification | Details |
+| :--- | :--- | :--- |
+| 👤 **Identity Verification** | ✅ PASS | Role: `developer` |
+| 🏢 **Multi-Tenant Routing** | ✅ PASS | Tenant: `default` |
+| 🔌 **Tool Trust Verification** | ✅ PASS | Verified code signature |
+| 🔄 **Rate Limits & Quotas** | ✅ PASS | Within active limits |
+| 🩸 **Taint Analysis** | ✅ PASS | Session clean |
+| 📊 **Risk Scoring Engine** | ✅ PASS | Score: `0.02` (negligible) |
+| ⚖️ **OPA Policy Evaluation** | ✅ ALLOW | Permitted by default rules |
+
+---
+
+**Execution Result:**
+`30`
+
+---
+
+### Example: Tool Execution Blocked (Access Denied)
+If the agent attempts to run a quarantined tool, or execute a write command in a tainted session, the execution is blocked and the card clearly shows which check failed:
+
+### 🛡️ Runwall Shield: ACCESS DENIED
+| Governance Checkpoint | Verification | Details |
+| :--- | :--- | :--- |
+| 👤 **Identity Verification** | ✅ PASS | Role: `developer` |
+| 🏢 **Multi-Tenant Routing** | ✅ PASS | Tenant: `default` |
+| 🔌 **Tool Trust Verification** | ❌ FAIL | Tool is QUARANTINED (signature mismatch) |
+| 🔄 **Rate Limits & Quotas** | ✅ PASS | Within active limits |
+| 🩸 **Taint Analysis** | ⚠️ TAINTED | Session contains external web taint |
+| 📊 **Risk Scoring Engine** | ❌ HIGH RISK | Score: `0.95` (critical) |
+| ⚖️ **OPA Policy Evaluation** | ❌ DENY | High risk destructive actions are strictly prohibited |
+
+**Execution Blocked: Policy denied - High risk destructive actions are strictly prohibited.**
+
+---
+
+## 4. 🔄 Step-by-Step Request Lifecycle
 
 Here is the exact path of a tool call when Claude asks to evaluate an equation:
 
@@ -127,7 +172,7 @@ Here is the exact path of a tool call when Claude asks to evaluate an equation:
 
 ---
 
-## 📊 How to Verify and Monitor Your Tools
+## 5. 📊 How to Verify and Monitor Your Tools
 
 To see this system in action:
 

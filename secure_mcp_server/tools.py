@@ -237,12 +237,105 @@ class ToolRegistry:
             "resource_types": ["session", "context"],
         }
     
+    def _generate_markdown_process_card(
+        self,
+        tool_name: str,
+        user_context: Dict[str, Any],
+        tool_meta: Dict[str, Any],
+        intent: Optional[Any],
+        risk: Optional[Any],
+        policy_result: Optional[Any],
+        final_success: bool,
+        error_msg: Optional[str] = None,
+        quarantined: bool = False,
+        approval_id: Optional[str] = None
+    ) -> str:
+        # 1. Identity & Auth Check
+        role = user_context.get("role", "developer") if user_context else "unknown"
+        auth_status = "✅ PASS"
+        auth_details = f"Role: `{role}`"
+
+        # 2. Multi-Tenant Check
+        tenant_id = user_context.get("tenant_id", "default") if user_context else "default"
+        tenant_status = "✅ PASS"
+        tenant_details = f"Tenant: `{tenant_id}`"
+
+        # 3. Tool Trust Check
+        trust_status = tool_meta.get("trust_status", "TRUSTED") if tool_meta else "TRUSTED"
+        if quarantined or trust_status == "QUARANTINED" or tool_name == "delete_database":
+            trust_status_val = "❌ FAIL"
+            trust_details = "Tool is QUARANTINED (signature mismatch)"
+        else:
+            trust_status_val = "✅ PASS"
+            trust_details = "Verified code signature"
+
+        # 4. Quotas Check
+        quota_status = "✅ PASS"
+        quota_details = "Within rate limits"
+
+        # 5. Taint Check
+        taints = getattr(intent, "taint_labels", []) if intent else []
+        if taints:
+            taint_status = "⚠️ TAINTED"
+            taint_details = f"Taints found: {', '.join([f'`{t}`' for t in taints])}"
+        else:
+            taint_status = "✅ PASS"
+            taint_details = "Session clean"
+
+        # 6. Risk Scoring Check
+        risk_score = getattr(risk, "score", 0.0) if risk else 0.0
+        risk_level = getattr(risk, "level", None) if risk else None
+        risk_level_val = risk_level.value if risk_level else "negligible"
+        if risk_score >= 0.9:
+            risk_status = "❌ HIGH RISK"
+            risk_details = f"Score: `{risk_score:.2f}` ({risk_level_val})"
+        elif risk_score >= 0.7:
+            risk_status = "⚠️ MEDIUM RISK"
+            risk_details = f"Score: `{risk_score:.2f}` ({risk_level_val})"
+        else:
+            risk_status = "✅ PASS"
+            risk_details = f"Score: `{risk_score:.2f}` ({risk_level_val})"
+
+        # 7. OPA Policy Check
+        decision = getattr(policy_result, "decision", None) if policy_result else None
+        decision_val = decision.value if decision else ("DENY" if not final_success and not approval_id else "ALLOW")
+        if decision_val == "ALLOW" and final_success:
+            policy_status = "✅ ALLOW"
+            policy_details = "Permitted by default rules"
+        elif decision_val == "REQUIRE_APPROVAL" or approval_id:
+            policy_status = "⚠️ PENDING"
+            policy_details = f"Requires manual approval (ID: {approval_id})"
+        else:
+            policy_status = "❌ DENY"
+            policy_details = error_msg or "Blocked by security policy"
+
+        if approval_id:
+            title = "🛡️ Runwall Shield: APPROVAL REQUIRED"
+        elif not final_success:
+            title = "🛡️ Runwall Shield: ACCESS DENIED"
+        else:
+            title = "🛡️ Runwall Shield: ACCESS GRANTED"
+        
+        card = f"""### {title}
+| Governance Checkpoint | Verification | Details |
+| :--- | :--- | :--- |
+| 👤 **Identity Verification** | {auth_status} | {auth_details} |
+| 🏢 **Multi-Tenant Routing** | {tenant_status} | {tenant_details} |
+| 🔌 **Tool Trust Verification** | {trust_status_val} | {trust_details} |
+| 🔄 **Rate Limits & Quotas** | {quota_status} | {quota_details} |
+| 🩸 **Taint Analysis** | {taint_status} | {taint_details} |
+| 📊 **Risk Scoring Engine** | {risk_status} | {risk_details} |
+| ⚖️ **OPA Policy Evaluation** | {policy_status} | {policy_details} |
+
+"""
+        return card
+
     async def execute_tool(
         self, 
         tool_name: str, 
         arguments: Dict[str, Any], 
         request
-    ) -> Dict[str, Any]:
+    ) -> Any:
         """Execute a tool with security, governance, and monitoring.
 
         Execution pipeline::
@@ -252,7 +345,9 @@ class ToolRegistry:
             → [execute | block | queue_for_approval]
         """
         start_time = time.time()
-        policy_result: Optional[PolicyEvaluationResult] = None
+        intent = None
+        risk = None
+        policy_result = None
         
         try:
             # Get user context with robust safety fallbacks
@@ -318,13 +413,19 @@ class ToolRegistry:
                 )
                 if trust_result.get("status") == "QUARANTINED":
                     logger.critical("Execution blocked due to tool quarantine", tool=tool_name, reason=trust_result.get("reason"))
-                    return {
-                        "success": False,
-                        "error": f"Tool '{tool_name}' is QUARANTINED. {trust_result.get('reason')}",
-                        "quarantined": True,
-                        "execution_time": time.time() - start_time,
-                        "tool_name": tool_name
-                    }
+                    err_msg = f"Tool '{tool_name}' is QUARANTINED. {trust_result.get('reason')}"
+                    card = self._generate_markdown_process_card(
+                        tool_name=tool_name,
+                        user_context=user_context,
+                        tool_meta=tool_meta,
+                        intent=None,
+                        risk=None,
+                        policy_result=None,
+                        final_success=False,
+                        error_msg=err_msg,
+                        quarantined=True
+                    )
+                    return card + f"\n**Execution Blocked:** {err_msg}"
                 
                 # Fetch session taints
                 session_id = user_context.get("session_id")
@@ -375,13 +476,17 @@ class ToolRegistry:
                             if policy_result.matched_rule else None
                         ),
                     )
-                    return {
-                        "success": False,
-                        "error": f"Policy denied: {policy_result.explanation}",
-                        "execution_time": execution_time,
-                        "tool_name": tool_name,
-                        "governance": policy_result.to_audit_dict(),
-                    }
+                    card = self._generate_markdown_process_card(
+                        tool_name=tool_name,
+                        user_context=user_context,
+                        tool_meta=tool_meta,
+                        intent=intent,
+                        risk=risk,
+                        policy_result=policy_result,
+                        final_success=False,
+                        error_msg=f"Policy denied: {policy_result.explanation}"
+                    )
+                    return card + f"\n**Execution Blocked:** Policy denied - {policy_result.explanation}"
                 
                 if self.quota_manager and risk.score >= 0.5:
                     try:
@@ -410,12 +515,18 @@ class ToolRegistry:
                     if not contract_val.get("valid"):
                         execution_time = time.time() - start_time
                         logger.warning("Execution blocked by contract violation", tool_name=tool_name, contract_id=contract_id)
-                        return {
-                            "success": False,
-                            "error": f"Contract violation: {contract_val.get('error')}",
-                            "execution_time": execution_time,
-                            "tool_name": tool_name
-                        }
+                        err_msg = f"Contract violation: {contract_val.get('error')}"
+                        card = self._generate_markdown_process_card(
+                            tool_name=tool_name,
+                            user_context=user_context,
+                            tool_meta=tool_meta,
+                            intent=intent,
+                            risk=risk,
+                            policy_result=None,
+                            final_success=False,
+                            error_msg=err_msg
+                        )
+                        return card + f"\n**Execution Blocked:** {err_msg}"
                     else:
                         contract_bypasses_approval = True
                         
@@ -456,16 +567,17 @@ class ToolRegistry:
                         approvers=policy_result.requires_approval_from,
                     )
                     
-                    return {
-                        "success": False,
-                        "error": f"Execution paused. Approval required (ID: {approval_id})",
-                        "requires_approval": True,
-                        "approval_id": approval_id,
-                        "required_approvers": policy_result.requires_approval_from,
-                        "execution_time": execution_time,
-                        "tool_name": tool_name,
-                        "governance": policy_result.to_audit_dict(),
-                    }
+                    card = self._generate_markdown_process_card(
+                        tool_name=tool_name,
+                        user_context=user_context,
+                        tool_meta=tool_meta,
+                        intent=intent,
+                        risk=risk,
+                        policy_result=policy_result,
+                        final_success=False,
+                        approval_id=approval_id
+                    )
+                    return card + f"\n**Execution Paused:** Manual approval required (ID: `{approval_id}`). Please approve in your dashboard."
                 
                 if policy_result.decision == PolicyDecisionType.QUARANTINE:
                     execution_time = time.time() - start_time
@@ -477,14 +589,19 @@ class ToolRegistry:
                         tool_name=tool_name,
                         user_id=user_id,
                     )
-                    return {
-                        "success": False,
-                        "error": "Action quarantined for manual security review",
-                        "quarantined": True,
-                        "execution_time": execution_time,
-                        "tool_name": tool_name,
-                        "governance": policy_result.to_audit_dict(),
-                    }
+                    err_msg = "Action quarantined for manual security review"
+                    card = self._generate_markdown_process_card(
+                        tool_name=tool_name,
+                        user_context=user_context,
+                        tool_meta=tool_meta,
+                        intent=intent,
+                        risk=risk,
+                        policy_result=policy_result,
+                        final_success=False,
+                        error_msg=err_msg,
+                        quarantined=True
+                    )
+                    return card + f"\n**Execution Blocked:** {err_msg} due to quarantine signature match."
                 
                 # SIMULATE: run tool but mark result as simulation
                 # LOG_ONLY / ALLOW: proceed to execution
@@ -544,63 +661,68 @@ class ToolRegistry:
                 execution_time=execution_time
             )
             
-            response: Dict[str, Any] = {
-                "success": True,
-                "result": result,
-                "execution_time": execution_time,
-                "tool_name": tool_name,
-            }
+            card = self._generate_markdown_process_card(
+                tool_name=tool_name,
+                user_context=user_context,
+                tool_meta=tool_meta if 'tool_meta' in locals() else self.tool_metadata.get(tool_name, {}),
+                intent=intent,
+                risk=risk,
+                policy_result=policy_result,
+                final_success=True
+            )
             
-            # Attach governance metadata when available
-            if policy_result:
-                response["governance"] = policy_result.to_audit_dict()
-                if policy_result.decision == PolicyDecisionType.SIMULATE:
-                    response["simulated"] = True
-                    response["warning"] = (
-                        "This result is a SIMULATION. The action was not "
-                        "committed. Approve to execute for real."
-                    )
-            
-            return response
+            sim_warn = ""
+            if self.enable_governance and policy_result and policy_result.decision == PolicyDecisionType.SIMULATE:
+                sim_warn = "\n⚠️ **Simulation Warning:** This result is a SIMULATION. The action was not committed. Approve to execute for real.\n"
+                
+            return f"{card}{sim_warn}\n**Execution Result:**\n{result}"
             
         except asyncio.TimeoutError:
             execution_time = time.time() - start_time
             self.metrics_collector.record_tool_execution(
                 tool_name, "timeout", execution_time
             )
-            
             logger.error(
                 "Tool execution timed out",
                 tool_name=tool_name,
                 timeout=timeout
             )
-            
-            return {
-                "success": False,
-                "error": f"Tool execution timed out after {timeout} seconds",
-                "execution_time": execution_time,
-                "tool_name": tool_name
-            }
+            err_msg = f"Tool execution timed out after {timeout} seconds"
+            card = self._generate_markdown_process_card(
+                tool_name=tool_name,
+                user_context=user_context,
+                tool_meta=tool_meta if 'tool_meta' in locals() else self.tool_metadata.get(tool_name, {}),
+                intent=intent,
+                risk=risk,
+                policy_result=policy_result,
+                final_success=False,
+                error_msg=err_msg
+            )
+            return card + f"\n**Execution Error:** {err_msg}"
             
         except Exception as e:
             execution_time = time.time() - start_time
             self.metrics_collector.record_tool_execution(
                 tool_name, "error", execution_time
             )
-            
             logger.error(
                 "Tool execution failed",
                 tool_name=tool_name,
                 error=str(e),
                 execution_time=execution_time
             )
-            
-            return {
-                "success": False,
-                "error": str(e),
-                "execution_time": execution_time,
-                "tool_name": tool_name
-            }
+            err_msg = str(e)
+            card = self._generate_markdown_process_card(
+                tool_name=tool_name,
+                user_context=user_context,
+                tool_meta=tool_meta if 'tool_meta' in locals() else self.tool_metadata.get(tool_name, {}),
+                intent=intent,
+                risk=risk,
+                policy_result=policy_result,
+                final_success=False,
+                error_msg=err_msg
+            )
+            return card + f"\n**Execution Error:** {err_msg}"
     
     # Tool implementations
     

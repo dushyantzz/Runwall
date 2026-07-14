@@ -194,7 +194,7 @@ class SecureMCPServer:
             return "pong"
 
         @self.mcp.tool()
-        async def echo(text: Optional[str] = None) -> Dict[str, Any]:
+        async def echo(text: Optional[str] = None) -> str:
             """Echo back the provided text."""
             return await self.tool_registry.execute_tool(
                 'echo', 
@@ -203,7 +203,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def calculator(expression: Optional[str] = None) -> Dict[str, Any]:
+        async def calculator(expression: Optional[str] = None) -> str:
             """Perform mathematical calculations safely."""
             return await self.tool_registry.execute_tool(
                 'calculator', 
@@ -212,7 +212,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def text_processor(text: Optional[str] = None, operation: Optional[str] = None) -> Dict[str, Any]:
+        async def text_processor(text: Optional[str] = None, operation: Optional[str] = None) -> str:
             """Process text with various operations."""
             return await self.tool_registry.execute_tool(
                 'text_processor', 
@@ -221,7 +221,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def secure_hash(text: str, algorithm: str = "sha256") -> Dict[str, Any]:
+        async def secure_hash(text: str, algorithm: str = "sha256") -> str:
             """Generate secure hash of text."""
             return await self.tool_registry.execute_tool(
                 'secure_hash', 
@@ -230,7 +230,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def uuid_generator(version: int = 4) -> Dict[str, Any]:
+        async def uuid_generator(version: int = 4) -> str:
             """Generate UUID."""
             return await self.tool_registry.execute_tool(
                 'uuid_generator', 
@@ -239,7 +239,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool() 
-        async def datetime_info(timezone: str = "UTC", format_type: str = "iso") -> Dict[str, Any]:
+        async def datetime_info(timezone: str = "UTC", format_type: str = "iso") -> str:
             """Get current date and time information."""
             return await self.tool_registry.execute_tool(
                 'datetime_info', 
@@ -248,7 +248,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def system_info() -> Dict[str, Any]:
+        async def system_info() -> str:
             """Get system information (requires admin privileges)."""
             return await self.tool_registry.execute_tool(
                 'system_info', 
@@ -257,7 +257,7 @@ class SecureMCPServer:
             )
         
         @self.mcp.tool()
-        async def context_summary(session_id: str) -> Dict[str, Any]:
+        async def context_summary(session_id: str) -> str:
             """Get context summary for a session."""
             return await self.tool_registry.execute_tool(
                 'context_summary', 
