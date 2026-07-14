@@ -314,7 +314,7 @@ function IntroductionDoc() {
       <p style={{ lineHeight: '1.6' }}>
         Everyone is wiring AI agents into production environments (Salesforce, Slack, internal databases, shell terminals) using standard protocols like the Model Context Protocol (MCP). Unprotected, these connections behave like unlocked doors:
       </p>
-      
+
       <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <li><strong>Prompt Injection Threat:</strong> A malicious instruction hidden in a web page or file can hijack your agent into executing destructive actions (e.g., "delete database").</li>
         <li><strong>Infinite Loops:</strong> A minor agent logic loop can trigger thousands of API calls in minutes, draining budgets.</li>
@@ -324,7 +324,7 @@ function IntroductionDoc() {
       <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
         Core Pillars of Governance
       </h2>
-      
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
         <div style={{ padding: '16px', border: '1px solid #1c1c1c', borderRadius: '8px', background: '#050505' }}>
           <h4 style={{ color: '#fff', fontWeight: 600, marginBottom: '6px', fontSize: '14px' }}>🛡️ Intent-Aware Policy</h4>
@@ -343,14 +343,15 @@ function IntroductionDoc() {
   );
 }
 
-/* ── B. QUICK START DOC ── */
 function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
   const mcpConfig = `{
   "mcpServers": {
-    "runwall": {
-      "url": "https://runwall.onrender.com/sse",
-      "headers": {
-        "Authorization": "Bearer <your-api-key>"
+    "runwall": {i 
+      "command": "npx",
+      "args": ["-y", "@runwall/mcp"],
+      "env": {
+        "RUNWALL_API_KEY": "<your-api-key>",
+        "RUNWALL_URL": "https://runwall.vercel.app/mcp"
       }
     }
   }
@@ -409,7 +410,7 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
       <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#b4b4b4' }}>
         Open the MCP configuration file corresponding to your AI assistant application and paste the copied block into the main JSON structure:
       </p>
-      
+
       <table style={{
         width: '100%',
         borderCollapse: 'collapse',
