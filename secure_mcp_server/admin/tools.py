@@ -231,10 +231,10 @@ def register_admin_tools(mcp: FastMCP):
         """View all registered tools and their metadata."""
         user_ctx = _require_admin(mcp.current_request)
         
-        # In a real setup, we'd fetch from ToolRegistry, but for MCP we can list registered tools
-        # mcp._tools is a dictionary of Tool objects in FastMCP
+        # Get active tools dynamically from FastMCP using its async get_tools() API
         tools_info = []
-        for name, tool in mcp._tools.items():
+        active_tools = await mcp.get_tools()
+        for name, tool in active_tools.items():
             tools_info.append({
                 "name": name,
                 "description": tool.description,
@@ -432,4 +432,47 @@ def register_admin_tools(mcp: FastMCP):
             "explanation": result.explanation,
             "simulated_intent": intent.intent_category.value,
             "simulated_risk": risk.score
+        }
+
+    @mcp.tool()
+    async def get_active_policies() -> Dict[str, Any]:
+        """
+        Get the current active OPA/Rego policies being evaluated.
+        """
+        import os
+        user_ctx = _require_admin(mcp.current_request)
+        tenant_id = user_ctx.get("tenant_id", "default")
+        
+        # 1. Read default file-based policy
+        rego_path = os.path.join("secure_mcp_server", "policies", "governance.rego")
+        file_policy = ""
+        if os.path.exists(rego_path):
+            try:
+                with open(rego_path, "r") as f:
+                    file_policy = f.read()
+            except Exception as e:
+                logger.error("Failed to read governance.rego", error=str(e))
+                
+        # 2. Check DB for active policy bundle
+        db_policy = None
+        try:
+            async with get_db_manager().get_session_context() as db:
+                stmt = select(PolicyBundle).where(PolicyBundle.tenant_id == tenant_id, PolicyBundle.is_active == True)
+                result = await db.execute(stmt)
+                bundle = result.scalars().first()
+                if bundle:
+                    db_policy = {
+                        "id": bundle.id,
+                        "version": bundle.version,
+                        "rego_content": bundle.rego_content,
+                        "is_simulation_mode": bundle.is_simulation_mode,
+                        "rollout_percentage": bundle.rollout_percentage
+                    }
+        except Exception as e:
+            logger.error("Failed to fetch active PolicyBundle from DB", error=str(e))
+            
+        return {
+            "success": True,
+            "default_file_policy": file_policy,
+            "active_database_bundle": db_policy
         }

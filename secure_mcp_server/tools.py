@@ -425,7 +425,7 @@ class ToolRegistry:
                         error_msg=err_msg,
                         quarantined=True
                     )
-                    return card + f"\n**Execution Blocked:** {err_msg}"
+                    raise PermissionError(card + f"\n**Execution Blocked:** {err_msg}")
                 
                 # Fetch session taints
                 session_id = user_context.get("session_id")
@@ -486,7 +486,7 @@ class ToolRegistry:
                         final_success=False,
                         error_msg=f"Policy denied: {policy_result.explanation}"
                     )
-                    return card + f"\n**Execution Blocked:** Policy denied - {policy_result.explanation}"
+                    raise PermissionError(card + f"\n**Execution Blocked:** Policy denied - {policy_result.explanation}")
                 
                 if self.quota_manager and risk.score >= 0.5:
                     try:
@@ -526,7 +526,7 @@ class ToolRegistry:
                             final_success=False,
                             error_msg=err_msg
                         )
-                        return card + f"\n**Execution Blocked:** {err_msg}"
+                        raise PermissionError(card + f"\n**Execution Blocked:** {err_msg}")
                     else:
                         contract_bypasses_approval = True
                         
@@ -601,7 +601,7 @@ class ToolRegistry:
                         error_msg=err_msg,
                         quarantined=True
                     )
-                    return card + f"\n**Execution Blocked:** {err_msg} due to quarantine signature match."
+                    raise PermissionError(card + f"\n**Execution Blocked:** {err_msg} due to quarantine signature match.")
                 
                 # SIMULATE: run tool but mark result as simulation
                 # LOG_ONLY / ALLOW: proceed to execution

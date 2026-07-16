@@ -30,6 +30,10 @@ deny[msg] {
 }
 
 has_all_permissions(user_perms, req_perms) {
+    user_perms[_] == "*"
+}
+
+has_all_permissions(user_perms, req_perms) {
     count({p | p := req_perms[_]; p == user_perms[_]}) == count(req_perms)
 }
 
