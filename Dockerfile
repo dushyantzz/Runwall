@@ -31,7 +31,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Shell form so $MODE is expanded at runtime
 CMD if [ "$MODE" = "api" ]; then \
-        uvicorn mcp_server.main:app --host 0.0.0.0 --port 8000; \
+        uvicorn secure_mcp_server.api.app:app --host 0.0.0.0 --port 8000; \
     else \
         python -m secure_mcp_server.main; \
     fi
