@@ -446,10 +446,9 @@ async def amain():
         # Route /mcp requests directly to the Streamable HTTP app
         logger.info("Routing /mcp directly to Streamable HTTP app")
         mcp_http_app = server.mcp.http_app(transport="streamable-http")
-        
-        @api_app.api_route("/mcp", methods=["GET", "POST"])
-        async def mcp_streamable_route(request: Request):
-            return await mcp_http_app(request.scope, request.receive, request.send)
+        for route in mcp_http_app.routes:
+            if route.path == "/mcp":
+                api_app.routes.append(route)
 
         # Mount MCP SSE application at root to expose /sse and /messages
         # (legacy compatibility for older MCP clients)
