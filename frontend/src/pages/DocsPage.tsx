@@ -431,12 +431,24 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
             <td style={{ padding: '10px 12px' }}><code>%USERPROFILE%\.gemini\config\mcp_config.json</code></td>
           </tr>
           <tr style={{ borderBottom: '1px solid #141414' }}>
-            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Claude Desktop</strong></td>
+            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Claude Desktop / Claude Code</strong></td>
             <td style={{ padding: '10px 12px' }}><code>%APPDATA%\Claude\claude_desktop_config.json</code></td>
           </tr>
           <tr style={{ borderBottom: '1px solid #141414' }}>
             <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Cline (VS Code)</strong></td>
             <td style={{ padding: '10px 12px' }}><code>%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json</code></td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Windsurf</strong></td>
+            <td style={{ padding: '10px 12px' }}><code>~/.codeium/windsurf/mcp_config.json</code></td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>Trae / Qoder / Copilot</strong></td>
+            <td style={{ padding: '10px 12px' }}>Configure via the Trae / Qoder / Copilot MCP Settings panel (select <strong>command</strong> / stdio transport)</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #141414' }}>
+            <td style={{ padding: '10px 12px', color: '#fff' }}><strong>KIRO / Codex / Custom Agents</strong></td>
+            <td style={{ padding: '10px 12px' }}>HTTP POST to the remote URL gateway endpoint using your custom API Key</td>
           </tr>
         </tbody>
       </table>

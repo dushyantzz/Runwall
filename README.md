@@ -370,13 +370,14 @@ That's it — your agent is now authenticated, rate-limited, taint-tracked, audi
 
 ##  Client Integration
 
-| Client | Recommended Method | Config Key |
+| Client | Recommended Method | Config Key / Reference |
 |---|---|---|
-| **Claude Web / API** | Remote URL (Streamable HTTP) | `url: https://mcp.runwall.dev/mcp` |
-| **Claude Desktop** | `npx @runwall/mcp` (stdio) or remote URL | See Quick Start above |
-| **Cursor** | Remote URL in MCP settings | `url: https://mcp.runwall.dev/mcp` |
-| **VS Code (Cline)** | Remote URL in MCP config | `url: https://mcp.runwall.dev/mcp` |
-| **Custom Agents** | HTTP POST to `/mcp` endpoint | `Authorization: Bearer YOUR_KEY` |
+| **Claude Desktop / Claude Code** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
+| **Cursor** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
+| **VS Code (Cline)** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
+| **Windsurf** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
+| **Trae / Qoder / Copilot** | Settings panel configuration | Configure via the built-in MCP panel (Stdio connection) |
+| **KIRO / Codex / Custom Agents** | HTTP POST to `/mcp` gateway | `Authorization: Bearer YOUR_KEY` (Streamable HTTP) |
 
 **Transport Support:**
 - **Primary**: Streamable HTTP at `/mcp` (recommended)
