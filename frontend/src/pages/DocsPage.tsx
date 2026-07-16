@@ -75,6 +75,12 @@ export default function DocsPage() {
       category: 'getting-started',
       component: <FunctionsDoc />
     },
+    {
+      id: 'agent-integration',
+      title: 'Agent Integration',
+      category: 'getting-started',
+      component: <AgentIntegrationDoc />
+    },
     // Core Features
     { id: 'identity-access-control', title: 'Identity & Access Control', icon: Fingerprint, category: 'features', component: <IdentityAccessControl /> },
     { id: 'tenant-management', title: 'Tenant & Org Management', icon: Building2, category: 'features', component: <TenantManagement /> },
@@ -346,12 +352,12 @@ function IntroductionDoc() {
 function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
   const mcpConfig = `{
   "mcpServers": {
-    "runwall": {i 
+    "runwall": {
       "command": "npx",
       "args": ["-y", "@runwall/mcp"],
       "env": {
         "RUNWALL_API_KEY": "<your-api-key>",
-        "RUNWALL_URL": "https://runwall.vercel.app/mcp"
+        "RUNWALL_URL": "https://calm-cloud-km6b6.run.mcp-use.com/mcp"
       }
     }
   }
@@ -636,6 +642,160 @@ function FunctionsDoc() {
           </tr>
         </tbody>
       </table>
+    </article>
+  );
+}
+
+/* ── B.3 AGENT INTEGRATION DOC ── */
+function AgentIntegrationDoc() {
+  return (
+    <article style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} id="agent-integration">
+      <h1 style={{
+        fontSize: '32px',
+        fontWeight: 600,
+        color: 'var(--heading, #ffffff)',
+        fontFamily: 'var(--font-display)',
+        letterSpacing: '-0.02em',
+      }}>
+        Agentic Framework Integration
+      </h1>
+
+      <p style={{ fontSize: '16px', lineHeight: '1.7' }}>
+        Learn how to configure the Runwall MCP governance gateway inside popular AI agent frameworks including LangChain, LangGraph, CrewAI, AutoGen, and custom Python/TypeScript agents.
+      </p>
+
+      {/* LangChain (Python) */}
+      <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
+        🐍 LangChain / LangGraph (Python)
+      </h3>
+      <p style={{ fontSize: '14px', color: '#b4b4b4', lineHeight: '1.6' }}>
+        Integrate the Runwall remote gateway into your LangChain workflow using the standard MCP client bridge:
+      </p>
+      <pre style={{
+        background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
+        padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
+      }}>
+        <code>{`from langchain_openai import ChatOpenAI
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+# 1. Define Runwall connection parameters
+server_params = StdioServerParameters(
+    command="npx",
+    args=["-y", "@runwall/mcp"],
+    env={
+        "RUNWALL_API_KEY": "YOUR_API_KEY",
+        "RUNWALL_URL": "https://calm-cloud-km6b6.run.mcp-use.com/mcp"
+    }
+)
+
+# 2. Establish governor channel and fetch tools
+async with stdio_client(server_params) as (read_stream, write_stream):
+    async with ClientSession(read_stream, write_stream) as session:
+        await session.initialize()
+        tools = await session.list_tools()
+        
+        # Bind governance-wrapped tools to LLM
+        llm = ChatOpenAI(model="gpt-4o").bind_tools(tools)`}</code>
+      </pre>
+
+      {/* CrewAI */}
+      <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
+        🚀 CrewAI
+      </h3>
+      <p style={{ fontSize: '14px', color: '#b4b4b4', lineHeight: '1.6' }}>
+        Expose Runwall tools to your CrewAI agents. CrewAI automatically leverages tool descriptions and schemas to invoke them safely:
+      </p>
+      <pre style={{
+        background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
+        padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
+      }}>
+        <code>{`from crewai import Agent, Crew, Task
+from crewai.tools import tool
+import httpx
+
+@tool("Runwall Tool Runner")
+def runwall_tool(tool_name: str, arguments: dict) -> str:
+    """Executes a tool securely routed through the Runwall governance gateway."""
+    headers = {"Authorization": "Bearer YOUR_API_KEY"}
+    payload = {
+        "method": "tools/call",
+        "params": {"name": tool_name, "arguments": arguments}
+    }
+    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    return res.text
+
+# Define Governed Security Agent
+security_agent = Agent(
+    role="Database Administrator",
+    goal="Safely query and mutate database records",
+    backstory="An automated DBA operating strictly under enterprise security rules.",
+    tools=[runwall_tool],
+    verbose=True
+)`}</code>
+      </pre>
+
+      {/* Microsoft AutoGen */}
+      <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
+        🤖 Microsoft AutoGen
+      </h3>
+      <p style={{ fontSize: '14px', color: '#b4b4b4', lineHeight: '1.6' }}>
+        Register Runwall's remote MCP tools to an AutoGen Conversational Agent:
+      </p>
+      <pre style={{
+        background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
+        padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
+      }}>
+        <code>{`import autogen
+import httpx
+
+# Configure LLM Client
+config_list = [{"model": "gpt-4", "api_key": "YOUR_OPENAI_KEY"}]
+assistant = autogen.AssistantAgent(name="governed_assistant", llm_config={"config_list": config_list})
+user_proxy = autogen.UserProxyAgent(name="user_proxy", code_execution_config=False)
+
+# Register tool on AutoGen agent
+@user_proxy.register_for_execution()
+@assistant.register_for_llm(description="Secure math calculator governed by Runwall policies")
+def calculator(expression: str) -> str:
+    headers = {"Authorization": "Bearer YOUR_API_KEY"}
+    payload = {"method": "tools/call", "params": {"name": "calculator", "arguments": {"expression": expression}}}
+    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    return res.json().get("result", {}).get("content", [{}])[0].get("text", "Error")`}</code>
+      </pre>
+
+      {/* Custom JS/TS Agents */}
+      <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', marginTop: '12px' }}>
+        ⚡ LangChain (TypeScript) & Custom JS Agents
+      </h3>
+      <p style={{ fontSize: '14px', color: '#b4b4b4', lineHeight: '1.6' }}>
+        Integrate using the official Model Context Protocol TypeScript SDK:
+      </p>
+      <pre style={{
+        background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
+        padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
+      }}>
+        <code>{`import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+
+// 1. Establish SSE Transport with API Key header
+const transport = new SSEClientTransport(
+  new URL("https://calm-cloud-km6b6.run.mcp-use.com/sse"),
+  {
+    eventSourceInitDict: {
+      headers: {
+        Authorization: "Bearer YOUR_API_KEY",
+      },
+    },
+  }
+);
+
+// 2. Initialize Client and list tools
+const client = new Client({ name: "runwall-client", version: "1.0.0" });
+await client.connect(transport);
+const tools = await client.listTools();
+console.log("Governed Tools Loaded:", tools);`}</code>
+      </pre>
     </article>
   );
 }

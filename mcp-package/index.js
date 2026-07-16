@@ -7,7 +7,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
 const apiKey = process.env.RUNWALL_API_KEY;
-const runwallUrl = process.env.RUNWALL_URL || "https://runwall.vercel.app/mcp";
+const runwallUrl = process.env.RUNWALL_URL || "https://calm-cloud-km6b6.run.mcp-use.com/mcp";
 
 if (!apiKey) {
   console.error("Error: RUNWALL_API_KEY environment variable is required.");

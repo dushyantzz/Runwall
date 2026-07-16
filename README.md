@@ -275,7 +275,7 @@ No setup required. Connect your AI client directly to the hosted Runwall endpoin
 **Runwall MCP Endpoint**
 
 ```
-URL:       https://mcp.runwall.dev/mcp
+URL:       https://calm-cloud-km6b6.run.mcp-use.com/mcp
 Transport: Streamable HTTP
 Auth:      API Key (Bearer token)
 ```
@@ -286,7 +286,7 @@ Auth:      API Key (Bearer token)
 {
   "mcpServers": {
     "runwall": {
-      "url": "https://mcp.runwall.dev/mcp",
+      "url": "https://calm-cloud-km6b6.run.mcp-use.com/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -319,7 +319,7 @@ Auth:      API Key (Bearer token)
     {
       "type": "url",
       "name": "runwall",
-      "url": "https://mcp.runwall.dev/mcp",
+      "url": "https://calm-cloud-km6b6.run.mcp-use.com/mcp",
       "authorization_token": "YOUR_API_KEY"
     }
   ],
@@ -357,7 +357,7 @@ async def run_governed_tool(api_key, tool_name, arguments):
         "params": {"name": tool_name, "arguments": arguments}
     }
     response = await httpx.post(
-        "https://mcp.runwall.dev/mcp",
+        "https://calm-cloud-km6b6.run.mcp-use.com/mcp",
         json=payload,
         headers=headers,
     )
@@ -372,10 +372,10 @@ That's it — your agent is now authenticated, rate-limited, taint-tracked, audi
 
 | Client | Recommended Method | Config Key / Reference |
 |---|---|---|
-| **Claude Desktop / Claude Code** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
-| **Cursor** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
-| **VS Code (Cline)** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
-| **Windsurf** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.dev/mcp` or `npx -y @runwall/mcp` |
+| **Claude Desktop / Claude Code** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
+| **Cursor** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
+| **VS Code (Cline)** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
+| **Windsurf** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
 | **Trae / Qoder / Copilot** | Settings panel configuration | Configure via the built-in MCP panel (Stdio connection) |
 | **KIRO / Codex / Custom Agents** | HTTP POST to `/mcp` gateway | `Authorization: Bearer YOUR_KEY` (Streamable HTTP) |
 
@@ -420,6 +420,84 @@ Common endpoints:
 ##  License & Support
 
 Runwall is distributed as a Docker image (`dushyantzz/secure-mcp-server:latest`). For issues, feature requests, or policy authoring help, consult the in-app Swagger docs at `/docs` or your internal platform team.
+
+---
+
+## 🤖 Agentic Framework Integration Examples
+
+### 1. LangChain / LangGraph (Python)
+Integrate the Runwall remote gateway into your LangChain workflow using the standard MCP client bridge:
+```python
+from langchain_openai import ChatOpenAI
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+# Define connection parameters
+server_params = StdioServerParameters(
+    command="npx",
+    args=["-y", "@runwall/mcp"],
+    env={
+        "RUNWALL_API_KEY": "YOUR_API_KEY",
+        "RUNWALL_URL": "https://calm-cloud-km6b6.run.mcp-use.com/mcp"
+    }
+)
+
+# Establish connection
+async with stdio_client(server_params) as (read_stream, write_stream):
+    async with ClientSession(read_stream, write_stream) as session:
+        await session.initialize()
+        tools = await session.list_tools()
+        
+        # Bind governance-wrapped tools to LLM
+        llm = ChatOpenAI(model="gpt-4o").bind_tools(tools)
+```
+
+### 2. CrewAI
+Expose Runwall tools to your CrewAI agents. CrewAI automatically leverages tool descriptions and schemas to invoke them safely:
+```python
+from crewai import Agent
+from crewai.tools import tool
+import httpx
+
+@tool("Runwall Tool Runner")
+def runwall_tool(tool_name: str, arguments: dict) -> str:
+    """Executes a tool securely routed through the Runwall governance gateway."""
+    headers = {"Authorization": "Bearer YOUR_API_KEY"}
+    payload = {
+        "method": "tools/call",
+        "params": {"name": tool_name, "arguments": arguments}
+    }
+    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    return res.text
+
+# Define Governed DBA Agent
+dba_agent = Agent(
+    role="Database Administrator",
+    goal="Safely query and mutate database records",
+    backstory="An automated DBA operating strictly under enterprise security rules.",
+    tools=[runwall_tool],
+    verbose=True
+)
+```
+
+### 3. Microsoft AutoGen
+Register Runwall's remote MCP tools to an AutoGen Conversational Agent:
+```python
+import autogen
+import httpx
+
+config_list = [{"model": "gpt-4", "api_key": "YOUR_OPENAI_KEY"}]
+assistant = autogen.AssistantAgent(name="governed_assistant", llm_config={"config_list": config_list})
+user_proxy = autogen.UserProxyAgent(name="user_proxy", code_execution_config=False)
+
+@user_proxy.register_for_execution()
+@assistant.register_for_llm(description="Secure math calculator governed by Runwall policies")
+def calculator(expression: str) -> str:
+    headers = {"Authorization": "Bearer YOUR_API_KEY"}
+    payload = {"method": "tools/call", "params": {"name": "calculator", "arguments": {"expression": expression}}}
+    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    return res.json().get("result", {}).get("content", [{}])[0].get("text", "Error")
+```
 
 ---
 
