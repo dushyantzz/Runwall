@@ -11,6 +11,7 @@ from fastmcp import FastMCP
 from mcp.types import Resource, Tool
 import structlog
 import uvicorn
+from fastapi import Request
 from secure_mcp_server.api.app import app as api_app
 
 from .config import Settings, get_settings
@@ -442,9 +443,13 @@ async def amain():
         logger.info("Starting server")
         await server.start()
         
-        # Mount MCP Streamable HTTP at /mcp (primary, per MCP spec)
-        logger.info("Mounting MCP Streamable HTTP app at /mcp")
-        api_app.mount("/mcp", server.mcp.http_app(transport="streamable-http"))
+        # Route /mcp requests directly to the Streamable HTTP app
+        logger.info("Routing /mcp directly to Streamable HTTP app")
+        mcp_http_app = server.mcp.http_app(transport="streamable-http")
+        
+        @api_app.api_route("/mcp", methods=["GET", "POST"])
+        async def mcp_streamable_route(request: Request):
+            return await mcp_http_app(request.scope, request.receive, request.send)
 
         # Mount MCP SSE application at root to expose /sse and /messages
         # (legacy compatibility for older MCP clients)
