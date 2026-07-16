@@ -452,8 +452,9 @@ async def amain():
         api_app.mount("/", server.mcp.http_app(transport="sse"))
         
         # Start API server in the background
-        logger.info("Starting REST API Control Plane on port 8000")
-        config = uvicorn.Config(api_app, host="0.0.0.0", port=8000, log_level="info")
+        port = int(os.environ.get("PORT", 8000))
+        logger.info(f"Starting REST API Control Plane on port {port}")
+        config = uvicorn.Config(api_app, host="0.0.0.0", port=port, log_level="info")
         api_server = uvicorn.Server(config)
         
         # Keep server running
