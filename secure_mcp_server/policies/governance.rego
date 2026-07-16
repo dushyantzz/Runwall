@@ -21,6 +21,23 @@ deny[msg] {
     msg := "Mutating actions are not allowed when session is tainted"
 }
 
+# Deny shell injection in string parameters
+deny[msg] {
+    some key
+    val := input.arguments[key]
+    is_string(val)
+    regex.match("[;&|`$]", val)
+    msg := sprintf("Injection detected in parameter '%v': contains dangerous characters", [key])
+}
+
+# Deny execution if session is tainted and category is sensitive
+deny[msg] {
+    taint_blocking_categories := {"write", "execute", "delete", "configure", "admin"}
+    taint_blocking_categories[input.intent.intent_category]
+    count(input.taints) > 0
+    msg := sprintf("Tainted session cannot execute sensitive action: category '%v'", [input.intent.intent_category])
+}
+
 # Deny access if user context does not have required permissions
 deny[msg] {
     req_perms := input.tool_metadata.permissions_required
@@ -55,6 +72,13 @@ require_approval[msg] {
     input.tool_metadata.sensitivity_level == "restricted"
     input.user_context.role != "admin"
     msg := "Restricted sensitivity tools require admin approval for non-admins"
+}
+
+# Require approval for any delete action that has risk >= 0.7
+require_approval[msg] {
+    input.intent.intent_category == "delete"
+    input.risk.score >= 0.7
+    msg := "Destructive delete actions require manual approval"
 }
 
 # ---------------------------------------------------------------------------

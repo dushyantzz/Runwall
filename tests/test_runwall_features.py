@@ -339,3 +339,78 @@ async def test_access_control_and_validations(test_settings):
     assert "Mismatched" in err or "Unclosed" in err
     # Valid syntax
     assert validate_rego_syntax("package secure_mcp.governance\nallow = true") is None
+
+
+# -----------------------------------------------------------------------------
+# 14. Shell Injection, Taint tracking and Destructive Delete Rules
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_new_policies_enforcement(test_settings):
+    from secure_mcp_server.governance.opa_evaluator import OPAPolicyEvaluator
+    from secure_mcp_server.governance.risk_scorer import RiskScorer
+    from secure_mcp_server.governance.intent_types import IntentCategory, BlastRadius, ResourceSensitivity, IntentClassification, PolicyDecisionType
+    
+    evaluator = OPAPolicyEvaluator()
+    scorer = RiskScorer()
+    
+    # 1. Test shell injection blocking
+    intent = IntentClassification(
+        tool_name="run_command",
+        intent_category=IntentCategory.EXECUTE,
+        blast_radius=BlastRadius.NONE,
+        resource_sensitivity=ResourceSensitivity.PUBLIC
+    )
+    risk = scorer.score(intent, {"role": "developer", "is_admin": False})
+    
+    res = await evaluator.evaluate(
+        intent=intent,
+        risk=risk,
+        user_context={"role": "developer", "tenant_id": "default"},
+        arguments={"command": "echo hello; rm -rf /"}
+    )
+    assert res.decision == PolicyDecisionType.DENY
+    assert "Injection detected" in res.explanation
+
+    # 2. Test tainted session sensitive action blocking
+    intent_write = IntentClassification(
+        tool_name="db_write",
+        intent_category=IntentCategory.WRITE,
+        blast_radius=BlastRadius.NONE,
+        resource_sensitivity=ResourceSensitivity.PUBLIC
+    )
+    
+    # Tainted session
+    intent_write.taint_labels = ["EXTERNAL_WEB"]
+    res_taint_blocked = await evaluator.evaluate(
+        intent=intent_write,
+        risk=risk,
+        user_context={"role": "developer", "tenant_id": "default"},
+        arguments={"data": "test"}
+    )
+    assert res_taint_blocked.decision == PolicyDecisionType.DENY
+    assert "Tainted session" in res_taint_blocked.explanation
+
+    # 3. Test high-risk delete requires approval
+    intent_delete = IntentClassification(
+        tool_name="delete_record",
+        intent_category=IntentCategory.DELETE,
+        blast_radius=BlastRadius.SYSTEM_WIDE,
+        resource_sensitivity=ResourceSensitivity.TOP_SECRET,
+        is_destructive=True
+    )
+    risk_delete = scorer.score(intent_delete, {"role": "developer", "is_admin": False})
+    
+    # Ensure risk score is in approval range (0.7 <= risk < 0.9)
+    # We can override score if needed, but let's see what scorer outputs first
+    if risk_delete.score >= 0.9 or risk_delete.score < 0.7:
+        # Override to force it into require_approval range for the policy rule check
+        risk_delete = risk_delete.model_copy(update={"score": 0.8})
+        
+    res_delete = await evaluator.evaluate(
+        intent=intent_delete,
+        risk=risk_delete,
+        user_context={"role": "developer", "tenant_id": "default"},
+        arguments={"id": 1}
+    )
+    assert res_delete.decision == PolicyDecisionType.REQUIRE_APPROVAL
+    assert "Delete actions require manual approval" in res_delete.explanation or "Destructive delete actions require manual approval" in res_delete.explanation

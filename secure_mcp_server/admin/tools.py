@@ -231,36 +231,8 @@ def register_admin_tools(mcp: FastMCP):
         """View all registered tools and their metadata."""
         user_ctx = _require_admin(mcp.current_request)
         
-        # Version-agnostic retrieval of tools dictionary from FastMCP
-        active_tools = {}
-        if hasattr(mcp, "get_tools"):
-            try:
-                res = mcp.get_tools()
-                import inspect
-                if inspect.iscoroutine(res) or inspect.isawaitable(res):
-                    active_tools = await res
-                else:
-                    active_tools = res
-            except Exception:
-                pass
-        
-        if not active_tools and hasattr(mcp, "_tools"):
-            active_tools = mcp._tools
-            
-        if not active_tools and hasattr(mcp, "_tool_manager"):
-            tm = mcp._tool_manager
-            if hasattr(tm, "_tools"):
-                active_tools = tm._tools
-            elif hasattr(tm, "list_tools"):
-                try:
-                    res = tm.list_tools()
-                    import inspect
-                    if inspect.iscoroutine(res) or inspect.isawaitable(res):
-                        active_tools = await res
-                    else:
-                        active_tools = res
-                except Exception:
-                    pass
+        # Get active tools dynamically from FastMCP using its async get_tools() API
+        active_tools = await mcp.get_tools()
                     
         # Parse metadata
         tools_info = []

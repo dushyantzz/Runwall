@@ -3,15 +3,22 @@ OPA / Rego Policy Evaluator.
 
 Evaluates execution intent, risk, and user context against versioned Rego policies.
 """
-from typing import Dict, Any, Optional, List
-import json
-import subprocess
 import asyncio
-import structlog
+import json
 import os
+import re
+from typing import Any, Dict, List, Optional
 
-from secure_mcp_server.governance.intent_types import IntentClassification, IntentCategory, RiskScore, PolicyDecisionType
-from secure_mcp_server.database import get_db_manager, PolicyDecisionLog
+import structlog
+
+from sqlalchemy.future import select
+from secure_mcp_server.database import PolicyDecisionLog, get_db_manager
+from secure_mcp_server.governance.intent_types import (
+    IntentCategory,
+    IntentClassification,
+    PolicyDecisionType,
+    RiskScore,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -21,6 +28,7 @@ class OPAPolicyResult:
         self.explanation = explanation
         self.matched_rule = None
         self.raw_output = raw_output or {}
+        self.requires_approval_from = None
 
     def to_audit_dict(self) -> Dict[str, Any]:
         return {
@@ -42,11 +50,37 @@ class OPAPolicyEvaluator:
         risk: RiskScore,
         user_context: Dict[str, Any],
         tool_metadata: Dict[str, Any] = None,
-        simulation_mode: bool = False
+        simulation_mode: bool = False,
+        arguments: Dict[str, Any] = None
     ) -> OPAPolicyResult:
         """Evaluate the execution against OPA policies."""
         
-        # 1. Construct the Input JSON
+        # 1. Resolve tenant and check database for active PolicyBundle
+        tenant_id = user_context.get("tenant_id") or "default"
+        db_policy_rego = None
+        try:
+            from secure_mcp_server.database import PolicyBundle
+            async with get_db_manager().get_session_context() as db:
+                stmt = select(PolicyBundle).where(PolicyBundle.tenant_id == tenant_id, PolicyBundle.is_active == True)
+                result = await db.execute(stmt)
+                db_bundle = result.scalars().first()
+                if db_bundle and db_bundle.rego_content:
+                    db_policy_rego = db_bundle.rego_content
+        except Exception as e:
+            logger.debug("Failed to query active PolicyBundle from DB, using file-based fallback", error=str(e))
+
+        # Determine path to evaluate
+        policy_file_path = self.default_policy
+        if db_policy_rego:
+            policy_file_path = os.path.join(self.policy_dir, f"active_db_{tenant_id}.rego")
+            try:
+                with open(policy_file_path, "w", encoding="utf-8") as f:
+                    f.write(db_policy_rego)
+            except Exception as e:
+                logger.error("Failed to write active PolicyBundle to file", error=str(e))
+                policy_file_path = self.default_policy
+
+        # 2. Construct the Input JSON
         input_data = {
             "input": {
                 "intent": {
@@ -59,18 +93,20 @@ class OPAPolicyEvaluator:
                 },
                 "user_context": user_context,
                 "tool_metadata": tool_metadata or {},
-                "taints": getattr(intent, "taint_labels", [])
+                "taints": getattr(intent, "taint_labels", []),
+                "arguments": arguments or {}
             }
         }
         
         decision_str = "ALLOW"
         explanation = "Execution permitted by default policies"
+        req_approvers = None
         
-        # 2. Attempt to run OPA
+        # 3. Attempt to run OPA
         try:
-            # Check if opa exists
+            # Check if OPA exists and execute evaluation
             proc = await asyncio.create_subprocess_shell(
-                f"opa eval -d {self.default_policy} 'data.secure_mcp.governance' -I",
+                f"opa eval -d {policy_file_path} 'data.secure_mcp.governance' -I",
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
@@ -84,6 +120,13 @@ class OPAPolicyEvaluator:
                     gov_data = result["result"][0].get("expressions", [])[0].get("value", {})
                     decision_str = gov_data.get("decision", "ALLOW")
                     explanation = gov_data.get("explanation", explanation)
+                    
+                    if decision_str == "REQUIRE_APPROVAL":
+                        if "admin" in explanation.lower():
+                            req_approvers = ["admin"]
+                        else:
+                            req_approvers = ["manager", "admin"]
+                            
                     logger.debug("OPA evaluation complete", decision=decision_str)
             else:
                 logger.warning("OPA evaluation failed, falling back to strict mock", stderr=stderr.decode())
@@ -93,10 +136,22 @@ class OPAPolicyEvaluator:
             logger.warning("OPA binary not found or execution failed, using fallback evaluation", error=str(e))
             decision_str, explanation = self._fallback_evaluation(input_data["input"])
 
-        # 3. Map to Python Enum
+        # Clean up temporary database policy file if created
+        if policy_file_path != self.default_policy:
+            try:
+                os.remove(policy_file_path)
+            except Exception:
+                pass
+
+        # 4. Map to Python Enum
         decision = PolicyDecisionType(decision_str.lower())
+        if decision == PolicyDecisionType.REQUIRE_APPROVAL and not req_approvers:
+            if "admin" in explanation.lower():
+                req_approvers = ["admin"]
+            else:
+                req_approvers = ["manager", "admin"]
         
-        # 4. Handle Simulation Mode
+        # 5. Handle Simulation Mode
         if simulation_mode and decision != PolicyDecisionType.ALLOW:
             logger.info(
                 "SIMULATION MODE: Would have blocked execution",
@@ -106,7 +161,7 @@ class OPAPolicyEvaluator:
             explanation = f"[SIMULATED] Would have resulted in {decision.value}: {explanation}"
             decision = PolicyDecisionType.ALLOW
             
-        # 5. Log to Database
+        # 6. Log to Database
         try:
             async with get_db_manager().get_session_context() as db:
                 log_entry = PolicyDecisionLog(
@@ -127,17 +182,47 @@ class OPAPolicyEvaluator:
         except Exception as e:
             logger.error("Failed to log policy decision to DB", error=str(e))
 
-        return OPAPolicyResult(decision=decision, explanation=explanation)
+        res = OPAPolicyResult(decision=decision, explanation=explanation)
+        res.requires_approval_from = req_approvers
+        return res
 
     def _fallback_evaluation(self, input_data: Dict[str, Any]) -> tuple[str, str]:
         """A native python fallback mimicking the Rego logic if the opa binary is missing."""
         intent_cat = input_data["intent"]["intent_category"]
         risk_score = input_data["risk"]["score"]
         taints = input_data["taints"]
+        arguments = input_data.get("arguments") or {}
         
-        if intent_cat == "delete" and risk_score >= 0.9:
-            return "DENY", "High risk destructive actions are strictly prohibited"
+        # 1. Shell Injection detection
+        for k, v in arguments.items():
+            if isinstance(v, str) and re.search(r'[;&|`$]', v):
+                return "DENY", f"Injection detected in parameter '{k}': contains dangerous characters"
+        
+        # 2. Destructive delete actions
+        if intent_cat == "delete":
+            if risk_score >= 0.9:
+                return "DENY", "High risk destructive actions are strictly prohibited"
+            elif risk_score >= 0.7:
+                return "REQUIRE_APPROVAL", "Destructive delete actions require manual approval"
+        
+        # 3. Taint Blocking on sensitive categories
+        taint_blocking_categories = {"write", "execute", "delete", "configure", "admin"}
+        if intent_cat in taint_blocking_categories and len(taints) > 0:
+            return "DENY", f"Tainted session cannot execute sensitive action: category '{intent_cat}'"
             
+        # 4. Check permissions required
+        req_perms = input_data.get("tool_metadata", {}).get("permissions_required") or []
+        user_perms = input_data.get("user_context", {}).get("permissions") or []
+        if req_perms:
+            has_perm = False
+            if "*" in user_perms:
+                has_perm = True
+            else:
+                has_perm = all(p in user_perms for p in req_perms)
+            if not has_perm:
+                return "DENY", f"Missing required permissions. Need: {req_perms}"
+            
+        # 5. Rest of the existing fallback rules
         if intent_cat == "write" and len(taints) > 0:
             return "DENY", "Mutating actions are not allowed when session is tainted"
             

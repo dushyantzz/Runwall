@@ -77,15 +77,9 @@ class SecureMCPServer:
             critical_risk_threshold=self.settings.critical_risk_threshold,
         )
         
-        # Resolve default policy action from settings
-        try:
-            default_action = PolicyDecisionType(self.settings.default_policy_action)
-        except ValueError:
-            default_action = PolicyDecisionType.DENY
-        
-        self.policy_evaluator = PolicyEvaluator(
-            default_action=default_action,
-        )
+        # Initialize OPA Policy Evaluator
+        from secure_mcp_server.governance.opa_evaluator import OPAPolicyEvaluator
+        self.policy_evaluator = OPAPolicyEvaluator()
         
         # Initialize tool registry with governance
         self.tool_registry = ToolRegistry(
@@ -456,18 +450,9 @@ async def amain():
         mcp_sse_app = server.mcp.http_app(transport="sse")
         api_app.mount("/", mcp_sse_app)
 
-        # Set up combined ASGI lifespan to initialize FastMCP task groups
-        from contextlib import asynccontextmanager
-        from fastapi import FastAPI
-
-        @asynccontextmanager
-        async def combined_lifespan(app: FastAPI):
-            logger.info("Executing combined FastAPI and FastMCP lifespans")
-            async with mcp_http_app.router.lifespan_context(mcp_http_app):
-                async with mcp_sse_app.router.lifespan_context(mcp_sse_app):
-                    yield
-
-        api_app.router.lifespan_context = combined_lifespan
+        # Store mcp apps in api_app.state for the dynamic lifespan manager
+        api_app.state.mcp_http_app = mcp_http_app
+        api_app.state.mcp_sse_app = mcp_sse_app
         
         # Start API server in the background
         port = int(os.environ.get("PORT", 8000))

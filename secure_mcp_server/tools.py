@@ -456,7 +456,8 @@ class ToolRegistry:
                     risk=risk,
                     user_context=user_context,
                     tool_metadata=tool_meta,
-                    simulation_mode=False
+                    simulation_mode=False,
+                    arguments=clean_arguments
                 )
                 
                 # Act on the policy decision

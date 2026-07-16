@@ -476,7 +476,7 @@ class PolicyEvaluator:
                         risk_level=risk.level.value,
                         decision=decision.value,
                         matched_rule_id=matched_rule.rule_id if matched_rule else None,
-                        evaluation_chain=[rm.to_audit_dict() for rm in evaluation_chain],
+                        evaluation_chain=[rm.model_dump() for rm in evaluation_chain],
                         explanation=explanation,
                         taint_labels=getattr(intent, "taint_labels", [])
                     )

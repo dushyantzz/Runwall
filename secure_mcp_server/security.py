@@ -33,6 +33,8 @@ class SecurityManager:
             r'<iframe[^>]*>',  # Iframe injection
             r'eval\s*\(',  # Code evaluation
             r'exec\s*\(',  # Code execution
+            r'[;&|`$]',  # Shell command chaining / substitution
+            r'\b(bash|sh|cmd|powershell|nc|curl|wget)\b',  # Dangerous CLI binaries
         ]
         
         self.compiled_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in self.dangerous_patterns]
