@@ -443,7 +443,7 @@ async def amain():
         logger.info("Starting server")
         await server.start()
         
-        # Route /mcp requests directly to the Streamable HTTP app
+        # Initialize and route the Streamable HTTP app
         logger.info("Routing /mcp directly to Streamable HTTP app")
         mcp_http_app = server.mcp.http_app(transport="streamable-http")
         for route in mcp_http_app.routes:
@@ -453,7 +453,21 @@ async def amain():
         # Mount MCP SSE application at root to expose /sse and /messages
         # (legacy compatibility for older MCP clients)
         logger.info("Mounting MCP SSE app onto REST API app (legacy)")
-        api_app.mount("/", server.mcp.http_app(transport="sse"))
+        mcp_sse_app = server.mcp.http_app(transport="sse")
+        api_app.mount("/", mcp_sse_app)
+
+        # Set up combined ASGI lifespan to initialize FastMCP task groups
+        from contextlib import asynccontextmanager
+        from fastapi import FastAPI
+
+        @asynccontextmanager
+        async def combined_lifespan(app: FastAPI):
+            logger.info("Executing combined FastAPI and FastMCP lifespans")
+            async with mcp_http_app.router.lifespan_context(mcp_http_app):
+                async with mcp_sse_app.router.lifespan_context(mcp_sse_app):
+                    yield
+
+        api_app.router.lifespan_context = combined_lifespan
         
         # Start API server in the background
         port = int(os.environ.get("PORT", 8000))
