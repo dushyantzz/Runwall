@@ -95,6 +95,49 @@ _ADMIN_PATTERNS: List[re.Pattern] = [
     )
 ]
 
+# Shell / code execution patterns — detected in argument values
+_EXECUTE_SHELL_PATTERNS: List[re.Pattern] = [
+    re.compile(p, re.IGNORECASE)
+    for p in (
+        r"\brm\s+-rf\b",         # rm -rf
+        r"\beval\s*\(",           # eval(
+        r"\bexec\s*\(",           # exec(
+        r"\bos\.system\s*\(",     # os.system(
+        r"\bsubprocess\b",        # subprocess
+        r"\b/bin/(sh|bash|zsh)\b",# shell invocation
+        r"\bcurl\s+http",         # curl http
+        r"\bwget\s+http",         # wget http
+        r"\bchmod\s+[0-9]+",      # chmod 777
+        r"\bchown\b",             # chown
+        r"\bnc\s+-\w+",           # netcat reverse shell
+        r"\bpython[23]?\s+-c\b",  # python -c
+        r"\bnode\s+-e\b",         # node -e
+    )
+]
+
+# Dangerous argument content patterns — used to upgrade risk regardless of tool name
+_DANGEROUS_CONTENT_PATTERNS: List[re.Pattern] = [
+    re.compile(p, re.IGNORECASE)
+    for p in (
+        r"rm\s+-rf",
+        r"DROP\s+TABLE",
+        r"DROP\s+DATABASE",
+        r"TRUNCATE\s+TABLE",
+        r"DELETE\s+FROM",
+        r"/etc/(passwd|shadow|sudoers)",
+        r"/dev/(null|zero|urandom|sda)",
+        r"eval\s*\(",
+        r"exec\s*\(",
+        r"__import__",
+        r"os\.system",
+        r"subprocess\.call",
+        r"base64\.decode",
+        r"'; DROP",               # Classic SQL injection
+        r"UNION SELECT",
+        r"INSERT INTO.*--",
+    )
+]
+
 _READ_PATTERNS: List[re.Pattern] = [
     re.compile(p, re.IGNORECASE)
     for p in (
@@ -282,7 +325,16 @@ class IntentClassifier:
         parameters: Dict[str, Any],
         tool_metadata: Dict[str, Any],
     ) -> IntentCategory:
-        """Determine the high-level intent category."""
+        """Determine the high-level intent category.
+
+        Two-pass classification:
+        1. Tool-name + structural parameter matching (original logic).
+        2. Argument value content scan — upgrades the category if dangerous
+           patterns are detected in any string argument, regardless of the
+           tool name.  This ensures that a harmless-sounding tool like
+           ``calculator(expression="rm -rf /")`` is correctly classified as
+           EXECUTE/DELETE instead of READ.
+        """
         # Authoritative override from tool metadata
         explicit = tool_metadata.get("intent_category")
         if explicit:
@@ -293,20 +345,51 @@ class IntentClassifier:
 
         combined = self._normalize_for_matching(tool_name, parameters)
 
+        # Pass 1: match on tool name + all parameter values (original logic)
         # Order matters: check most specific/dangerous first
         if any(p.search(combined) for p in _DESTRUCTIVE_PATTERNS):
-            return IntentCategory.DELETE
-        if any(p.search(combined) for p in _EXPORT_PATTERNS):
-            return IntentCategory.EXPORT
-        if any(p.search(combined) for p in _ADMIN_PATTERNS):
-            return IntentCategory.ADMIN
-        if any(p.search(combined) for p in _WRITE_PATTERNS):
-            return IntentCategory.WRITE
-        if any(p.search(combined) for p in _READ_PATTERNS):
-            return IntentCategory.READ
+            base_category = IntentCategory.DELETE
+        elif any(p.search(combined) for p in _EXPORT_PATTERNS):
+            base_category = IntentCategory.EXPORT
+        elif any(p.search(combined) for p in _ADMIN_PATTERNS):
+            base_category = IntentCategory.ADMIN
+        elif any(p.search(combined) for p in _WRITE_PATTERNS):
+            base_category = IntentCategory.WRITE
+        elif any(p.search(combined) for p in _READ_PATTERNS):
+            base_category = IntentCategory.READ
+        else:
+            base_category = IntentCategory.EXECUTE
 
-        # Fallback: treat unknown as EXECUTE (generic action)
-        return IntentCategory.EXECUTE
+        # Pass 2: scan argument STRING VALUES for dangerous content
+        # This catches cases like calculator(expression="DROP TABLE users")
+        arg_str = " ".join(
+            str(v) for v in parameters.values() if isinstance(v, str)
+        )
+        if arg_str:
+            # Dangerous shell/destructive content in args -> upgrade to DELETE/EXECUTE
+            if any(p.search(arg_str) for p in _DESTRUCTIVE_PATTERNS):
+                if base_category not in (IntentCategory.DELETE, IntentCategory.EXECUTE):
+                    return IntentCategory.DELETE
+            if any(p.search(arg_str) for p in _EXECUTE_SHELL_PATTERNS):
+                if base_category not in (IntentCategory.DELETE,):
+                    return IntentCategory.EXECUTE
+            if any(p.search(arg_str) for p in _DANGEROUS_CONTENT_PATTERNS):
+                # Dangerous content found — escalate to at least EXECUTE
+                _escalation_order = [
+                    IntentCategory.READ,
+                    IntentCategory.WRITE,
+                    IntentCategory.EXPORT,
+                    IntentCategory.EXECUTE,
+                    IntentCategory.CONFIGURE,
+                    IntentCategory.ADMIN,
+                    IntentCategory.DELETE,
+                ]
+                if base_category in (
+                    IntentCategory.READ, IntentCategory.WRITE
+                ):
+                    return IntentCategory.EXECUTE
+
+        return base_category
 
     def _is_destructive(
         self, tool_name: str, parameters: Dict[str, Any],

@@ -174,7 +174,12 @@ class OPAPolicyEvaluator:
                     risk_level=risk.level.value,
                     decision=decision.value,
                     explanation=explanation,
-                    evaluation_chain={"opa_input": input_data["input"]},
+                    evaluation_chain={
+                        "opa_input": input_data["input"],
+                        "tool_arguments": arguments or {},   # Gap 4: persist full arguments
+                        "taint_labels": getattr(intent, "taint_labels", []),
+                        "client_ip": user_context.get("client_ip"),
+                    },
                     taint_labels=getattr(intent, "taint_labels", [])
                 )
                 db.add(log_entry)

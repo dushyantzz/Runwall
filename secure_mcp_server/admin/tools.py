@@ -425,23 +425,31 @@ def register_admin_tools(mcp: FastMCP):
         # Mock Intent and Risk (normally done by pipelines)
         intent = IntentClassifier().classify(tool_name, args_dict, {})
         intent.taint_labels = taint_list
-        risk = RiskScorer().score(intent, user_ctx, {})
+        # Pass raw arguments so content-risk scoring works correctly
+        risk = RiskScorer().score(intent, user_ctx, {}, raw_arguments=args_dict)
         
         evaluator = OPAPolicyEvaluator()
+        # Gap 3 Fix: use simulation_mode=False to get the REAL decision.
+        # This ensures explanation matches decision — no contradictory [SIMULATED] prefix.
+        # The caller knows this is a dry run because the tool itself is called run_policy_simulation.
         result = await evaluator.evaluate(
             intent=intent,
             risk=risk,
             user_context=user_ctx,
             tool_metadata={},
-            simulation_mode=True
+            simulation_mode=False,
+            arguments=args_dict
         )
         
         return {
             "success": True,
+            "dry_run": True,  # Clearly marks this as a simulation (no execution occurred)
             "decision": result.decision.value,
             "explanation": result.explanation,
             "simulated_intent": intent.intent_category.value,
-            "simulated_risk": risk.score
+            "simulated_risk": risk.score,
+            "risk_level": risk.level.value,
+            "note": "This is a policy dry-run. The tool was NOT executed. Decision reflects what WOULD happen."
         }
 
     @mcp.tool()

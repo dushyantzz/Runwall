@@ -441,11 +441,12 @@ class ToolRegistry:
                 )
                 intent.taint_labels = session_taints
                 
-                # Step 2: Score risk
+                # Step 2: Score risk — pass raw arguments for content analysis
                 risk = self.risk_scorer.score(
                     intent=intent,
                     user_context=user_context,
                     tool_metadata=tool_meta,
+                    raw_arguments=clean_arguments,
                 )
                 
                 # Step 3: Evaluate policy using OPA
@@ -661,6 +662,28 @@ class ToolRegistry:
                 user_id=user_id,
                 execution_time=execution_time
             )
+            
+            # Gap 5: Always create a ReversibleExecutionLog entry so rollback works
+            try:
+                from secure_mcp_server.database import get_db_manager, ReversibleExecutionLog as RevLog
+                async with get_db_manager().get_session_context() as db:
+                    import json as _json
+                    rev_log = RevLog(
+                        tenant_id=tenant_id,
+                        tool_name=tool_name,
+                        compensation_handler=self.tool_metadata.get(tool_name, {}).get("compensation_handler", "generic_undo"),
+                        compensation_arguments={
+                            "original_args": clean_arguments,
+                            "result": str(result)[:500] if result else None,
+                            "user_id": user_id,
+                        }
+                    )
+                    db.add(rev_log)
+                    await db.commit()
+                    await db.refresh(rev_log)
+                    logger.debug("ReversibleExecutionLog entry created", log_id=rev_log.id, tool=tool_name)
+            except Exception as _rlog_err:
+                logger.debug("Could not create ReversibleExecutionLog entry", error=str(_rlog_err))
             
             card = self._generate_markdown_process_card(
                 tool_name=tool_name,

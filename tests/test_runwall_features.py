@@ -512,3 +512,60 @@ async def test_raw_url_auth_conditions(test_settings, db_manager):
     req_missing = MockRequest(headers={"User-Agent": "agent"})
     ctx_missing = await auth_manager.get_user_context(req_missing)
     assert ctx_missing is None
+
+
+# -----------------------------------------------------------------------------
+# 16. Content-Risk Calibration Tests (Gaps 1 & 2)
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_risk_calibration_content_scoring():
+    """Verify that dangerous argument content drives high risk scores
+    regardless of the tool name — the core fix for the Claude Desktop report."""
+    from secure_mcp_server.governance.intent_classifier import IntentClassifier
+    from secure_mcp_server.governance.risk_scorer import RiskScorer
+    from secure_mcp_server.governance.intent_types import IntentCategory
+
+    classifier = IntentClassifier()
+    scorer = RiskScorer()
+    user_ctx = {"role": "developer", "is_admin": False}
+
+    # --- Test A: rm -rf / inside calculator expression -----------------------
+    args_rm = {"expression": "rm -rf /"}
+    intent_rm = classifier.classify("calculator", args_rm, {})
+    # Intent should be upgraded to EXECUTE (shell execution detected)
+    assert intent_rm.intent_category in (IntentCategory.EXECUTE, IntentCategory.DELETE), \
+        f"Expected EXECUTE/DELETE, got {intent_rm.intent_category}"
+    risk_rm = scorer.score(intent_rm, user_ctx, {}, raw_arguments=args_rm)
+    assert risk_rm.score >= 0.60, \
+        f"rm -rf / should score >= 0.60, got {risk_rm.score} (content_risk should dominate)"
+
+    # --- Test B: DROP TABLE inside calculator expression ---------------------
+    args_drop = {"expression": "DROP TABLE users"}
+    intent_drop = classifier.classify("calculator", args_drop, {})
+    assert intent_drop.intent_category in (IntentCategory.DELETE, IntentCategory.EXECUTE), \
+        f"Expected DELETE/EXECUTE, got {intent_drop.intent_category}"
+    risk_drop = scorer.score(intent_drop, user_ctx, {}, raw_arguments=args_drop)
+    assert risk_drop.score >= 0.50, \
+        f"DROP TABLE should score >= 0.50, got {risk_drop.score}"
+
+    # --- Test C: /etc/passwd inside text_processor ---------------------------
+    args_etc = {"text": "/etc/passwd"}
+    intent_etc = classifier.classify("text_processor", args_etc, {})
+    risk_etc = scorer.score(intent_etc, user_ctx, {}, raw_arguments=args_etc)
+    assert risk_etc.score >= 0.15, \
+        f"/etc/passwd should score >= 0.15, got {risk_etc.score}"
+
+    # --- Test D: Safe calculator call should score LOW -----------------------
+    args_safe = {"expression": "2 + 2"}
+    intent_safe = classifier.classify("calculator", args_safe, {})
+    risk_safe = scorer.score(intent_safe, user_ctx, {}, raw_arguments=args_safe)
+    assert risk_safe.score < 0.50, \
+        f"Safe calc should score < 0.50, got {risk_safe.score}"
+
+    # --- Test E: SQL injection pattern UNION SELECT --------------------------
+    args_sql = {"query": "' UNION SELECT * FROM users --"}
+    intent_sql = classifier.classify("search", args_sql, {})
+    risk_sql = scorer.score(intent_sql, user_ctx, {}, raw_arguments=args_sql)
+    assert risk_sql.score >= 0.50, \
+        f"UNION SELECT injection should score >= 0.50, got {risk_sql.score}"
+

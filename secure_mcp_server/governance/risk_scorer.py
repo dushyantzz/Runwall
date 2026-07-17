@@ -20,6 +20,7 @@ The composite score is a weighted arithmetic mean with configurable weights.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
@@ -43,17 +44,18 @@ logger = structlog.get_logger()
 # ---------------------------------------------------------------------------
 
 DEFAULT_WEIGHTS: Dict[str, float] = {
-    "tool_sensitivity": 0.20,
+    "tool_sensitivity": 0.10,   # Reduced: raw tool name is less reliable than content
     "parameter_risk": 0.15,
+    "content_risk": 0.20,       # NEW: scans actual argument string values for danger
     "user_trust": 0.15,
-    "resource_sensitivity": 0.20,
+    "resource_sensitivity": 0.15,
     "blast_radius": 0.15,
     "temporal_risk": 0.05,
-    "behavioral_anomaly": 0.10,
+    "behavioral_anomaly": 0.05,
 }
 
 # ---------------------------------------------------------------------------
-# Enum → numeric mappings
+# Enum -> numeric mappings
 # ---------------------------------------------------------------------------
 
 _SENSITIVITY_SCORES: Dict[ResourceSensitivity, float] = {
@@ -78,6 +80,47 @@ _TOOL_SENSITIVITY_DEFAULTS: Dict[str, float] = {
     "confidential": 0.55,
     "restricted": 0.80,
     "top_secret": 1.0,
+}
+
+# Content-risk pattern dictionary: pattern -> risk score contribution
+# Patterns are matched against all string argument values at eval time.
+_CONTENT_RISK_PATTERNS: Dict[str, float] = {
+    # Filesystem destruction
+    r"rm\s+-rf": 0.99,
+    r"/dev/sda": 0.99,
+    r"mkfs\.?": 0.99,
+    # Database destruction
+    r"DROP\s+(TABLE|DATABASE|SCHEMA)": 0.95,
+    r"TRUNCATE\s+TABLE": 0.90,
+    r"DELETE\s+FROM": 0.85,
+    # Sensitive filesystem reads
+    r"/etc/shadow": 0.95,
+    r"/etc/sudoers": 0.90,
+    r"/etc/passwd": 0.75,
+    r"/proc/[a-z]": 0.70,
+    # Code execution
+    r"eval\s*\(": 0.90,
+    r"exec\s*\(": 0.85,
+    r"os\.system": 0.85,
+    r"subprocess\.(call|Popen|run)": 0.85,
+    r"__import__": 0.80,
+    r"base64\.(b64decode|decode)": 0.75,
+    # Injection attacks
+    r"';\s*DROP": 0.95,
+    r"UNION\s+SELECT": 0.85,
+    r"INSERT\s+INTO.*--": 0.80,
+    r"1=1\s*(--|#)": 0.80,
+    # Network / shell
+    r"curl\s+http": 0.70,
+    r"wget\s+http": 0.70,
+    r"/bin/(sh|bash|zsh)\s+-c": 0.90,
+    r"python[23]?\s+-c": 0.85,
+    r"node\s+-e": 0.80,
+    r"nc\s+-[el]": 0.95,        # netcat reverse shell
+    r"chmod\s+[0-9]{3}": 0.65,
+    # Bulk/catastrophic SQL
+    r"UPDATE.*WHERE\s+1=1": 0.90,
+    r"DELETE.*WHERE\s+1=1": 0.95,
 }
 
 # Risk thresholds for level assignment
@@ -122,11 +165,13 @@ class RiskScorer:
     # Public API
     # ------------------------------------------------------------------
 
+    # Convenience: allow callers to inject raw arguments for content analysis
     def score(
         self,
         intent: IntentClassification,
         user_context: Dict[str, Any],
         tool_metadata: Optional[Dict[str, Any]] = None,
+        raw_arguments: Optional[Dict[str, Any]] = None,
     ) -> RiskScore:
         """Compute composite risk score for a classified intent.
 
@@ -139,6 +184,10 @@ class RiskScorer:
             ``session_age_minutes`` (optional).
         tool_metadata:
             Optional tool-registry metadata dict.
+        raw_arguments:
+            Optional raw tool arguments dict used for content-based risk scanning.
+            When provided, dangerous patterns in string values (e.g. ``rm -rf /``)
+            directly increase the risk score.
 
         Returns
         -------
@@ -146,6 +195,9 @@ class RiskScorer:
             Composite score with factor breakdown and explanation.
         """
         tool_metadata = tool_metadata or {}
+
+        # Attach raw_arguments to intent so _weighted_average can access it
+        intent._raw_arguments = raw_arguments or {}
 
         factors = RiskFactors(
             tool_sensitivity=self._tool_sensitivity(tool_metadata),
@@ -159,9 +211,22 @@ class RiskScorer:
             ),
         )
 
-        composite = self._weighted_average(factors)
+        content_risk_score = self._content_risk(raw_arguments or {})
+        composite = self._weighted_average(factors, content_risk_score)
+
+        # Safety floor: when dangerous content is detected (content_risk >= 0.70),
+        # the composite score must be at least 0.70 (HIGH risk) regardless of
+        # other factor dilution. This prevents weaponized content from scoring low
+        # just because the tool name or user trust lowers the average.
+        if content_risk_score >= 0.90:
+            composite = max(composite, 0.85)   # CRITICAL-level content -> at least HIGH
+        elif content_risk_score >= 0.70:
+            composite = max(composite, 0.70)   # Dangerous content -> at least HIGH
+        elif content_risk_score >= 0.50:
+            composite = max(composite, 0.45)   # Medium-risk content -> at least MEDIUM
+
         level = self._score_to_level(composite)
-        explanation = self._build_explanation(composite, level, factors, intent)
+        explanation = self._build_explanation(composite, level, factors, intent, content_risk_score)
 
         risk = RiskScore(
             score=round(composite, 4),
@@ -175,6 +240,7 @@ class RiskScorer:
             tool=intent.tool_name,
             score=risk.score,
             level=risk.level.value,
+            content_risk=content_risk_score,
         )
 
         return risk
@@ -321,11 +387,12 @@ class RiskScorer:
     # Composite score computation
     # ------------------------------------------------------------------
 
-    def _weighted_average(self, factors: RiskFactors) -> float:
+    def _weighted_average(self, factors: RiskFactors, content_risk: float = 0.0) -> float:
         """Compute weighted arithmetic mean of all factors."""
         factor_values = {
             "tool_sensitivity": factors.tool_sensitivity,
             "parameter_risk": factors.parameter_risk,
+            "content_risk": content_risk,
             "user_trust": factors.user_trust,
             "resource_sensitivity": factors.resource_sensitivity,
             "blast_radius": factors.blast_radius,
@@ -350,21 +417,52 @@ class RiskScorer:
                 return level
         return RiskLevel.NEGLIGIBLE
 
+    def _content_risk(self, arguments: Dict[str, Any]) -> float:
+        """Scan string argument values for dangerous payload patterns.
+
+        Returns the highest matching pattern score found in any argument
+        value, or 0.0 if no dangerous content is detected.
+        """
+        if not arguments:
+            return 0.0
+
+        # Concatenate all string argument values for matching
+        combined = " ".join(
+            str(v) for v in arguments.values() if isinstance(v, (str, int, float))
+        )
+        if not combined:
+            return 0.0
+
+        max_score = 0.0
+        for pattern, score in _CONTENT_RISK_PATTERNS.items():
+            if re.search(pattern, combined, re.IGNORECASE):
+                max_score = max(max_score, score)
+                # Short-circuit on catastrophic risk
+                if max_score >= 0.99:
+                    break
+
+        return max_score
+
     def _build_explanation(
         self,
         composite: float,
         level: RiskLevel,
         factors: RiskFactors,
         intent: IntentClassification,
+        content_risk: float = 0.0,
     ) -> str:
         parts = [
             f"Risk level {level.value.upper()} (score: {composite:.2f}).",
         ]
 
+        if content_risk >= 0.20:
+            parts.append(f"Dangerous content detected in arguments (content risk: {content_risk:.2f}).")
+
         # Call out the top contributing factors
         factor_items = [
             ("Tool sensitivity", factors.tool_sensitivity),
             ("Parameter risk", factors.parameter_risk),
+            ("Content risk", content_risk),
             ("User trust risk", factors.user_trust),
             ("Resource sensitivity", factors.resource_sensitivity),
             ("Blast radius", factors.blast_radius),
