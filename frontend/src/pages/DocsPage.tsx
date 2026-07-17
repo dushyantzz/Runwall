@@ -381,10 +381,17 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
 
       {/* Step 1: Gateway Configuration */}
       <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', marginTop: '16px' }}>
-        Step 1 — Copy the MCP Server Configuration
+        Step 1 — Choose Connection Method
       </h2>
       <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#b4b4b4' }}>
-        To integrate the secure Runwall governance gateway into your AI agent or IDE editor, copy the following configuration block:
+        Depending on your AI assistant client, select either the Stdio configuration block or the direct HTTPS connection URL.
+      </p>
+
+      <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent, #FFDA62)', marginTop: '8px', marginBottom: '8px' }}>
+        Option A — Stdio / Local Configuration (Recommended for Cursor, Claude Desktop, Cline)
+      </h3>
+      <p style={{ fontSize: '13px', color: '#b4b4b4', marginBottom: '8px' }}>
+        Copy the following JSON configuration and replace <code>&lt;your-api-key&gt;</code> with your Runwall API Key:
       </p>
 
       <div style={{ position: 'relative' }}>
@@ -406,6 +413,35 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
           padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
         }}>
           <code>{mcpConfig}</code>
+        </pre>
+      </div>
+
+      <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent, #FFDA62)', marginTop: '20px', marginBottom: '8px' }}>
+        Option B — Direct HTTPS / Raw URL (For Claude Code & clients only accepting raw HTTP/SSE links)
+      </h3>
+      <p style={{ fontSize: '13px', color: '#b4b4b4', marginBottom: '8px' }}>
+        If your agent only takes a raw URL and does not support JSON configs or local binaries, supply the API key directly in the URL query string:
+      </p>
+
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => onCopy("https://calm-cloud-km6b6.run.mcp-use.com/mcp?token=<your-api-key>")}
+          style={{
+            position: 'absolute', right: '12px', top: '12px',
+            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
+            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer',
+            transition: 'background 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#2a2a2a'}
+          onMouseLeave={(e) => e.currentTarget.style.background = '#1c1c1c'}
+        >
+          Copy Link
+        </button>
+        <pre style={{
+          background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
+          padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
+        }}>
+          <code>https://calm-cloud-km6b6.run.mcp-use.com/mcp?token=&lt;your-api-key&gt;</code>
         </pre>
       </div>
 

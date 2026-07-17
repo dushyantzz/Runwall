@@ -414,3 +414,101 @@ async def test_new_policies_enforcement(test_settings):
     )
     assert res_delete.decision == PolicyDecisionType.REQUIRE_APPROVAL
     assert "Delete actions require manual approval" in res_delete.explanation or "Destructive delete actions require manual approval" in res_delete.explanation
+
+
+# -----------------------------------------------------------------------------
+# 15. Raw URL Query Parameter & Header Authentication Tests
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_raw_url_auth_conditions(test_settings, db_manager):
+    from secure_mcp_server.auth import AuthManager
+    from secure_mcp_server.database import get_db_manager
+    from secure_mcp_server.database.models import User
+    from sqlalchemy import select
+    
+    auth_manager = AuthManager(test_settings)
+    
+    # 1. Provision a test user
+    async with get_db_manager().get_session_context() as db:
+        stmt = select(User).where(User.username == "test_auth_user")
+        res = await db.execute(stmt)
+        user = res.scalar_one_or_none()
+        if not user:
+            user = User(
+                username="test_auth_user",
+                email="test_auth_user@example.com",
+                hashed_password=auth_manager.hash_password("password"),
+                tenant_id="default",
+                is_admin=False,
+                is_active=True
+            )
+            db.add(user)
+            await db.commit()
+            
+            # Re-fetch to get id
+            stmt = select(User).where(User.username == "test_auth_user")
+            res = await db.execute(stmt)
+            user = res.scalar_one()
+            
+        user_id = user.id
+            
+    # 2. Create a test API key for the user
+    raw_key = await auth_manager.create_api_key(
+        name="test_key",
+        user_id=user_id,
+        tenant_id="default",
+        environment="testing"
+    )
+    
+    # 3. Simulate requests
+    class MockRequest:
+        def __init__(self, headers=None, query_params=None):
+            self.headers = headers or {}
+            self.query_params = query_params or {}
+            self.client = ("127.0.0.1", 12345)
+            
+    # Test A: Authorization header
+    req_header = MockRequest(headers={"Authorization": f"Bearer {raw_key}"})
+    ctx_header = await auth_manager.get_user_context(req_header)
+    assert ctx_header is not None
+    assert ctx_header["username"] == "test_auth_user"
+    
+    # Test B: ?token=mcp_... query param
+    req_token = MockRequest(query_params={"token": raw_key})
+    ctx_token = await auth_manager.get_user_context(req_token)
+    assert ctx_token is not None
+    assert ctx_token["username"] == "test_auth_user"
+    
+    # Test C: ?api_key=mcp_... query param
+    req_apikey = MockRequest(query_params={"api_key": raw_key})
+    ctx_apikey = await auth_manager.get_user_context(req_apikey)
+    assert ctx_apikey is not None
+    assert ctx_apikey["username"] == "test_auth_user"
+    
+    # Test D: ?apiKey=mcp_... query param
+    req_apikey2 = MockRequest(query_params={"apiKey": raw_key})
+    ctx_apikey2 = await auth_manager.get_user_context(req_apikey2)
+    assert ctx_apikey2 is not None
+    assert ctx_apikey2["username"] == "test_auth_user"
+    
+    # Test E: ?authorization=Bearer mcp_... query param
+    req_auth_bearer = MockRequest(query_params={"authorization": f"Bearer {raw_key}"})
+    ctx_auth_bearer = await auth_manager.get_user_context(req_auth_bearer)
+    assert ctx_auth_bearer is not None
+    assert ctx_auth_bearer["username"] == "test_auth_user"
+    
+    # Test F: ?authorization=mcp_... query param
+    req_auth_raw = MockRequest(query_params={"authorization": raw_key})
+    ctx_auth_raw = await auth_manager.get_user_context(req_auth_raw)
+    assert ctx_auth_raw is not None
+    assert ctx_auth_raw["username"] == "test_auth_user"
+    
+    # Test G: Invalid API key (HTTP request detected, should return None, not local_admin)
+    req_invalid = MockRequest(query_params={"token": "mcp_invalidkey"})
+    ctx_invalid = await auth_manager.get_user_context(req_invalid)
+    assert ctx_invalid is None
+    
+    # Test H: Missing API key on HTTP request (should return None, not local_admin)
+    req_missing = MockRequest(headers={"User-Agent": "agent"})
+    ctx_missing = await auth_manager.get_user_context(req_missing)
+    assert ctx_missing is None
