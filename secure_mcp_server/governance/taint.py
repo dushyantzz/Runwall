@@ -91,3 +91,24 @@ class TaintManager:
             return tool_metadata["taint_source"]
             
         return taint_map.get(tool_name)
+
+    async def clear_session_taints(self, session_id: str) -> bool:
+        """Clear all taint labels associated with a session (recovery)."""
+        if not session_id:
+            return False
+            
+        try:
+            async with get_db_manager().get_session_context() as db:
+                stmt = select(DBSession).where(DBSession.id == session_id)
+                result = await db.execute(stmt)
+                session = result.scalars().first()
+                
+                if session:
+                    session.taint_labels = []
+                    await db.commit()
+                    logger.info("Session taints cleared", session_id=session_id)
+                    return True
+        except Exception as e:
+            logger.error("Failed to clear session taints", session_id=session_id, error=str(e))
+            
+        return False

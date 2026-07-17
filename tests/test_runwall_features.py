@@ -604,3 +604,127 @@ async def test_api_key_email_case_insensitivity(db_manager):
     assert keys_upper[0]["name"] == "My test key"
 
 
+# -----------------------------------------------------------------------------
+# 18. URL-Encoded Evasion Bypass Prevention Test
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_url_encoded_bypass_prevention(test_settings):
+    """Verify that URL-encoded injection attempts are properly decoded and blocked."""
+    from secure_mcp_server.governance.opa_evaluator import OPAPolicyEvaluator
+    from secure_mcp_server.governance.intent_types import IntentCategory, BlastRadius, ResourceSensitivity, IntentClassification, PolicyDecisionType
+    from secure_mcp_server.governance.risk_scorer import RiskScorer
+    
+    evaluator = OPAPolicyEvaluator()
+    scorer = RiskScorer()
+    
+    # 1. URL encoded shell command injection: %3B is semicolon
+    intent = IntentClassification(
+        tool_name="run_command",
+        intent_category=IntentCategory.EXECUTE,
+        blast_radius=BlastRadius.NONE,
+        resource_sensitivity=ResourceSensitivity.PUBLIC
+    )
+    risk = scorer.score(intent, {"role": "developer", "is_admin": False})
+    
+    res = await evaluator.evaluate(
+        intent=intent,
+        risk=risk,
+        user_context={"role": "developer", "tenant_id": "default"},
+        arguments={"command": "echo%20hello%3B%20rm%20-rf%20%2F"}
+    )
+    
+    assert res.decision == PolicyDecisionType.DENY
+    assert "Injection detected" in res.explanation
+
+# -----------------------------------------------------------------------------
+# 19. Device & Sensitive System File Blocking Test
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_device_file_blocking(test_settings):
+    """Verify that direct device file access or sensitive system file reads are denied."""
+    from secure_mcp_server.governance.opa_evaluator import OPAPolicyEvaluator
+    from secure_mcp_server.governance.intent_types import IntentCategory, BlastRadius, ResourceSensitivity, IntentClassification, PolicyDecisionType
+    from secure_mcp_server.governance.risk_scorer import RiskScorer
+    
+    evaluator = OPAPolicyEvaluator()
+    scorer = RiskScorer()
+    
+    # Attempt to write to a block device `/dev/sda`
+    intent = IntentClassification(
+        tool_name="write_file",
+        intent_category=IntentCategory.WRITE,
+        blast_radius=BlastRadius.NONE,
+        resource_sensitivity=ResourceSensitivity.PUBLIC
+    )
+    risk = scorer.score(intent, {"role": "developer", "is_admin": False})
+    
+    res = await evaluator.evaluate(
+        intent=intent,
+        risk=risk,
+        user_context={"role": "developer", "tenant_id": "default"},
+        arguments={"path": "/dev/sda", "content": "malicious"}
+    )
+    
+    assert res.decision == PolicyDecisionType.DENY
+    assert "sensitive system file or device prohibited" in res.explanation.lower()
+
+# -----------------------------------------------------------------------------
+# 20. Taint Clearing Test
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_taint_clearing_logic(db_manager):
+    """Verify that the TaintManager successfully clears taint state on recovery."""
+    from secure_mcp_server.governance.taint import TaintManager
+    from secure_mcp_server.database.models import Session as DBSession
+    
+    taint_mgr = TaintManager()
+    
+    # 1. Register session in DB
+    async with db_manager.get_session_context() as session:
+        db_sess = DBSession(
+            id="test-clear-session-123",
+            tenant_id="default",
+            is_active=True,
+            taint_labels=[]
+        )
+        session.add(db_sess)
+        await session.commit()
+        
+    # 2. Add taint and verify
+    await taint_mgr.add_taint("test-clear-session-123", "EXTERNAL_WEB")
+    taints = await taint_mgr.get_session_taints("test-clear-session-123")
+    assert "EXTERNAL_WEB" in taints
+    
+    # 3. Clear taints and verify empty
+    success = await taint_mgr.clear_session_taints("test-clear-session-123")
+    assert success is True
+    taints_cleared = await taint_mgr.get_session_taints("test-clear-session-123")
+    assert len(taints_cleared) == 0
+
+# -----------------------------------------------------------------------------
+# 21. Quota Enforcement Limit Test
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_quota_rate_limiting_enforcement(test_settings):
+    """Verify that the QuotaManager properly throttles when request limits are exceeded."""
+    from secure_mcp_server.governance.quota_manager import QuotaManager, QuotaExceededError
+    
+    # Set default RPM limit to 2 for testing
+    test_settings.default_user_rpm = 2
+    quota_mgr = QuotaManager(test_settings)
+    await quota_mgr.initialize()
+    
+    # 1. First request should pass
+    res1 = await quota_mgr.check_quotas(tenant_id="default", user_id="quota_test_user")
+    assert res1 is True
+    
+    # 2. Second request should pass
+    res2 = await quota_mgr.check_quotas(tenant_id="default", user_id="quota_test_user")
+    assert res2 is True
+    
+    # 3. Third request should fail
+    with pytest.raises(QuotaExceededError):
+        await quota_mgr.check_quotas(tenant_id="default", user_id="quota_test_user")
+
+
+

@@ -490,7 +490,7 @@ class ToolRegistry:
                     )
                     raise PermissionError(card + f"\n**Execution Blocked:** Policy denied - {policy_result.explanation}")
                 
-                if self.quota_manager and risk.score >= 0.5:
+                if self.quota_manager:
                     try:
                         await self.quota_manager.check_quotas(
                             tenant_id=tenant_id,
@@ -500,8 +500,8 @@ class ToolRegistry:
                             risk_score=risk.score
                         )
                     except QuotaExceededError as e:
-                        logger.warning("Execution throttled adaptively due to high risk", tool=tool_name, risk=risk.score)
-                        raise Exception(f"Adaptive quota limit exceeded due to elevated risk: {str(e)}")
+                        logger.warning("Quota limit exceeded", tool=tool_name, risk=risk.score)
+                        raise Exception(f"Quota limit exceeded: {str(e)}")
                         
                 # Validate against Task Contract if provided
                 contract_bypasses_approval = False
@@ -666,9 +666,11 @@ class ToolRegistry:
             # Gap 5: Always create a ReversibleExecutionLog entry so rollback works
             try:
                 from secure_mcp_server.database import get_db_manager, ReversibleExecutionLog as RevLog
+                import uuid as _uuid
+                log_id = f"rev-{_uuid.uuid4().hex[:12]}"
                 async with get_db_manager().get_session_context() as db:
-                    import json as _json
                     rev_log = RevLog(
+                        id=log_id,
                         tenant_id=tenant_id,
                         tool_name=tool_name,
                         compensation_handler=self.tool_metadata.get(tool_name, {}).get("compensation_handler", "generic_undo"),

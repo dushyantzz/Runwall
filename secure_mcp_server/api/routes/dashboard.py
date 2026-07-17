@@ -38,6 +38,9 @@ class TaintAddRequest(BaseModel):
     session_id: str
     label: str
 
+class TaintClearRequest(BaseModel):
+    session_id: str
+
 class RiskScoreRequest(BaseModel):
     tool_name: str
     parameters: Dict[str, Any]
@@ -256,6 +259,23 @@ async def add_session_taint(req: TaintAddRequest):
     if not success:
         raise HTTPException(status_code=400, detail="Failed to add taint label")
     return {"success": True, "message": f"Added taint label '{req.label}' to session '{req.session_id}'"}
+
+@router.post("/taint/clear")
+async def clear_session_taint(req: TaintClearRequest):
+    taint_manager = TaintManager()
+    
+    # Verify session exists
+    async with get_db_manager().get_session_context() as db:
+        stmt = select(Session).where(Session.id == req.session_id)
+        res = await db.execute(stmt)
+        session = res.scalar_one_or_none()
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+            
+    success = await taint_manager.clear_session_taints(req.session_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to clear taint labels")
+    return {"success": True, "message": f"Cleared taint labels for session '{req.session_id}'"}
 
 # ---------------------------------------------------------------------------
 # 5. Risk Scoring Engine Simulator

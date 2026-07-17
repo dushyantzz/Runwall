@@ -80,7 +80,19 @@ class OPAPolicyEvaluator:
                 logger.error("Failed to write active PolicyBundle to file", error=str(e))
                 policy_file_path = self.default_policy
 
-        # 2. Construct the Input JSON
+        # 2. Construct the Input JSON (with URL decoding to prevent evasion bypasses)
+        import urllib.parse
+        decoded_arguments = {}
+        if arguments:
+            for k, v in arguments.items():
+                if isinstance(v, str):
+                    try:
+                        decoded_arguments[k] = urllib.parse.unquote(v)
+                    except Exception:
+                        decoded_arguments[k] = v
+                else:
+                    decoded_arguments[k] = v
+
         input_data = {
             "input": {
                 "intent": {
@@ -94,7 +106,7 @@ class OPAPolicyEvaluator:
                 "user_context": user_context,
                 "tool_metadata": tool_metadata or {},
                 "taints": getattr(intent, "taint_labels", []),
-                "arguments": arguments or {}
+                "arguments": decoded_arguments
             }
         }
         
@@ -200,8 +212,11 @@ class OPAPolicyEvaluator:
         
         # 1. Shell Injection detection
         for k, v in arguments.items():
-            if isinstance(v, str) and re.search(r'[;&|`$]', v):
-                return "DENY", f"Injection detected in parameter '{k}': contains dangerous characters"
+            if isinstance(v, str):
+                if re.search(r'[;&|`$]', v):
+                    return "DENY", f"Injection detected in parameter '{k}': contains dangerous characters"
+                if re.search(r'(/dev/|/proc/|/etc/passwd|/etc/shadow|/etc/sudoers)', v):
+                    return "DENY", f"Access to sensitive system file or device prohibited in parameter '{k}'"
         
         # 2. Destructive delete actions
         if intent_cat == "delete":

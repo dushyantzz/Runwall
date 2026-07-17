@@ -30,6 +30,15 @@ deny[msg] {
     msg := sprintf("Injection detected in parameter '%v': contains dangerous characters", [key])
 }
 
+# Deny direct device or sensitive system file access in arguments
+deny[msg] {
+    some key
+    val := input.arguments[key]
+    is_string(val)
+    regex.match("(/dev/|/proc/|/etc/passwd|/etc/shadow|/etc/sudoers)", val)
+    msg := sprintf("Access to sensitive system file or device prohibited in parameter '%v'", [key])
+}
+
 # Deny execution if session is tainted and category is sensitive
 deny[msg] {
     taint_blocking_categories := {"write", "execute", "delete", "configure", "admin"}
