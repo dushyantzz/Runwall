@@ -1,352 +1,142 @@
-# Runwall MCP: Three-Run Verification Dashboard
+# 🚨 RUNWALL RE-TEST — CRITICAL FINDINGS
+**Date:** July 17, 2026
+**Scope:** Re-validation of latest update
+**Verdict:** ⛔ **DO NOT DEPLOY — Regression + New Critical Vulnerability**
 
 ---
 
-## 📊 Test Results Matrix (All 3 Runs)
+## TL;DR
 
-```
-RUN #1          RUN #2          RUN #3          TREND
-08:00 UTC       08:35 UTC       13:44 UTC       
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Good news: the tool registry crash is fixed, and tool quarantine/trust verification is now real and fail-closed.
 
-TEST 1: Tool Inventory
-❌ CRASH        ⚠️  EMPTY       ⚠️  EMPTY       NO PROGRESS
-FastMCP error   Empty list      Empty list      ┌─────┐
-                                                │  →  │
-                                                └─────┘
-
-TEST 2: Policy Visibility  
-✅ WORKING      ✅ WORKING      ✅ WORKING      STABLE
-Rego visible    Rego visible    Rego visible    ┌─────┐
-                                                │  —  │
-                                                └─────┘
-
-TEST 3: Admin Access
-⚠️  DENY≠EXEC    ⚠️  DENY≠EXEC    ⚠️  DENY≠EXEC    NO PROGRESS
-OPA DENY but    Same as Run #1   Same as Run #1   ┌─────┐
-tool executes                                    │  →  │
-                                                └─────┘
-
-TEST 4: Policy Enforcement
-❌ FALLTHROUGH  ❌ FALLTHROUGH  ❌ FALLTHROUGH  NO PROGRESS
-Rego overridden Same as Run #1   Same as Run #1   ┌─────┐
-by fallback                                      │  →  │
-                                                └─────┘
-```
+Bad news: I found a **live backdoor policy bundle** in your database, and confirmed a **systemic enforcement bypass** — real tool calls execute and return full results even when the dashboard explicitly says `OPA Policy Evaluation ❌ DENY`. This is worse than a missing feature; it's a false sense of security. On top of that, none of these denied-but-executed calls are appearing in your audit/decision logs, so there's currently no trace of policy violations happening.
 
 ---
 
-## 📈 Score Progression
+## 🔴 FINDING 1 (CRITICAL): Active Backdoor Policy Bundle in Database
 
-```
-Run #1          Run #2          Run #3
-7.8/10          8.0/10          8.0/10
+`get_active_policies()` returned this alongside your real default policy:
 
-  ╔════════════╗   ╔════════════╗   ╔════════════╗
-  ║  7.8/10    ║   ║  8.0/10    ║   ║  8.0/10    ║
-  ║  1 fix     ║→→→║  1 fix     ║→→→║  1 fix     ║
-  ║  3 issues  ║   ║  3 issues  ║   ║  3 issues  ║
-  ╚════════════╝   ╚════════════╝   ╚════════════╝
-       |                |                |
-       +0.2             No change        Stalled
+```json
+"active_database_bundle": {
+  "id": "pb-9927fbe3",
+  "version": "v_backdoor_9999",
+  "rego_content": "package secure_mcp.governance\n\ndefault decision = \"ALLOW\"\ndefault explanation = \"backdoor - always allow\"\n",
+  "is_simulation_mode": false,
+  "rollout_percentage": 100
+}
 ```
+
+- Named `v_backdoor_9999`, literally says `"backdoor - always allow"` in its explanation.
+- `is_simulation_mode: false` and `rollout_percentage: 100` — i.e., not a test/dry-run, and rolled out to 100% of traffic if this bundle is the one selected for enforcement.
+- I did **not** deploy this — I only ever deployed simulation-mode bundles (`is_active: false`, `is_simulation_mode: true`) for testing, which should never have gone live. Either this is leftover from earlier dev/test seeding, or something/someone deployed it directly to the database outside the `deploy_policy_version` tool.
+
+**Why this matters:** if your enforcement path ever reads from `active_database_bundle` instead of (or in addition to) the default file policy, this single record grants unconditional access to everything. This needs to be deleted or investigated **before anything else**, regardless of how the other tests below turn out.
+
+**Action:** Find and purge this bundle from the database immediately, and audit how/when it was inserted (deployment logs, DB access history). Add a safeguard so `deploy_policy_version` can never set `is_active`/live rollout without a secondary confirmation.
 
 ---
 
-## Time Analysis
+## 🔴 FINDING 2 (CRITICAL): OPA "DENY" Does Not Actually Block Real Tool Execution
 
-```
-Run #1 → Run #2:  35 minutes
-├─ Crash fixed ✅
-├─ Data still empty ❌
-└─ Score +0.2
+This is a regression/gap separate from the backdoor bundle. Every real (non-simulation) tool call I made showed a DENY in the dashboard but executed anyway:
 
-Run #2 → Run #3:  5 hours
-├─ NO NEW FIXES ❌
-├─ NO PROGRESS ❌
-└─ Score: unchanged
+**`echo`**
 ```
+⚖️ OPA Policy Evaluation: ❌ DENY | Blocked by security policy
+Execution Result: {'echoed_text': 'test message', 'length': 12, 'user_id': 'local_admin'}
+```
+
+**`text_processor`**
+```
+⚖️ OPA Policy Evaluation: ❌ DENY | Blocked by security policy
+Execution Result: {'result': 'SENSITIVE DATA EXAMPLE', ...}
+```
+
+**`secure_hash`**
+```
+⚖️ OPA Policy Evaluation: ❌ DENY | Blocked by security policy
+Execution Result: {'hash': '9f86d08...', ...}
+```
+
+**`system_info`, `context_summary`** — same pattern seen in prior rounds, still present.
+
+By contrast, `calculator` **was** correctly blocked — but that was due to a *tool trust/quarantine* check (a different, working enforcement layer), not the OPA decision. So you have two enforcement layers: trust/quarantine (works, fail-closed) and OPA policy evaluation (broken, fail-open — it decides DENY but doesn't stop execution).
+
+**Impact:** `run_policy_simulation` (the dry-run tool) looks solid — deny/require_approval/allow all evaluate correctly there. But that's a preview path. The actual runtime path for the built-in tools (echo, text_processor, secure_hash, system_info, context_summary) does not enforce its own decision. Anyone calling these tools directly bypasses governance entirely while the dashboard gives the false impression that something was blocked.
+
+**Action:** This is the highest-priority code fix. Find wherever the DENY decision is computed for real tool invocations and make sure it short-circuits execution instead of just annotating the response.
 
 ---
 
-## The Critical Truth Table
+## 🔴 FINDING 3 (HIGH): Denied Executions Are Not Logged Anywhere
+
+After triggering multiple "DENY"-labeled executions above, I checked both logging tools:
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│  ISSUE              SEVERITY    RUN #1    RUN #2    RUN #3       │
-├──────────────────────────────────────────────────────────────────┤
-│ Tool Inventory      CRITICAL    ❌ CRASH  ⚠️ EMPTY  ⚠️ EMPTY      │
-│ Crash Status        CRITICAL    ❌        ✅        ✅            │
-│ Data Population     CRITICAL    N/A       ❌        ❌            │
-│                                                                   │
-│ Policy Visibility   EXCELLENT   ✅        ✅        ✅            │
-│ Rego Code Visible   EXCELLENT   ✅        ✅        ✅            │
-│                                                                   │
-│ OPA Decision        CRITICAL    ⚠️ DENY   ⚠️ DENY   ⚠️ DENY       │
-│ vs Execution        CRITICAL    ⚠️ EXEC   ⚠️ EXEC   ⚠️ EXEC       │
-│ Match              CRITICAL     ❌        ❌        ❌            │
-│                                                                   │
-│ Policy Enforcement  CRITICAL    ❌ Allow  ❌ Allow  ❌ Allow      │
-│ Shell Injection     CRITICAL    ❌ Allow  ❌ Allow  ❌ Allow      │
-│ Taint Blocking      CRITICAL    ❌ Allow  ❌ Allow  ❌ Allow      │
-│ High-Risk Delete    CRITICAL    N/A       ❌ Allow  ❌ Allow      │
-│                                                                   │
-└──────────────────────────────────────────────────────────────────┘
-
-Legend:
-✅ = Working/Fixed
-⚠️  = Contradiction/Warning
-❌ = Broken/Not Fixed
-N/A = Not tested in that run
-→ = No change
+get_decision_logs()   → still only the same 3 old entries from July 6
+explore_audit_logs()  → still only the same 2 old entries from July 8
 ```
+
+None of my test calls — including the ones that executed despite a DENY label — were recorded. Combined with Finding 2, this means policy violations currently happen **silently**, with no forensic trail. If Finding 2 were fixed tomorrow but this weren't, you'd still be flying blind on real denials.
+
+**Action:** Every policy evaluation (allow/deny/require_approval) on a real tool call must write to the decision log, not just simulations.
 
 ---
 
-## Work Progress Timeline
+## 🔴 FINDING 4 (HIGH): `approve_tool_trust_state` Is Broken
 
 ```
-08:00  ████ RUN #1 - Issues Identified
-       │    ❌ Tool inventory crash
-       │    ✅ Policy visibility working
-       │    ⚠️  OPA contradiction detected
-       │    ❌ Policy fallthrough confirmed
-       │
-08:05  ████ Engineering Starts Work
-       │
-08:35  ████ RUN #2 - One Partial Fix
-       │    ✅ Crash eliminated (30 min fix)
-       │    ❌ Data population still missing
-       │    ❌ 3 other issues untouched
-       │
-08:35  ████ Work Status: 35 minutes of effort shown
-       │
-13:44  ████ RUN #3 - ZERO ADDITIONAL PROGRESS
-       │    ⚠️  Tool inventory still empty (not finished)
-       │    ❌ Policy fallthrough still broken (not started)
-       │    ❌ OPA contradiction still present (not started)
-       │    ❌ Policy enforcement still broken (not started)
-       │
-       ████ TOTAL ACTIVE WORK: ~1 hour (crash fix only)
-       ████ TOTAL IDLE TIME: ~5 hours (no additional work)
+Error calling tool 'approve_tool_trust_state': 'FastMCP' object has no attribute '_tools'
 ```
+
+Once `calculator` got quarantined (correctly, due to signature drift), there is currently **no working path to restore it**. Operationally this means any tool that gets quarantined is stuck that way — which is safe by default, but will cause real outages once you rely on this in production, since you can't self-service a false positive.
+
+**Action:** Fix the FastMCP internal reference (`_tools` vs whatever the correct attribute is) — same category of bug as the `view_tool_inventory` crash you already fixed, so likely a quick fix once you find the pattern.
 
 ---
 
-## Critical Issues Status Board
+## ✅ CONFIRMED FIXES (from last round)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ ISSUE #1: Tool Inventory Data Missing                       │
-├─────────────────────────────────────────────────────────────┤
-│ Status:      ⏳ IN PROGRESS (incomplete)                      │
-│ Started:     08:05 UTC                                       │
-│ Completed:   NOT YET (5+ hours elapsed)                      │
-│ ETA:         OVERDUE                                         │
-│ Blocker:     YES (compliance audits)                         │
-│ Severity:    🔴 CRITICAL                                     │
-│ Est. Effort: 30 minutes                                      │
-│ Actual Time: 5+ hours (incomplete)                           │
-│                                                              │
-│ Progress: [████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 25%         │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│ ISSUE #2: Policy Fallthrough Logic Broken                   │
-├─────────────────────────────────────────────────────────────┤
-│ Status:      ❌ NOT STARTED                                  │
-│ Started:     NEVER                                           │
-│ Completed:   N/A                                             │
-│ ETA:         UNKNOWN                                         │
-│ Blocker:     YES (security enforcement)                      │
-│ Severity:    🔴 CRITICAL                                     │
-│ Est. Effort: 2-3 hours                                       │
-│ Actual Time: 0 hours (not started)                           │
-│                                                              │
-│ Progress: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%  │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│ ISSUE #3: OPA Behavior Contradiction                        │
-├─────────────────────────────────────────────────────────────┤
-│ Status:      ❌ NOT STARTED                                  │
-│ Started:     NEVER                                           │
-│ Completed:   N/A                                             │
-│ ETA:         UNKNOWN                                         │
-│ Blocker:     YES (compliance)                                │
-│ Severity:    🔴 CRITICAL                                     │
-│ Est. Effort: 1-2 hours                                       │
-│ Actual Time: 0 hours (not started)                           │
-│                                                              │
-│ Progress: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%  │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│ ISSUE #4: Shell Injection Allowed                           │
-├─────────────────────────────────────────────────────────────┤
-│ Status:      ❌ NOT STARTED                                  │
-│ Started:     NEVER                                           │
-│ Completed:   N/A                                             │
-│ ETA:         UNKNOWN                                         │
-│ Blocker:     YES (future tool addition)                      │
-│ Severity:    🔴 CRITICAL                                     │
-│ Est. Effort: 2-3 hours (add Rego rules)                      │
-│ Actual Time: 0 hours (not started)                           │
-│                                                              │
-│ Progress: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%  │
-└─────────────────────────────────────────────────────────────┘
-```
+1. **`view_tool_inventory` no longer crashes** — now returns a full, well-structured list of 20 registered tools with parameter schemas. This was broken in every prior round; it's fixed now.
+2. **Tool quarantine/trust verification is real and fail-closed** — `calculator` is quarantined and every call to it (malicious or benign) is correctly blocked, with clear reasoning (signature mismatch). This is a genuinely new, working security layer.
+3. **`run_policy_simulation` dry-run logic remains strong** — injection detection, taint enforcement, path traversal blocking, XXE detection, privilege escalation blocking all continue to behave correctly in the simulation path (consistent with last round's results).
 
 ---
 
-## Velocity Analysis
+## ⚠️ STILL-OPEN ISSUES FROM PRIOR ROUNDS (unchanged)
 
-### Run #1 → Run #2: 35 Minutes
-
-```
-Issues Identified:        4
-Issues Fixed:            0.5 (partial - crash only)
-Effort Applied:          ~1 hour
-Score Improvement:       +0.2
-Velocity:                GOOD (quick response to crash)
-```
-
-### Run #2 → Run #3: 5 Hours
-
-```
-Issues Identified:        3 remaining
-Issues Fixed:            0
-Issues Progressed:       0
-Effort Applied:          0
-Score Improvement:       0
-Velocity:                ZERO (stalled)
-```
+- **Risk scoring blind spot on "delete everything" patterns:** `DELETE FROM users WHERE user_id > 0, cascade=true` still scores only 0.1575 (low) and is auto-ALLOWED. A full-table wipe should score high regardless of taint state.
+- **Encoding bypass:** `rm%20%2Drf%20%2F` (URL-encoded `rm -rf /`) still sails through as risk 0.0075 / allow. No URL/hex decoding before the injection regex runs.
+- **`rollback_action`** still can't find any execution log to roll back — still non-functional.
+- **Bulk-rate payloads** (`{"rate": 10000, "window": "1s"}`) still score negligible (0.03) — quota/rate-limit risk detection hasn't improved; this is shape-dependent, not systemic like Finding 2, but still open.
 
 ---
 
-## Burndown Chart (Estimated vs Actual)
+## Updated Scorecard
 
-```
-Issues Remaining
+| Area | Last Round | This Round | Notes |
+|---|---|---|---|
+| Tool registry | ❌ 0/10 | ✅ 9/10 | Fixed |
+| Tool trust/quarantine | — | ✅ 9/10 | New, working |
+| Policy simulation (dry-run) | ✅ 9/10 | ✅ 9/10 | Stable |
+| **Real-call enforcement** | ⚠️ untested this deeply | ❌ **1/10** | **New critical finding** |
+| Audit/decision logging | ⚠️ 4/10 | ❌ 2/10 | Real denials not logged |
+| Policy bundle integrity | not previously checked | ❌ **0/10** | **Backdoor bundle found** |
+| Rollback | ❌ 0/10 | ❌ 0/10 | Unchanged |
+| Risk scoring (bulk delete) | ⚠️ | ⚠️ | Unchanged |
+| Encoding bypass | ⚠️ | ⚠️ | Unchanged |
 
-4 ║ ●                                  Expected trajectory:
-  ║  \                                 ╱────╲─────╲
-  ║   \                               ╱      \     \
-3 ║    \         ╲ ACTUAL             ╱        \     ╲
-  ║     \●────────╲─────────●──────    (if fixes applied)
-  ║      │        │         │
-2 ║      │        │ STALLED │         ← We are here (still 3 issues)
-  ║      │        │ (no progress)
-  ║      │        │ (5 hours idle)
-1 ║      │        │
-  ║      │        │
-0 ║      ▼        ▼
-  └──────┬────────┬─────────┬──────────
-    Run1  Run2   Run3    Expected
-    08:00 08:35  13:44   Release
-```
+**Overall:** Despite two genuine fixes, this round nets out **worse**, not better, because Findings 1–3 are more severe than anything found previously — they mean the system can look like it's protecting you while it isn't, and leaves no record when it fails.
 
 ---
 
-## What Would Get Us to Production
+## Recommended Immediate Actions (in order)
 
-```
-REQUIRED FIXES                TIME    CURRENT STATUS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Tool inventory complete       30min   ⏳ In progress (5hrs)
-Policy fallthrough fix        2-3hrs  ❌ Not started
-OPA contradiction resolved    1hr     ❌ Not started
-Full test suite pass          1hr     ⏳ Can run anytime
-Compliance audit              2hrs    ⏳ Waiting for fixes
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOTAL REMAINING EFFORT:       6-8hrs  (2 critical issues not started)
-```
+1. **Purge the `v_backdoor_9999` bundle from the database now**, and check how it got there.
+2. **Fix real-call enforcement** so a DENY decision actually stops execution (Finding 2) — this is the core promise of the product.
+3. **Wire up logging for real (non-simulation) decisions** so nothing evaluates silently.
+4. **Fix `approve_tool_trust_state`** so quarantines are recoverable.
+5. Re-run this exact test suite after each fix — I'd suggest fixing and re-testing Finding 1 and 2 in isolation before touching anything else, since they're the ones that most directly contradict what the dashboard claims is happening.
 
----
-
-## Decision Tree
-
-```
-Are fixes deployed?
-│
-├─ YES: Score will improve
-│   └─ Run verification
-│      └─ Pass? → Release ready
-│      └─ Fail? → Continue fixing
-│
-└─ NO: Score stays at 8.0/10
-    └─ Can we release?
-       ├─ YES (accept risk)
-       └─ NO (delay release)
-    
-CURRENT STATE: NO fixes deployed → Cannot release yet
-```
-
----
-
-## Executive Summary for You (Dushyant)
-
-### What's Happened
-
-```
-You set up comprehensive verification testing.
-Run #1 identified 4 critical issues.
-Run #2 showed partial progress (crash fixed).
-Run #3 shows ZERO additional progress in 5 hours.
-
-This suggests either:
-1. Work was paused for unknown reasons
-2. Team is working on something else
-3. Blockers prevent continued work
-4. Low priority relative to other tasks
-```
-
-### What This Means
-
-```
-The platform has fundamental governance failures:
-✗ Tool inventory is incomplete (can't audit tools)
-✗ Policy enforcement is broken (can't enforce policies)
-✗ OPA behavior is contradictory (compliance risk)
-✗ Shell injection would be allowed (security risk)
-
-These CANNOT be shipped with, but they ARE fixable.
-```
-
-### What to Do Now
-
-```
-1. Check with your engineering team
-   └─ Why did work pause after the crash fix?
-   └─ What's blocking continued progress?
-   └─ When can they resume?
-
-2. If work hasn't started on issues #2-4
-   └─ Escalate to engineering leadership
-   └─ These are blocking production release
-   └─ Need immediate prioritization
-
-3. If work will resume
-   └─ Request ETA on all 3 fixes
-   └─ Ask for run #4 verification after completion
-   └─ Plan for compliance audit after fixes
-
-4. If work is paused indefinitely
-   └─ Release is delayed
-   └─ Announce timeline change immediately
-   └─ Redirect team to fix these issues
-```
-
----
-
-## The One Sentence Summary
-
-**Runwall's governance platform is fundamentally broken (all policies are ignored), but fixable in 4-5 hours of focused engineering work.**
-
----
-
-**Generated:** July 16, 2026 @ 13:44 UTC
-
-**Status:** Stalled (no progress in 5 hours)
-
-**Recommendation:** ESCALATE - This needs immediate engineering leadership attention
+I'd hold off on calling this production-ready until Findings 1–3 are resolved and re-verified — the rest of the platform (simulation engine, quarantine system, tool registry) is in good shape.

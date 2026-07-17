@@ -313,7 +313,33 @@ def register_admin_tools(mcp: FastMCP):
                 return {"success": False, "error": f"Tool '{tool_name}' is already TRUSTED."}
                 
             # Recompute current hashes
-            tool = mcp._tools.get(tool_name)
+            active_tools = None
+            if hasattr(mcp, "get_tools"):
+                try:
+                    active_tools = await mcp.get_tools()
+                except Exception:
+                    pass
+            if not active_tools:
+                if hasattr(mcp, "tools"):
+                    active_tools = mcp.tools
+                elif hasattr(mcp, "_tools"):
+                    active_tools = mcp._tools
+
+            tool = None
+            if active_tools:
+                if isinstance(active_tools, dict):
+                    tool = active_tools.get(tool_name)
+                    if not tool:
+                        for val in active_tools.values():
+                            if getattr(val, "name", None) == tool_name:
+                                tool = val
+                                break
+                elif isinstance(active_tools, list):
+                    for val in active_tools:
+                        if getattr(val, "name", None) == tool_name:
+                            tool = val
+                            break
+
             if not tool:
                 return {"success": False, "error": f"Tool '{tool_name}' is not currently loaded in the active server."}
                 

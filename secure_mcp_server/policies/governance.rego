@@ -1,28 +1,26 @@
 package secure_mcp.governance
 
+import rego.v1
+
 default decision = "ALLOW"
 default explanation = "Execution permitted by default policies"
 
-# ---------------------------------------------------------------------------
-# DENY RULES
-# ---------------------------------------------------------------------------
-
 # Deny highly destructive intents without exception
-deny[msg] {
+deny contains msg if {
     input.intent.intent_category == "delete"
     input.risk.score >= 0.9
     msg := "High risk destructive actions are strictly prohibited"
 }
 
 # Deny execution if session is tainted and intent is mutating
-deny[msg] {
+deny contains msg if {
     input.intent.intent_category == "write"
     count(input.taints) > 0
     msg := "Mutating actions are not allowed when session is tainted"
 }
 
 # Deny shell injection in string parameters
-deny[msg] {
+deny contains msg if {
     some key
     val := input.arguments[key]
     is_string(val)
@@ -31,7 +29,7 @@ deny[msg] {
 }
 
 # Deny direct device or sensitive system file access in arguments
-deny[msg] {
+deny contains msg if {
     some key
     val := input.arguments[key]
     is_string(val)
@@ -40,7 +38,7 @@ deny[msg] {
 }
 
 # Deny execution if session is tainted and category is sensitive
-deny[msg] {
+deny contains msg if {
     taint_blocking_categories := {"write", "execute", "delete", "configure", "admin"}
     taint_blocking_categories[input.intent.intent_category]
     count(input.taints) > 0
@@ -48,27 +46,23 @@ deny[msg] {
 }
 
 # Deny access if user context does not have required permissions
-deny[msg] {
+deny contains msg if {
     req_perms := input.tool_metadata.permissions_required
     count(req_perms) > 0
     not has_all_permissions(input.user_context.permissions, req_perms)
     msg := sprintf("Missing required permissions. Need: %v", [req_perms])
 }
 
-has_all_permissions(user_perms, req_perms) {
+has_all_permissions(user_perms, req_perms) if {
     user_perms[_] == "*"
 }
 
-has_all_permissions(user_perms, req_perms) {
+has_all_permissions(user_perms, req_perms) if {
     count({p | p := req_perms[_]; p == user_perms[_]}) == count(req_perms)
 }
 
-# ---------------------------------------------------------------------------
-# REQUIRE_APPROVAL RULES
-# ---------------------------------------------------------------------------
-
 # Require approval for any write action that is not highly destructive but has medium-high risk
-require_approval[msg] {
+require_approval contains msg if {
     input.intent.intent_category == "write"
     input.risk.score >= 0.7
     input.risk.score < 0.9
@@ -77,31 +71,28 @@ require_approval[msg] {
 }
 
 # Require approval for cross-environment execution
-require_approval[msg] {
+require_approval contains msg if {
     input.tool_metadata.sensitivity_level == "restricted"
     input.user_context.role != "admin"
     msg := "Restricted sensitivity tools require admin approval for non-admins"
 }
 
 # Require approval for any delete action that has risk >= 0.7
-require_approval[msg] {
+require_approval contains msg if {
     input.intent.intent_category == "delete"
     input.risk.score >= 0.7
     msg := "Destructive delete actions require manual approval"
 }
 
-# ---------------------------------------------------------------------------
-# DECISION LOGIC
-# ---------------------------------------------------------------------------
-
-decision = "DENY" {
+# Decision logic
+decision = "DENY" if {
     count(deny) > 0
-} else = "REQUIRE_APPROVAL" {
+} else = "REQUIRE_APPROVAL" if {
     count(require_approval) > 0
 }
 
-explanation = concat("; ", deny) {
+explanation = concat("; ", deny) if {
     count(deny) > 0
-} else = concat("; ", require_approval) {
+} else = concat("; ", require_approval) if {
     count(require_approval) > 0
 }

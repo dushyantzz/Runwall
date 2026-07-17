@@ -299,6 +299,7 @@ class ToolRegistry:
         # 7. OPA Policy Check
         decision = getattr(policy_result, "decision", None) if policy_result else None
         decision_val = decision.value if decision else ("DENY" if not final_success and not approval_id else "ALLOW")
+        decision_val = decision_val.upper()
         if decision_val == "ALLOW" and final_success:
             policy_status = "✅ ALLOW"
             policy_details = "Permitted by default rules"
