@@ -118,7 +118,12 @@ async def get_api_keys(x_user_email: Optional[str] = Header(None)):
             await db.commit()
             await db.refresh(user)
         
-        stmt = select(APIKey).where(APIKey.user_id == user.id)
+        # Fetch both user's keys and unlinked service account keys belonging to the tenant
+        tenant_id = getattr(user, "tenant_id", "default") or "default"
+        stmt = select(APIKey).where(
+            (APIKey.user_id == user.id) | 
+            ((APIKey.user_id == None) & (APIKey.tenant_id == tenant_id))
+        )
         res = await db.execute(stmt)
         keys = res.scalars().all()
         return [

@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     
     # Database Configuration
     database_url: str = Field(
-        default="sqlite+aiosqlite:///./secure_mcp.db", 
+        default="postgresql+asyncpg://postgres.catmnzhnxfmgayvnvszh:Daredevil%409451856439@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?prepared_statement_cache_size=0", 
         description="Database connection URL",
         validation_alias="DATABASE_URL"
     )

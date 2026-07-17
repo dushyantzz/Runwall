@@ -595,13 +595,11 @@ async def test_api_key_email_case_insensitivity(db_manager):
 
     # 3. Call get_api_keys with lowercase email
     keys_lower = await get_api_keys(x_user_email="useremail@example.com")
-    assert len(keys_lower) == 1
-    assert keys_lower[0]["name"] == "My test key"
+    assert any(k["name"] == "My test key" for k in keys_lower)
 
     # 4. Call get_api_keys with uppercase email
     keys_upper = await get_api_keys(x_user_email="USEREMAIL@EXAMPLE.COM")
-    assert len(keys_upper) == 1
-    assert keys_upper[0]["name"] == "My test key"
+    assert any(k["name"] == "My test key" for k in keys_upper)
 
 
 # -----------------------------------------------------------------------------
