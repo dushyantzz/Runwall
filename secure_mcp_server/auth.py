@@ -286,15 +286,20 @@ class AuthManager:
         async with db_manager.get_session_context() as db_session:
             # Check if exists
             email = identity_data.get("email")
-            stmt = select(User).where(User.email == email)
-            result = await db_session.execute(stmt)
-            user = result.scalar_one_or_none()
+            email_clean = email.strip().lower() if email else None
             
+            if email_clean:
+                stmt = select(User).where(User.email == email_clean)
+                result = await db_session.execute(stmt)
+                user = result.scalar_one_or_none()
+            else:
+                user = None
+                
             if not user:
                 # Provision new user
                 user = User(
-                    username=identity_data.get("subject_id") or email,
-                    email=email,
+                    username=identity_data.get("subject_id") or email_clean,
+                    email=email_clean,
                     full_name=identity_data.get("name"),
                     auth_provider=provider,
                     # dummy password for SSO users
@@ -303,7 +308,7 @@ class AuthManager:
                 )
                 db_session.add(user)
                 await db_session.flush()
-                logger.info("JIT provisioned new SSO user", email=email, provider=provider)
+                logger.info("JIT provisioned new SSO user", email=email_clean, provider=provider)
                 
             return user
 

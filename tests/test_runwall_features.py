@@ -569,3 +569,38 @@ async def test_risk_calibration_content_scoring():
     assert risk_sql.score >= 0.50, \
         f"UNION SELECT injection should score >= 0.50, got {risk_sql.score}"
 
+
+# -----------------------------------------------------------------------------
+# 17. API Key Email Case Insensitivity Test
+# -----------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_api_key_email_case_insensitivity(db_manager):
+    """Verify that case-insensitive email queries resolve the same user and key lists."""
+    from secure_mcp_server.api.routes.dashboard import get_api_keys, generate_api_key, APIKeyCreateRequest
+    from secure_mcp_server.database import ServiceAccount
+    
+    # 1. Create a service account to link keys to
+    async with db_manager.get_session_context() as db:
+        sa = ServiceAccount(name="test-sa", tenant_id="default")
+        db.add(sa)
+        await db.commit()
+        await db.refresh(sa)
+        sa_id = sa.id
+
+    # 2. Call generate_api_key with uppercase email
+    req = APIKeyCreateRequest(name="My test key", service_account_id=sa_id)
+    resp = await generate_api_key(req, x_user_email="UserEmail@Example.Com")
+    assert resp["success"] is True
+    assert resp["api_key"].startswith("mcp_")
+
+    # 3. Call get_api_keys with lowercase email
+    keys_lower = await get_api_keys(x_user_email="useremail@example.com")
+    assert len(keys_lower) == 1
+    assert keys_lower[0]["name"] == "My test key"
+
+    # 4. Call get_api_keys with uppercase email
+    keys_upper = await get_api_keys(x_user_email="USEREMAIL@EXAMPLE.COM")
+    assert len(keys_upper) == 1
+    assert keys_upper[0]["name"] == "My test key"
+
+

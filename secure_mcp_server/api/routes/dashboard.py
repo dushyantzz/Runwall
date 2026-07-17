@@ -95,16 +95,17 @@ async def get_api_keys(x_user_email: Optional[str] = Header(None)):
         # Prevent accessing other users' keys if header is missing
         return []
         
+    email_clean = x_user_email.strip().lower()
     async with get_db_manager().get_session_context() as db:
         # Get or create user
-        stmt = select(User).where(User.email == x_user_email)
+        stmt = select(User).where(User.email == email_clean)
         res = await db.execute(stmt)
         user = res.scalar_one_or_none()
         if not user:
-            username = x_user_email.split('@')[0]
+            username = email_clean.split('@')[0]
             user = User(
                 username=username,
-                email=x_user_email,
+                email=email_clean,
                 full_name=username,
                 hashed_password="supabase-auth-placeholder",
                 is_active=True,
@@ -136,19 +137,20 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
     if not x_user_email:
         raise HTTPException(status_code=400, detail="X-User-Email header is required to associate API keys.")
         
+    email_clean = x_user_email.strip().lower()
     settings = get_settings()
     auth_manager = AuthManager(settings)
     
     # Resolve user
     async with get_db_manager().get_session_context() as db:
-        stmt = select(User).where(User.email == x_user_email)
+        stmt = select(User).where(User.email == email_clean)
         res = await db.execute(stmt)
         user = res.scalar_one_or_none()
         if not user:
-            username = x_user_email.split('@')[0]
+            username = email_clean.split('@')[0]
             user = User(
                 username=username,
-                email=x_user_email,
+                email=email_clean,
                 full_name=username,
                 hashed_password="supabase-auth-placeholder",
                 is_active=True,
