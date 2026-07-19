@@ -324,7 +324,10 @@ class AuthManager:
         tenant_id: str = "default",
         permissions: Optional[List[str]] = None,
         allowed_ips: Optional[List[str]] = None,
-        environment: str = "production"
+        environment: str = "production",
+        tier: str = "free",
+        rate_limit_requests: int = 15,
+        rate_limit_period: str = "week"
     ) -> str:
         """Create a new API key for a user or service account with hashed storage."""
         if not user_id and not service_account_id:
@@ -347,11 +350,14 @@ class AuthManager:
                 permissions=permissions or [],
                 allowed_ips=allowed_ips or [],
                 environment=environment,
+                tier=tier,
+                rate_limit_requests=rate_limit_requests,
+                rate_limit_period=rate_limit_period,
                 is_active=True
             )
             db_session.add(new_key)
             
-        logger.info("API key created", user_id=user_id, service_account_id=service_account_id, name=name)
+        logger.info("API key created", user_id=user_id, service_account_id=service_account_id, name=name, tier=tier)
         return api_key
     
     async def validate_api_key(

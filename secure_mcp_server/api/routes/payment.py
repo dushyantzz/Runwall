@@ -210,6 +210,7 @@ async def verify_payment(body: VerifyPaymentRequest):
             )
             db.add(usage)
         else:
+            usage.request_count = 0
             usage.requests_remaining = settings.pro_tier_requests
             usage.is_exceeded = False
 

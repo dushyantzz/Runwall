@@ -33,6 +33,7 @@ class APIKeyCreateRequest(BaseModel):
     service_account_id: int
     allowed_ips: List[str] = ["127.0.0.1/32"]
     environment: str = "production"
+    tier: str = "free"
 
 class TaintAddRequest(BaseModel):
     session_id: str
@@ -169,12 +170,66 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
             await db.refresh(user)
         user_id = user.id
 
+        # Check if user is rate limit exhausted across their active keys
+        from secure_mcp_server.billing.rate_limiter import get_current_period, TIER_LIMITS, get_or_create_usage_record
+        
+        # Get active keys
+        keys_stmt = select(APIKey).where(APIKey.user_id == user_id, APIKey.is_active == True)
+        keys_res = await db.execute(keys_stmt)
+        active_keys = keys_res.scalars().all()
+        
+        is_exhausted = False
+        if active_keys:
+            # Check if all active keys are exhausted
+            all_exhausted = True
+            for k in active_keys:
+                if k.tier == "enterprise":
+                    all_exhausted = False
+                    continue
+                limit = TIER_LIMITS.get(k.tier, k.rate_limit_requests)
+                usage = await get_or_create_usage_record(k, db)
+                if limit is not None and usage.request_count < limit:
+                    all_exhausted = False
+                    break
+            is_exhausted = all_exhausted
+
+        if is_exhausted:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Key creation blocked. You have exhausted all requests in your current period. "
+                    "You will be able to create a new key once your current period resets, or you "
+                    "can renew/upgrade your Pro plan."
+                )
+            )
+
         # Verify service account exists
         stmt = select(ServiceAccount).where(ServiceAccount.id == req.service_account_id)
         res = await db.execute(stmt)
         sa = res.scalar_one_or_none()
         if not sa:
             raise HTTPException(status_code=404, detail="Service account not found")
+
+        # Check Pro subscription if tier is 'pro'
+        rate_limit_requests = settings.free_tier_requests
+        rate_limit_period = "week"
+        if req.tier == "pro":
+            # Check active subscription
+            from secure_mcp_server.database.models import UserSubscription
+            sub_stmt = select(UserSubscription).where(
+                UserSubscription.user_id == user_id,
+                UserSubscription.tier == "pro",
+                UserSubscription.status == "active"
+            )
+            sub_res = await db.execute(sub_stmt)
+            sub = sub_res.scalars().first()
+            if not sub:
+                raise HTTPException(
+                    status_code=402,
+                    detail="Payment Required: You do not have an active Pro subscription. Please select Pro plan and pay ₹674 ($7) first."
+                )
+            rate_limit_requests = settings.pro_tier_requests
+            rate_limit_period = "month"
             
     # Generate API key
     raw_key = await auth_manager.create_api_key(
@@ -182,7 +237,10 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
         user_id=user_id,
         service_account_id=req.service_account_id,
         allowed_ips=req.allowed_ips,
-        environment=req.environment
+        environment=req.environment,
+        tier=req.tier,
+        rate_limit_requests=rate_limit_requests,
+        rate_limit_period=rate_limit_period
     )
     return {"success": True, "api_key": raw_key, "message": "API key generated successfully"}
 

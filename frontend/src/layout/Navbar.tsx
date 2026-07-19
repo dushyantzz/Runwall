@@ -17,6 +17,8 @@ export default function Navbar() {
   const [loading, setLoading] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeySvcAcct, setNewKeySvcAcct] = useState('');
+  const [newKeyTier, setNewKeyTier] = useState('free');
+  const [keyGenError, setKeyGenError] = useState<{ text: string, status: number } | null>(null);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [apiKeys, setApiKeys] = useState<any[]>([]);
   const [serviceAccounts, setServiceAccounts] = useState<any[]>([]);
@@ -69,6 +71,7 @@ export default function Navbar() {
     e.preventDefault();
     if (!newKeyName || !newKeySvcAcct) return;
     setLoading(true);
+    setKeyGenError(null);
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (user?.email) {
@@ -79,7 +82,8 @@ export default function Navbar() {
         headers,
         body: JSON.stringify({
           name: newKeyName,
-          service_account_id: parseInt(newKeySvcAcct)
+          service_account_id: parseInt(newKeySvcAcct),
+          tier: newKeyTier
         })
       });
       const data = await res.json();
@@ -91,9 +95,14 @@ export default function Navbar() {
         const kRes = await fetch(`${API_BASE}/dashboard/identity/keys`, { headers });
         if (kRes.ok) setApiKeys(await kRes.json());
       } else {
-        notify('error', data.detail || 'Failed to generate API key.');
+        setKeyGenError({
+          text: data.detail || 'Failed to generate API key.',
+          status: res.status
+        });
+        notify('error', 'Key generation blocked.');
       }
     } catch (err) {
+      setKeyGenError({ text: 'Network error generating API key.', status: 500 });
       notify('error', 'Network error generating API key.');
     } finally {
       setLoading(false);
@@ -412,10 +421,58 @@ export default function Navbar() {
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, color: '#777777', marginBottom: 4 }}>Select Key Billing Tier</label>
+                    <select 
+                      value={newKeyTier} 
+                      onChange={e => setNewKeyTier(e.target.value)}
+                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#ffffff' }}
+                      required
+                    >
+                      <option value="free">Free Plan (15 requests / week)</option>
+                      <option value="pro">Pro Plan (2,000 requests / month)</option>
+                    </select>
+                  </div>
                   <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '10px 0', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} disabled={loading}>
                     Generate Token
                   </button>
                 </form>
+
+                {keyGenError && (
+                  <div style={{
+                    marginTop: 12,
+                    padding: '10px 12px',
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.2)',
+                    borderRadius: 8,
+                    color: 'var(--destructive)',
+                    fontSize: 12,
+                  }}>
+                    <div>{keyGenError.text}</div>
+                    {keyGenError.status === 402 && (
+                      <button
+                        onClick={() => {
+                          setModalOpen(false);
+                          window.location.href = '/pricing';
+                        }}
+                        style={{
+                          marginTop: 8,
+                          width: '100%',
+                          padding: '6px 0',
+                          background: 'var(--accent)',
+                          color: '#000',
+                          border: 'none',
+                          borderRadius: 6,
+                          fontWeight: 700,
+                          fontSize: 11,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Go to Pricing & Subscription Page
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {generatedKey && (
                   <div style={{ marginTop: 16, border: '1px dashed #10b981', borderRadius: 6, padding: 12, background: 'rgba(16,185,129,0.03)' }}>

@@ -3,7 +3,6 @@ import AppLayout from '@/layout/AppLayout';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import DocsPage from '@/pages/DocsPage';
 import PricingPage from '@/pages/PricingPage';
 
@@ -26,9 +25,9 @@ export function AppRoutes() {
         {/* Pricing */}
         <Route path="/pricing" element={<PricingPage />} />
 
-        {/* Unified Documentation Routes (Protected) */}
-        <Route path="/docs" element={<ProtectedRoute><DocsPage /></ProtectedRoute>} />
-        <Route path="/docs/:pageId" element={<ProtectedRoute><DocsPage /></ProtectedRoute>} />
+        {/* Unified Documentation Routes (Public) */}
+        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/docs/:pageId" element={<DocsPage />} />
 
         {/* Legacy Features Redirects */}
         <Route path="/features/:pageId" element={<FeaturesRedirect />} />

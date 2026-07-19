@@ -49,40 +49,42 @@ async def lifespan(app: FastAPI):
 
     cron_task.cancel()
 
-def create_app() -> FastAPI:
-    """Create and configure the FastAPI application for the Control Plane."""
-    app = FastAPI(
-        title="Execution Governance Platform API",
-        description="REST API Control Plane for managing AI Agent execution policies, approvals, and audits.",
-        version="1.0.0",
-        docs_url=None,
-        redoc_url=None,
-        lifespan=lifespan
-    )
+class MCPAuthASGIMiddleware:
+    """ASGI Middleware to enforce API Key authentication on MCP HTTP/SSE endpoints."""
+    def __init__(self, app):
+        self.app = app
 
-    # Enforce API Key Authentication Middleware for MCP endpoints
-    @app.middleware("http")
-    async def mcp_token_auth_middleware(request: Request, call_next):
-        path = request.url.path
-        
+    async def __call__(self, scope, receive, send):
+        if scope["type"] not in ("http", "websocket"):
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path", "")
         # Protect MCP protocol endpoints: /mcp, /sse, /messages, and root /
         mcp_paths = ["/mcp", "/sse", "/messages"]
         is_mcp_request = any(path.startswith(p) for p in mcp_paths) or path == "/"
-        
+
         if is_mcp_request and not path.startswith("/api/v1") and path not in ("/health", "/docs", "/redoc", "/openapi.json"):
+            # Extract query parameters
+            query_string = scope.get("query_string", b"").decode("utf-8")
+            from urllib.parse import parse_qs
+            params = parse_qs(query_string)
+            
+            # Extract headers
+            headers = scope.get("headers", [])
+            auth_header_val = None
+            for key, val in headers:
+                if key == b"authorization":
+                    auth_header_val = val.decode("utf-8")
+                    break
+
             token = None
-            auth_header = request.headers.get("Authorization")
-            if auth_header and auth_header.startswith("Bearer "):
-                token = auth_header[7:]
+            if auth_header_val and auth_header_val.startswith("Bearer "):
+                token = auth_header_val[7:]
             else:
-                query_params = request.query_params
-                q_token = (
-                    query_params.get("token") 
-                    or query_params.get("api_key") 
-                    or query_params.get("apiKey") 
-                    or query_params.get("authorization")
-                )
-                if q_token:
+                q_token_list = params.get("token") or params.get("api_key") or params.get("apiKey") or params.get("authorization")
+                if q_token_list:
+                    q_token = q_token_list[0]
                     if q_token.startswith("Bearer "):
                         q_token = q_token[7:]
                     token = q_token
@@ -95,12 +97,13 @@ def create_app() -> FastAPI:
                 settings = get_settings()
                 auth_manager = AuthManager(settings)
                 
-                request_ip = request.client.host if request.client else None
-                if not request_ip:
-                    forwarded = request.headers.get("x-forwarded-for")
-                    if forwarded:
-                        request_ip = forwarded.split(",")[0].strip()
-                
+                client = scope.get("client")
+                request_ip = client[0] if client else None
+                for key, val in headers:
+                    if key == b"x-forwarded-for":
+                        request_ip = val.decode("utf-8").split(",")[0].strip()
+                        break
+
                 try:
                     ctx = await auth_manager.validate_api_key(
                         api_key=token,
@@ -109,21 +112,47 @@ def create_app() -> FastAPI:
                     )
                     if ctx:
                         authorized = True
-                        # Inject context into request state for downstream uses
-                        request.state.user_context = ctx
+                        scope["user_context"] = ctx
                 except Exception:
                     pass
 
             if not authorized:
-                return JSONResponse(
-                    status_code=401,
-                    content={
-                        "error": "Unauthorized",
-                        "detail": "A valid Runwall API Key ('token' query parameter or Bearer token) is required to access the MCP endpoints."
-                    }
-                )
+                # Return 401 response directly via ASGI
+                import json
+                body_dict = {
+                    "error": "Unauthorized",
+                    "detail": "A valid Runwall API Key ('token' query parameter or Bearer token) is required to access the MCP endpoints."
+                }
+                body = json.dumps(body_dict).encode("utf-8")
+                await send({
+                    "type": "http.response.start",
+                    "status": 401,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode("ascii")),
+                    ]
+                })
+                await send({
+                    "type": "http.response.body",
+                    "body": body,
+                })
+                return
 
-        return await call_next(request)
+        await self.app(scope, receive, send)
+
+def create_app() -> FastAPI:
+    """Create and configure the FastAPI application for the Control Plane."""
+    app = FastAPI(
+        title="Execution Governance Platform API",
+        description="REST API Control Plane for managing AI Agent execution policies, approvals, and audits.",
+        version="1.0.0",
+        docs_url=None,
+        redoc_url=None,
+        lifespan=lifespan
+    )
+
+    # Register ASGI custom auth middleware
+    app.add_middleware(MCPAuthASGIMiddleware)
 
     # Add CORS middleware for UI access
     app.add_middleware(

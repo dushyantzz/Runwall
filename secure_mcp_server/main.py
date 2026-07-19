@@ -105,9 +105,12 @@ class SecureMCPServer:
             """Authentication middleware for all MCP requests."""
             self.mcp.current_request = request
             
-            # Extract user context from request state if already validated in HTTP middleware
+            # Extract user context from ASGI scope if already validated in HTTP middleware
             user_context = None
-            if request and hasattr(request, "state") and hasattr(request.state, "user_context"):
+            if request and hasattr(request, "scope"):
+                user_context = request.scope.get("user_context")
+            
+            if not user_context and request and hasattr(request, "state") and hasattr(request.state, "user_context"):
                 user_context = request.state.user_context
             
             if not user_context:
