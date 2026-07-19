@@ -11,10 +11,10 @@ declare global {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  apiKeyId: number;
+  apiKeyId?: number;
   userEmail?: string;
   userName?: string;
-  onSuccess?: () => void;
+  onSuccess?: (apiKey?: string) => void;
 }
 
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -95,14 +95,19 @@ export default function PaymentModal({
         }) => {
           // Step 3: Verify payment on backend
           try {
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (userEmail) {
+              headers['X-User-Email'] = userEmail;
+            }
             const verifyRes = await fetch(`${baseUrl}/api/v1/payment/verify`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers,
               body: JSON.stringify({
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_subscription_id,
                 razorpay_signature: response.razorpay_signature,
-                api_key_id: apiKeyId,
+                api_key_id: apiKeyId || null,
+                key_name: 'Pro API Key'
               }),
             });
 
@@ -115,7 +120,7 @@ export default function PaymentModal({
             if (result.success) {
               setSuccess(true);
               setLoading(false);
-              onSuccess?.();
+              onSuccess?.(result.api_key);
             } else {
               throw new Error('Payment verification returned failure');
             }

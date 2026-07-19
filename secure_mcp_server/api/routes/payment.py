@@ -43,7 +43,8 @@ class VerifyPaymentRequest(BaseModel):
     razorpay_payment_id: str
     razorpay_order_id: str
     razorpay_signature: str
-    api_key_id: int                   # which API key to upgrade
+    api_key_id: Optional[int] = None
+    key_name: Optional[str] = None
 
 
 class CancelSubscriptionRequest(BaseModel):
@@ -127,9 +128,9 @@ async def create_order(body: CreateOrderRequest):
 # ── POST /api/v1/payment/verify ───────────────────────────────────────────────
 
 @router.post("/payment/verify")
-async def verify_payment(body: VerifyPaymentRequest):
+async def verify_payment(body: VerifyPaymentRequest, x_user_email: Optional[str] = Header(None)):
     """
-    Verify Razorpay payment signature and upgrade the API key tier to Pro.
+    Verify Razorpay payment signature and upgrade or create the API key under Pro tier.
     Called by the frontend after Razorpay checkout succeeds.
     """
     settings = get_settings()
@@ -148,24 +149,88 @@ async def verify_payment(body: VerifyPaymentRequest):
     now = datetime.now(timezone.utc)
     period_start, period_end = get_current_period("pro", now)
 
+    generated_raw_key = None
     async with get_db_manager().get_session_context() as db:
-        # 2. Upgrade API key
-        key = await _get_api_key_by_id(body.api_key_id, db)
-        key.tier = "pro"
-        key.subscription_id = body.razorpay_order_id
-        key.subscription_status = "active"
-        key.subscription_end_date = period_end
-        key.rate_limit_requests = settings.pro_tier_requests
-        key.rate_limit_period = "month"
+        # Resolve user
+        if not x_user_email:
+            raise HTTPException(status_code=400, detail="X-User-Email header is required.")
+        email_clean = x_user_email.strip().lower()
+        
+        stmt = select(User).where(User.email == email_clean)
+        res = await db.execute(stmt)
+        user = res.scalar_one_or_none()
+        if not user:
+            username = email_clean.split('@')[0]
+            user = User(
+                username=username,
+                email=email_clean,
+                full_name=username,
+                hashed_password="supabase-auth-placeholder",
+                is_active=True,
+                is_admin=False
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+            
+        if body.api_key_id:
+            # 2a. Upgrade existing API key
+            key = await _get_api_key_by_id(body.api_key_id, db)
+            key.tier = "pro"
+            key.subscription_id = body.razorpay_order_id
+            key.subscription_status = "active"
+            key.subscription_end_date = period_end
+            key.rate_limit_requests = settings.pro_tier_requests
+            key.rate_limit_period = "month"
+            db.add(key)
+        else:
+            # 2b. Create brand new Pro API key
+            from secure_mcp_server.auth import AuthManager
+            auth_manager = AuthManager(settings)
+            
+            # Resolve or create default service account
+            from secure_mcp_server.database import ServiceAccount
+            sa_stmt = select(ServiceAccount).where(ServiceAccount.name == "Default Service Account")
+            sa_res = await db.execute(sa_stmt)
+            sa = sa_res.scalar_one_or_none()
+            if not sa:
+                sa = ServiceAccount(
+                    name="Default Service Account",
+                    description="Automatically generated default service account for user API keys.",
+                    is_active=True
+                )
+                db.add(sa)
+                await db.commit()
+                await db.refresh(sa)
+                
+            generated_raw_key = await auth_manager.create_api_key(
+                name=body.key_name or "Pro API Key",
+                user_id=user.id,
+                service_account_id=sa.id,
+                tier="pro",
+                rate_limit_requests=settings.pro_tier_requests,
+                rate_limit_period="month"
+            )
+            
+            # Retrieve the created key to link subscription details
+            key_hash = hashlib.sha256(generated_raw_key[4:].encode()).hexdigest()
+            key_stmt = select(APIKey).where(APIKey.key_hash == key_hash)
+            key_res = await db.execute(key_stmt)
+            key = key_res.scalar_one()
+            
+            key.subscription_id = body.razorpay_order_id
+            key.subscription_status = "active"
+            key.subscription_end_date = period_end
+            db.add(key)
 
         # 3. Upsert UserSubscription
-        stmt = select(UserSubscription).where(
+        sub_stmt = select(UserSubscription).where(
             UserSubscription.api_key_id == key.id
         )
-        result = await db.execute(stmt)
+        result = await db.execute(sub_stmt)
         sub = result.scalars().first()
         if sub is None:
-            sub = UserSubscription(api_key_id=key.id, user_id=key.user_id)
+            sub = UserSubscription(api_key_id=key.id, user_id=user.id)
             db.add(sub)
 
         sub.tier = "pro"
@@ -179,7 +244,7 @@ async def verify_payment(body: VerifyPaymentRequest):
 
         # 4. Create payment transaction record
         txn = PaymentTransaction(
-            user_id=key.user_id,
+            user_id=user.id,
             api_key_id=key.id,
             tier="pro",
             amount=settings.pro_tier_price_paise,
@@ -217,12 +282,12 @@ async def verify_payment(body: VerifyPaymentRequest):
         await db.commit()
 
     logger.info(
-        "Pro upgrade completed",
-        api_key_id=body.api_key_id,
+        "Pro key verification completed",
+        api_key_id=key.id,
         payment_id=body.razorpay_payment_id,
     )
 
-    return {
+    ret = {
         "success": True,
         "tier": "pro",
         "rate_limit": {
@@ -231,6 +296,9 @@ async def verify_payment(body: VerifyPaymentRequest):
             "reset_at": period_end.isoformat(),
         },
     }
+    if generated_raw_key:
+        ret["api_key"] = generated_raw_key
+    return ret
 
 
 # ── POST /api/v1/webhooks/razorpay ───────────────────────────────────────────

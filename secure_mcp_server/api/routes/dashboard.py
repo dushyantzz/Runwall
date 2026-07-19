@@ -30,7 +30,7 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 class APIKeyCreateRequest(BaseModel):
     name: str
-    service_account_id: int
+    service_account_id: Optional[int] = None
     allowed_ips: List[str] = ["127.0.0.1/32"]
     environment: str = "production"
     tier: str = "free"
@@ -203,12 +203,28 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
                 )
             )
 
-        # Verify service account exists
-        stmt = select(ServiceAccount).where(ServiceAccount.id == req.service_account_id)
-        res = await db.execute(stmt)
-        sa = res.scalar_one_or_none()
-        if not sa:
-            raise HTTPException(status_code=404, detail="Service account not found")
+        # Resolve or create default service account if service_account_id not provided
+        if not req.service_account_id:
+            sa_stmt = select(ServiceAccount).where(ServiceAccount.name == "Default Service Account")
+            sa_res = await db.execute(sa_stmt)
+            sa = sa_res.scalar_one_or_none()
+            if not sa:
+                sa = ServiceAccount(
+                    name="Default Service Account",
+                    description="Automatically generated default service account for user API keys.",
+                    is_active=True
+                )
+                db.add(sa)
+                await db.commit()
+                await db.refresh(sa)
+            resolved_sa_id = sa.id
+        else:
+            resolved_sa_id = req.service_account_id
+            stmt = select(ServiceAccount).where(ServiceAccount.id == resolved_sa_id)
+            res = await db.execute(stmt)
+            sa = res.scalar_one_or_none()
+            if not sa:
+                raise HTTPException(status_code=404, detail="Service account not found")
 
         # Check Pro subscription if tier is 'pro'
         rate_limit_requests = settings.free_tier_requests
@@ -235,7 +251,7 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
     raw_key = await auth_manager.create_api_key(
         name=req.name,
         user_id=user_id,
-        service_account_id=req.service_account_id,
+        service_account_id=resolved_sa_id,
         allowed_ips=req.allowed_ips,
         environment=req.environment,
         tier=req.tier,

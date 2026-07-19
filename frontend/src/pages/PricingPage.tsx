@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Check, Zap, Crown, Infinity, ArrowRight, Star, Shield } from 'lucide-react';
+import { Check, Zap, Crown, Infinity, ArrowRight, Star, Shield, Copy, CheckCircle } from 'lucide-react';
 import PaymentModal from '../components/PaymentModal';
+import { useAuth } from '../hooks/AuthContext';
 
 // ── Tier data ─────────────────────────────────────────────────────────────────
 
@@ -30,20 +31,16 @@ const tiers = [
     name: 'Pro',
     price: '$7',
     period: '/month',
-    tagline: 'For serious AI builders',
+    tagline: 'Production-ready M-to-M security',
     icon: <Crown size={20} />,
-    color: '#FFDA62',
+    color: 'var(--accent)',
+    badge: 'MOST POPULAR',
     highlight: true,
-    badge: 'Most Popular',
     features: [
       '2,000 requests per month',
-      '500 requests per minute',
-      'Full Runwall security layer',
-      'OPA policy enforcement',
-      'Advanced audit trails',
-      'Rate limit dashboard',
-      'Auto-renewal',
-      'Email support',
+      'OPA + JWT Custom Governance',
+      'Instant plan renewals',
+      'Priority support',
     ],
     cta: 'Upgrade to Pro',
     ctaAction: 'upgrade',
@@ -53,15 +50,12 @@ const tiers = [
     name: 'Enterprise',
     price: 'Custom',
     period: '',
-    tagline: 'Unlimited scale, custom terms',
+    tagline: 'Tailored for scale and compliance',
     icon: <Infinity size={20} />,
-    color: '#3b82f6',
+    color: '#a855f7',
     highlight: false,
     features: [
-      'Unlimited requests',
-      'Unlimited RPM',
-      'Custom rate limits',
-      'Dedicated support',
+      'Unlimited rate limits',
       'SLA guarantees',
       'Custom OPA policies',
       'On-premise option',
@@ -75,14 +69,59 @@ const tiers = [
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
+  const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
-  // TODO: replace with real API key ID from auth context
-  const [activeApiKeyId] = useState<number>(1);
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  const handleCta = (action: string) => {
-    if (action === 'upgrade') setModalOpen(true);
-    if (action === 'enterprise') {
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+
+  const handleCta = async (action: string) => {
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+    setErrorMsg(null);
+    if (action === 'free') {
+      setLoading(true);
+      try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (user.email) {
+          headers['X-User-Email'] = user.email;
+        }
+        const res = await fetch(`${API_BASE}/dashboard/identity/keys`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            name: 'Free API Key',
+            tier: 'free',
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setGeneratedKey(data.api_key);
+        } else {
+          setErrorMsg(data.detail || 'Failed to generate Free key. You may have exhausted your limits.');
+        }
+      } catch (err) {
+        setErrorMsg('Network error creating Free key.');
+      } finally {
+        setLoading(false);
+      }
+    } else if (action === 'upgrade') {
+      setModalOpen(true);
+    } else if (action === 'enterprise') {
       window.open('mailto:sales@runwall.dev?subject=Enterprise%20Inquiry', '_blank');
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (generatedKey) {
+      navigator.clipboard.writeText(generatedKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -113,6 +152,22 @@ export default function PricingPage() {
         <p style={{ color: 'var(--body)', fontSize: 16, maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
           Every plan includes the full Runwall security layer — OPA policies, audit logs, and AI threat detection.
         </p>
+
+        {errorMsg && (
+          <div style={{
+            maxWidth: 500, margin: '24px auto 0', padding: '12px 16px',
+            background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: 8, color: 'var(--destructive)', fontSize: 13, fontWeight: 500
+          }}>
+            {errorMsg}
+          </div>
+        )}
+
+        {loading && (
+          <div style={{ color: 'var(--accent)', fontSize: 14, marginTop: 24, fontWeight: 600 }}>
+            Generating your key, please wait...
+          </div>
+        )}
       </div>
 
       {/* Cards grid */}
@@ -249,12 +304,84 @@ export default function PricingPage() {
       <PaymentModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        apiKeyId={activeApiKeyId}
-        onSuccess={() => {
+        userEmail={user?.email || undefined}
+        userName={user?.email?.split('@')[0] || undefined}
+        onSuccess={(apiKey) => {
           setModalOpen(false);
-          window.location.href = '/';  // redirect to dashboard after upgrade
+          if (apiKey) {
+            setGeneratedKey(apiKey);
+          } else {
+            window.location.href = '/';
+          }
         }}
       />
+
+      {/* Generated API Key Modal */}
+      {generatedKey && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 20
+        }}>
+          <div style={{
+            background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 16,
+            padding: 32, maxWidth: 500, width: '100%', textAlign: 'center',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.8)'
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%', background: 'rgba(16,185,129,0.1)',
+              border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', margin: '0 auto 20px', color: '#10b981'
+            }}>
+              <CheckCircle size={28} />
+            </div>
+            
+            <h3 style={{ color: '#fff', fontSize: 20, fontWeight: 700, margin: '0 0 8px 0' }}>
+              Your API Key is Ready!
+            </h3>
+            <p style={{ fontSize: 13, color: '#777', margin: '0 0 24px 0', lineHeight: 1.5 }}>
+              Copy this token now. For security reasons, you will not be able to see it again.
+            </p>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10, background: '#000',
+              border: '1px solid #1a1a1a', borderRadius: 8, padding: '12px 16px',
+              marginBottom: 24
+            }}>
+              <code style={{
+                color: 'var(--accent)', fontSize: 13, wordBreak: 'break-all',
+                flexGrow: 1, textAlign: 'left', fontFamily: 'monospace'
+              }}>
+                {generatedKey}
+              </code>
+              <button
+                onClick={copyToClipboard}
+                style={{
+                  background: 'none', border: 'none', color: copied ? '#10b981' : '#777',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center'
+                }}
+              >
+                {copied ? <Check size={18} /> : <Copy size={18} />}
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                setGeneratedKey(null);
+                window.location.href = '/'; // redirect to dashboard
+              }}
+              style={{
+                width: '100%', padding: '12px 0', background: 'var(--accent)',
+                color: '#000', border: 'none', borderRadius: 8, fontWeight: 700,
+                fontSize: 14, cursor: 'pointer'
+              }}
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

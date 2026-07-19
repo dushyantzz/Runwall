@@ -16,12 +16,10 @@ export default function Navbar() {
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
-  const [newKeySvcAcct, setNewKeySvcAcct] = useState('');
   const [newKeyTier, setNewKeyTier] = useState('free');
   const [keyGenError, setKeyGenError] = useState<{ text: string, status: number } | null>(null);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [apiKeys, setApiKeys] = useState<any[]>([]);
-  const [serviceAccounts, setServiceAccounts] = useState<any[]>([]);
   const [notification, setNotification] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
@@ -54,11 +52,7 @@ export default function Navbar() {
       if (user?.email) {
         headers['X-User-Email'] = user.email;
       }
-      const [saRes, kRes] = await Promise.all([
-        fetch(`${API_BASE}/dashboard/identity/service-accounts`, { headers }),
-        fetch(`${API_BASE}/dashboard/identity/keys`, { headers })
-      ]);
-      if (saRes.ok) setServiceAccounts(await saRes.json());
+      const kRes = await fetch(`${API_BASE}/dashboard/identity/keys`, { headers });
       if (kRes.ok) setApiKeys(await kRes.json());
     } catch (err) {
       notify('error', 'Failed to fetch identity data.');
@@ -69,7 +63,7 @@ export default function Navbar() {
 
   const handleGenerateKey = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newKeyName || !newKeySvcAcct) return;
+    if (!newKeyName) return;
     setLoading(true);
     setKeyGenError(null);
     try {
@@ -82,7 +76,6 @@ export default function Navbar() {
         headers,
         body: JSON.stringify({
           name: newKeyName,
-          service_account_id: parseInt(newKeySvcAcct),
           tier: newKeyTier
         })
       });
@@ -393,50 +386,37 @@ export default function Navbar() {
               {/* Form block */}
               <div style={{ border: '1px solid #1a1a1a', borderRadius: '8px', padding: '16px', background: '#000000' }}>
                 <h4 style={{ color: '#ffffff', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 16px 0' }}>
-                  <Plus size={14} color="var(--accent)" /> Generate Enterprise API Key
+                  <Plus size={14} color="var(--accent)" /> Generate Free API Key
                 </h4>
-                <form onSubmit={handleGenerateKey} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <form onSubmit={(e) => { setNewKeyTier('free'); handleGenerateKey(e); }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 11, color: '#777777', marginBottom: 4 }}>Key Label Name</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. SalesSyncAgentKey" 
+                      placeholder="e.g. MyFreeAgentKey" 
                       value={newKeyName} 
                       onChange={e => setNewKeyName(e.target.value)}
                       style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#ffffff' }}
                       required
                     />
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, color: '#777777', marginBottom: 4 }}>Target Service Account</label>
-                    <select 
-                      value={newKeySvcAcct} 
-                      onChange={e => setNewKeySvcAcct(e.target.value)}
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#ffffff' }}
-                      required
-                    >
-                      <option value="">-- Select Account --</option>
-                      {serviceAccounts.map(sa => (
-                        <option key={sa.id} value={sa.id}>{sa.name} (Tenant: {sa.tenant_id})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, color: '#777777', marginBottom: 4 }}>Select Key Billing Tier</label>
-                    <select 
-                      value={newKeyTier} 
-                      onChange={e => setNewKeyTier(e.target.value)}
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#ffffff' }}
-                      required
-                    >
-                      <option value="free">Free Plan (15 requests / week)</option>
-                      <option value="pro">Pro Plan (2,000 requests / month)</option>
-                    </select>
-                  </div>
                   <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '10px 0', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} disabled={loading}>
-                    Generate Token
+                    Generate Free Token
                   </button>
                 </form>
+
+                <div style={{
+                  marginTop: 16,
+                  padding: 12,
+                  borderRadius: 6,
+                  background: 'rgba(255,218,98,0.03)',
+                  border: '1px solid rgba(255,218,98,0.1)'
+                }}>
+                  <div style={{ fontSize: 11, color: '#FFDA62', fontWeight: 600, marginBottom: 4 }}>Need more capacity?</div>
+                  <div style={{ fontSize: 10, color: '#888', lineHeight: 1.4 }}>
+                    To get a Pro API Key with 2,000 requests/month, close this modal and click <strong>Pricing</strong> in the navigation bar to complete the subscription setup.
+                  </div>
+                </div>
 
                 {keyGenError && (
                   <div style={{
