@@ -22,7 +22,8 @@ export default function Navbar() {
   const [apiKeys, setApiKeys] = useState<any[]>([]);
   const [notification, setNotification] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+  const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const API_BASE = rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`;
 
   const notify = (type: 'success' | 'error', text: string) => {
     setNotification({ type, text });

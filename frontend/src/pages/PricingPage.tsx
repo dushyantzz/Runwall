@@ -76,7 +76,8 @@ export default function PricingPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+  const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const API_BASE = rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`;
 
   const handleCta = async (action: string) => {
     if (!user) {
