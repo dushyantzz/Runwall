@@ -4,7 +4,9 @@ from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from secure_mcp_server.api.routes import policies, approvals, audit, dashboard
+from secure_mcp_server.api.routes.payment import router as payment_router
 from secure_mcp_server.config import get_settings
+from secure_mcp_server.billing.cron import start_billing_cron
 
 security = HTTPBasic()
 
@@ -24,6 +26,9 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Start billing cron in background
+    cron_task = start_billing_cron()
+
     # Dynamic combined lifespan for FastMCP task groups
     mcp_http_app = getattr(app.state, "mcp_http_app", None)
     mcp_sse_app = getattr(app.state, "mcp_sse_app", None)
@@ -40,6 +45,8 @@ async def lifespan(app: FastAPI):
             yield
     else:
         yield
+
+    cron_task.cancel()
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application for the Control Plane."""
@@ -66,6 +73,7 @@ def create_app() -> FastAPI:
     app.include_router(approvals.router, prefix="/api/v1/approvals", tags=["Approvals"])
     app.include_router(audit.router, prefix="/api/v1/audit", tags=["Audit"])
     app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
+    app.include_router(payment_router, prefix="/api/v1", tags=["Billing & Payments"])
 
     @app.get("/docs", include_in_schema=False)
     async def get_swagger_documentation(username: str = Depends(authenticate_admin)):

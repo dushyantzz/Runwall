@@ -103,6 +103,17 @@ class Settings(BaseSettings):
         validation_alias="RISK_SCORE_WEIGHTS",
     )
 
+    # ── Razorpay Payment Integration ──────────────────────────────────────
+    razorpay_key_id: str = Field(default="", validation_alias="RAZORPAY_KEY_ID")
+    razorpay_key_secret: str = Field(default="", validation_alias="RAZORPAY_KEY_SECRET")
+    razorpay_webhook_secret: str = Field(default="", validation_alias="RAZORPAY_WEBHOOK_SECRET")
+    razorpay_plan_id: str = Field(default="", validation_alias="RAZORPAY_PLAN_ID")
+
+    # Tier configuration
+    free_tier_requests: int = Field(default=15, validation_alias="FREE_TIER_REQUESTS")
+    pro_tier_requests: int = Field(default=2000, validation_alias="PRO_TIER_REQUESTS")
+    pro_tier_price_paise: int = Field(default=700, validation_alias="PRO_TIER_PRICE_PAISE")
+
 
 # Global settings instance
 _settings: Optional[Settings] = None

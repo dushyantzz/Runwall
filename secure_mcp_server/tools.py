@@ -392,6 +392,25 @@ class ToolRegistry:
                     limit=self.tool_metadata[tool_name].get("rate_limit_per_hour", 100) // 60
                 ):
                     raise Exception(f"Rate limit exceeded for tool '{tool_name}'")
+
+            # ── BILLING TIER RATE LIMIT CHECK ────────────────────────────
+            # Check billing tier quota (15/week free, 2000/month pro) BEFORE execution.
+            api_key_id = user_context.get('api_key_id')
+            if api_key_id:
+                try:
+                    from secure_mcp_server.database import get_db_manager
+                    from secure_mcp_server.billing.rate_limiter import check_rate_limit as billing_check
+                    async with get_db_manager().get_session_context() as billing_db:
+                        limit_result = await billing_check(int(api_key_id), billing_db)
+                        await billing_db.commit()
+                    if not limit_result.get("allowed"):
+                        raise Exception(limit_result.get("detail", "Billing rate limit exceeded"))
+                except Exception as _bl_err:
+                    # Only propagate actual rate limit errors (not DB connection issues)
+                    if "Rate limit exceeded" in str(_bl_err) or "Billing rate limit" in str(_bl_err):
+                        raise
+                    logger.debug("Billing rate limit check skipped", error=str(_bl_err))
+            # ────────────────────────────────────────────────────────────
             
             # Extract contract_id if provided by the agent
             contract_id = arguments.pop("contract_id", None)
@@ -664,6 +683,20 @@ class ToolRegistry:
                 execution_time=execution_time
             )
             
+            # ── BILLING USAGE RECORDING ───────────────────────────────────
+            # Record billing usage AFTER successful execution.
+            _api_key_id = user_context.get('api_key_id')
+            if _api_key_id:
+                try:
+                    from secure_mcp_server.database import get_db_manager
+                    from secure_mcp_server.billing.rate_limiter import record_usage as billing_record
+                    async with get_db_manager().get_session_context() as usage_db:
+                        await billing_record(int(_api_key_id), usage_db)
+                        await usage_db.commit()
+                except Exception as _rec_err:
+                    logger.debug("Billing usage recording skipped", error=str(_rec_err))
+            # ────────────────────────────────────────────────────────────
+
             # Gap 5: Always create a ReversibleExecutionLog entry so rollback works
             try:
                 from secure_mcp_server.database import get_db_manager, ReversibleExecutionLog as RevLog

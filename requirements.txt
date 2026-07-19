@@ -30,6 +30,9 @@ httpx==0.28.1
 typer==0.12.5
 rich>=13.9.4
 
+# Payment Processing
+razorpay>=1.4.1
+
 # Development and Testing
 pytest==8.3.3
 pytest-asyncio==0.23.8

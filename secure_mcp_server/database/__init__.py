@@ -5,7 +5,8 @@ from .models import (
     Base, User, APIKey, Session, Tool, AuditLog,
     PolicyRule, PolicyDecisionLog, TokenRevocation,
     ServiceAccount, PolicyBundle, ToolManifest,
-    ApprovalRequest, TaskContract, ReversibleExecutionLog
+    ApprovalRequest, TaskContract, ReversibleExecutionLog,
+    UserSubscription, RateLimitUsage, PaymentTransaction,
 )
 
 __all__ = [
@@ -28,4 +29,8 @@ __all__ = [
     'ApprovalRequest',
     'TaskContract',
     'ReversibleExecutionLog',
+    # Billing
+    'UserSubscription',
+    'RateLimitUsage',
+    'PaymentTransaction',
 ]

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, Key, Fingerprint, Plus, Copy } from 'lucide-react';
 import { useAuth } from '../hooks/AuthContext';
+import SubscriptionCard from '../components/SubscriptionCard';
+import PaymentModal from '../components/PaymentModal';
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -11,6 +13,7 @@ export default function Navbar() {
 
   // API Key modal state
   const [modalOpen, setModalOpen] = useState(false);
+  const [payModalOpen, setPayModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeySvcAcct, setNewKeySvcAcct] = useState('');
@@ -140,8 +143,9 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }} className="desktop-nav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} className="desktop-nav">
           <NavLink to="/docs">Documentation</NavLink>
+          <NavLink to="/pricing">Pricing</NavLink>
         </div>
 
         {/* Right actions */}
@@ -435,11 +439,11 @@ export default function Navbar() {
                 <h4 style={{ color: '#ffffff', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 16px 0' }}>
                   <Fingerprint size={14} color="var(--accent)" /> Active API Keys
                 </h4>
-                <div style={{ flex: 1, overflowY: 'auto', maxHeight: 240 }}>
+                <div style={{ overflowY: 'auto', maxHeight: 120, marginBottom: 12 }}>
                   {loading && apiKeys.length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 20 }}>Loading API keys...</div>
+                    <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 10 }}>Loading API keys...</div>
                   ) : apiKeys.length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 20 }}>No API Keys generated yet.</div>
+                    <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 10 }}>No API Keys generated yet.</div>
                   ) : (
                     apiKeys.map(k => (
                       <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #111111' }}>
@@ -452,8 +456,32 @@ export default function Navbar() {
                     ))
                   )}
                 </div>
+
+                {/* Billing/Usage widget */}
+                {apiKeys.length > 0 && (
+                  <SubscriptionCard 
+                    apiKeyId={apiKeys[0].id} 
+                    onUpgradeClick={() => setPayModalOpen(true)} 
+                  />
+                )}
               </div>
             </div>
+
+            {/* Razorpay upgrade checkout modal */}
+            {user && apiKeys.length > 0 && (
+              <PaymentModal
+                isOpen={payModalOpen}
+                onClose={() => setPayModalOpen(false)}
+                apiKeyId={apiKeys[0].id}
+                userEmail={user.email}
+                userName={user.email?.split('@')[0]}
+                onSuccess={() => {
+                  setPayModalOpen(false);
+                  notify('success', 'Upgraded to Pro tier successfully!');
+                  fetchModalData();
+                }}
+              />
+            )}
 
             {/* Notification alert inside Modal */}
             {notification && (

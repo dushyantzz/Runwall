@@ -5,6 +5,7 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import DocsPage from '@/pages/DocsPage';
+import PricingPage from '@/pages/PricingPage';
 
 function FeaturesRedirect() {
   const { pageId } = useParams<{ pageId: string }>();
@@ -22,15 +23,15 @@ export function AppRoutes() {
         {/* Home */}
         <Route path="/" element={<HomePage />} />
 
+        {/* Pricing */}
+        <Route path="/pricing" element={<PricingPage />} />
+
         {/* Unified Documentation Routes (Protected) */}
         <Route path="/docs" element={<ProtectedRoute><DocsPage /></ProtectedRoute>} />
         <Route path="/docs/:pageId" element={<ProtectedRoute><DocsPage /></ProtectedRoute>} />
 
         {/* Legacy Features Redirects */}
         <Route path="/features/:pageId" element={<FeaturesRedirect />} />
-
-        {/* Placeholder routes */}
-        <Route path="/pricing" element={<HomePage />} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

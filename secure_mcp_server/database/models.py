@@ -218,14 +218,24 @@ class APIKey(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_used: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    # ── Billing & Subscription fields ──────────────────────────────────────
+    tier: Mapped[str] = mapped_column(String(20), default="free", index=True)
+    subscription_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)  # Razorpay sub ID
+    subscription_status: Mapped[Optional[str]] = mapped_column(String(50))           # active / expired / canceled
+    subscription_end_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    rate_limit_requests: Mapped[int] = mapped_column(Integer, default=15)            # quota per period
+    rate_limit_period: Mapped[str] = mapped_column(String(20), default="week")       # week / month / custom
     
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="api_keys")
     service_account: Mapped[Optional["ServiceAccount"]] = relationship("ServiceAccount", back_populates="api_keys")
+    rate_limit_usages: Mapped[List["RateLimitUsage"]] = relationship("RateLimitUsage", back_populates="api_key", cascade="all, delete-orphan")
     
     __table_args__ = (
         Index("idx_apikey_user_active", "user_id", "is_active"),
         Index("idx_apikey_sa_active", "service_account_id", "is_active"),
+        Index("idx_apikey_tier", "tier"),
     )
 
 
@@ -486,4 +496,93 @@ class PolicyBundle(Base):
     
     __table_args__ = (
         Index("idx_bundle_tenant_active", "tenant_id", "is_active"),
+    )
+
+
+class UserSubscription(Base):
+    """Razorpay subscription data per user."""
+    __tablename__ = "user_subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    api_key_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("api_keys.id"), index=True)
+
+    tier: Mapped[str] = mapped_column(String(20), default="free", index=True)
+    status: Mapped[str] = mapped_column(String(50), default="active", index=True)  # active / expired / canceled
+
+    # Razorpay identifiers
+    razorpay_subscription_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, index=True)
+    razorpay_customer_id: Mapped[Optional[str]] = mapped_column(String(255))
+    razorpay_plan_id: Mapped[Optional[str]] = mapped_column(String(255))
+
+    # Billing period
+    current_period_start: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    current_period_end: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    auto_renew: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    price_paid: Mapped[int] = mapped_column(Integer, default=0)  # in paise
+    currency: Mapped[str] = mapped_column(String(10), default="INR")
+
+    canceled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("idx_usersub_user_status", "user_id", "status"),
+        Index("idx_usersub_end", "current_period_end"),
+    )
+
+
+class RateLimitUsage(Base):
+    """Tracks request count per API key per billing period."""
+    __tablename__ = "rate_limit_usage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    api_key_id: Mapped[int] = mapped_column(Integer, ForeignKey("api_keys.id"), index=True)
+
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+    request_count: Mapped[int] = mapped_column(Integer, default=0)
+    requests_remaining: Mapped[int] = mapped_column(Integer, default=15)
+    last_request_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    is_exceeded: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    api_key: Mapped["APIKey"] = relationship("APIKey", back_populates="rate_limit_usages")
+
+    __table_args__ = (
+        Index("idx_ratelimit_key_period", "api_key_id", "period_start", "period_end"),
+    )
+
+
+class PaymentTransaction(Base):
+    """Immutable audit trail of every payment event."""
+    __tablename__ = "payment_transactions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    api_key_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("api_keys.id"), index=True)
+
+    tier: Mapped[str] = mapped_column(String(20), default="pro")
+    amount: Mapped[int] = mapped_column(Integer, default=0)           # paise
+    currency: Mapped[str] = mapped_column(String(10), default="INR")
+
+    status: Mapped[str] = mapped_column(String(50), index=True)       # pending / completed / failed / refunded
+    razorpay_payment_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, index=True)
+    razorpay_order_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    razorpay_signature: Mapped[Optional[str]] = mapped_column(String(512))
+    payment_method: Mapped[Optional[str]] = mapped_column(String(50))  # card / upi / netbanking
+    subscription_id: Mapped[Optional[str]] = mapped_column(String(255))
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    error_message: Mapped[Optional[str]] = mapped_column(Text)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("idx_payment_user_status", "user_id", "status"),
+        Index("idx_payment_created", "created_at"),
     )
