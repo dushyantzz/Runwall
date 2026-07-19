@@ -200,8 +200,8 @@ export default function PaymentModal({
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                  <span style={{ color: 'var(--heading)', fontWeight: 800, fontSize: 28 }}>₹7</span>
-                  <span style={{ color: 'var(--muted)', fontSize: 13 }}> / month</span>
+                  <span style={{ color: 'var(--heading)', fontWeight: 800, fontSize: 28 }}>$7</span>
+                  <span style={{ color: 'var(--muted)', fontSize: 13 }}> / month (approx. ₹674)</span>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>2,000 requests</div>
@@ -249,7 +249,7 @@ export default function PaymentModal({
               {loading ? (
                 <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Processing…</>
               ) : (
-                <><Crown size={14} /> Pay ₹7 with Razorpay</>
+                <><Crown size={14} /> Pay $7 with Razorpay</>
               )}
             </button>
 

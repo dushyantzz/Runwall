@@ -112,7 +112,7 @@ class Settings(BaseSettings):
     # Tier configuration
     free_tier_requests: int = Field(default=15, validation_alias="FREE_TIER_REQUESTS")
     pro_tier_requests: int = Field(default=2000, validation_alias="PRO_TIER_REQUESTS")
-    pro_tier_price_paise: int = Field(default=700, validation_alias="PRO_TIER_PRICE_PAISE")
+    pro_tier_price_paise: int = Field(default=67400, validation_alias="PRO_TIER_PRICE_PAISE")
 
 
 # Global settings instance

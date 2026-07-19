@@ -28,7 +28,7 @@ const tiers = [
   {
     id: 'pro',
     name: 'Pro',
-    price: '₹7',
+    price: '$7',
     period: '/month',
     tagline: 'For serious AI builders',
     icon: <Crown size={20} />,
