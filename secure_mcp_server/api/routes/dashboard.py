@@ -31,7 +31,7 @@ router = APIRouter()
 class APIKeyCreateRequest(BaseModel):
     name: str
     service_account_id: Optional[int] = None
-    allowed_ips: List[str] = ["127.0.0.1/32"]
+    allowed_ips: List[str] = ["0.0.0.0/0", "::/0"]
     environment: str = "production"
     tier: str = "free"
 
