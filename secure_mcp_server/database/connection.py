@@ -51,100 +51,104 @@ class DatabaseManager:
             expire_on_commit=False
         )
         
-        # Create tables
-        async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+        # Create tables (only if not in production to optimize cold-starts)
+        from secure_mcp_server.config import get_settings
+        settings = get_settings()
         
-        # Seed default policy rules if table is empty
-        async with self.session_factory() as session:
-            from sqlalchemy import select, func
-            from .models import PolicyRule as DBPolicyRule
-            stmt = select(func.count()).select_from(DBPolicyRule)
-            res = await session.execute(stmt)
-            count = res.scalar()
-            if count == 0:
-                logger.info("Database is empty. Seeding default policy rules.")
-                from secure_mcp_server.governance.policy_evaluator import get_default_policy_rules
-                default_rules = get_default_policy_rules()
-                for r in default_rules:
-                    db_rule = DBPolicyRule(
-                        id=r.rule_id,
-                        name=r.name,
-                        description=r.description,
-                        priority=r.priority,
-                        conditions=r.conditions,
-                        action=r.action.value,
-                        action_params=r.action_params,
-                        is_active=r.is_active,
-                        tenant_id=r.tenant_id or "default",
-                        version=r.version
-                    )
-                    session.add(db_rule)
-                await session.commit()
-                logger.info("Successfully seeded default policy rules.")
-
-        # Seed default service accounts if table is empty
-        async with self.session_factory() as session:
-            from .models import ServiceAccount as DBServiceAccount
-            stmt = select(func.count()).select_from(DBServiceAccount)
-            res = await session.execute(stmt)
-            count = res.scalar()
-            if count == 0:
-                logger.info("Database is empty. Seeding default service accounts.")
-                demo_sa1 = DBServiceAccount(
-                    name="default-agent-sa",
-                    description="Default Service Account for Automated Agents",
-                    tenant_id="default"
-                )
-                demo_sa2 = DBServiceAccount(
-                    name="production-gateway-sa",
-                    description="Production M2M Gateway Account",
-                    tenant_id="default"
-                )
-                demo_sa3 = DBServiceAccount(
-                    name="admin-gateway-sa",
-                    description="Admin M2M Service Account with elevated privileges",
-                    tenant_id="default"
-                )
-                session.add(demo_sa1)
-                session.add(demo_sa2)
-                session.add(demo_sa3)
-                await session.commit()
-                logger.info("Successfully seeded default service accounts.")
-
-        # Seed default admin API Keys if not present (linked to admin-gateway-sa)
-        async with self.session_factory() as session:
-            from .models import APIKey as DBAPIKey, ServiceAccount as DBServiceAccount
-            from sqlalchemy import select
+        if settings.environment != "production":
+            async with self.engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
             
-            stmt = select(DBServiceAccount).where(DBServiceAccount.name == "admin-gateway-sa")
-            res = await session.execute(stmt)
-            admin_sa = res.scalar_one_or_none()
-            if admin_sa:
-                target_hashes = [
-                    "410bc0546b169c040351d308aad277364bb5f3f8df9379bd4b97663a8043e7ab",  # EtG7h...
-                    "81ce5dbc4eab84c4f773ddec7ed8ed04c55f35a5422553d514c7d5acafdae79b"   # Hs3FO...
-                ]
-                for th in target_hashes:
-                    stmt = select(DBAPIKey).where(DBAPIKey.key_hash == th)
-                    res = await session.execute(stmt)
-                    existing_key = res.scalar_one_or_none()
-                    if not existing_key:
-                        logger.info("Seeding default admin API key", hash=th)
-                        new_key = DBAPIKey(
-                            tenant_id="default",
-                            service_account_id=admin_sa.id,
-                            name="Default Admin Key",
-                            key_hash=th,
-                            prefix="mcp_",
-                            permissions=["*"],
-                            allowed_ips=["0.0.0.0/0", "::/0"],
-                            environment="*",
-                            is_active=True
+            # Seed default policy rules if table is empty
+            async with self.session_factory() as session:
+                from sqlalchemy import select, func
+                from .models import PolicyRule as DBPolicyRule
+                stmt = select(func.count()).select_from(DBPolicyRule)
+                res = await session.execute(stmt)
+                count = res.scalar()
+                if count == 0:
+                    logger.info("Database is empty. Seeding default policy rules.")
+                    from secure_mcp_server.governance.policy_evaluator import get_default_policy_rules
+                    default_rules = get_default_policy_rules()
+                    for r in default_rules:
+                        db_rule = DBPolicyRule(
+                            id=r.rule_id,
+                            name=r.name,
+                            description=r.description,
+                            priority=r.priority,
+                            conditions=r.conditions,
+                            action=r.action.value,
+                            action_params=r.action_params,
+                            is_active=r.is_active,
+                            tenant_id=r.tenant_id or "default",
+                            version=r.version
                         )
-                        session.add(new_key)
-                await session.commit()
-                logger.info("Successfully seeded default admin API keys.")
+                        session.add(db_rule)
+                    await session.commit()
+                    logger.info("Successfully seeded default policy rules.")
+    
+            # Seed default service accounts if table is empty
+            async with self.session_factory() as session:
+                from .models import ServiceAccount as DBServiceAccount
+                stmt = select(func.count()).select_from(DBServiceAccount)
+                res = await session.execute(stmt)
+                count = res.scalar()
+                if count == 0:
+                    logger.info("Database is empty. Seeding default service accounts.")
+                    demo_sa1 = DBServiceAccount(
+                        name="default-agent-sa",
+                        description="Default Service Account for Automated Agents",
+                        tenant_id="default"
+                    )
+                    demo_sa2 = DBServiceAccount(
+                        name="production-gateway-sa",
+                        description="Production M2M Gateway Account",
+                        tenant_id="default"
+                    )
+                    demo_sa3 = DBServiceAccount(
+                        name="admin-gateway-sa",
+                        description="Admin M2M Service Account with elevated privileges",
+                        tenant_id="default"
+                    )
+                    session.add(demo_sa1)
+                    session.add(demo_sa2)
+                    session.add(demo_sa3)
+                    await session.commit()
+                    logger.info("Successfully seeded default service accounts.")
+    
+            # Seed default admin API Keys if not present (linked to admin-gateway-sa)
+            async with self.session_factory() as session:
+                from .models import APIKey as DBAPIKey, ServiceAccount as DBServiceAccount
+                from sqlalchemy import select
+                
+                stmt = select(DBServiceAccount).where(DBServiceAccount.name == "admin-gateway-sa")
+                res = await session.execute(stmt)
+                admin_sa = res.scalar_one_or_none()
+                if admin_sa:
+                    target_hashes = [
+                        "410bc0546b169c040351d308aad277364bb5f3f8df9379bd4b97663a8043e7ab",  # EtG7h...
+                        "81ce5dbc4eab84c4f773ddec7ed8ed04c55f35a5422553d514c7d5acafdae79b"   # Hs3FO...
+                    ]
+                    for th in target_hashes:
+                        stmt = select(DBAPIKey).where(DBAPIKey.key_hash == th)
+                        res = await session.execute(stmt)
+                        existing_key = res.scalar_one_or_none()
+                        if not existing_key:
+                            logger.info("Seeding default admin API key", hash=th)
+                            new_key = DBAPIKey(
+                                tenant_id="default",
+                                service_account_id=admin_sa.id,
+                                name="Default Admin Key",
+                                key_hash=th,
+                                prefix="mcp_",
+                                permissions=["*"],
+                                allowed_ips=["0.0.0.0/0", "::/0"],
+                                environment="*",
+                                is_active=True
+                            )
+                            session.add(new_key)
+                    await session.commit()
+                    logger.info("Successfully seeded default admin API keys.")
         
         logger.info("Database initialized successfully")
     
