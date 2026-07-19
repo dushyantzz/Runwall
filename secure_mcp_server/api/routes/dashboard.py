@@ -215,8 +215,7 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
                     is_active=True
                 )
                 db.add(sa)
-                await db.commit()
-                await db.refresh(sa)
+                await db.flush()
             resolved_sa_id = sa.id
         else:
             resolved_sa_id = req.service_account_id
@@ -246,18 +245,21 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
                 )
             rate_limit_requests = settings.pro_tier_requests
             rate_limit_period = "month"
-            
-    # Generate API key
-    raw_key = await auth_manager.create_api_key(
-        name=req.name,
-        user_id=user_id,
-        service_account_id=resolved_sa_id,
-        allowed_ips=req.allowed_ips,
-        environment=req.environment,
-        tier=req.tier,
-        rate_limit_requests=rate_limit_requests,
-        rate_limit_period=rate_limit_period
-    )
+
+        # Generate API key inside the same transaction
+        raw_key = await auth_manager.create_api_key(
+            name=req.name,
+            user_id=user_id,
+            service_account_id=resolved_sa_id,
+            allowed_ips=req.allowed_ips,
+            environment=req.environment,
+            tier=req.tier,
+            rate_limit_requests=rate_limit_requests,
+            rate_limit_period=rate_limit_period,
+            db_session=db
+        )
+        await db.commit()
+
     return {"success": True, "api_key": raw_key, "message": "API key generated successfully"}
 
 # ---------------------------------------------------------------------------

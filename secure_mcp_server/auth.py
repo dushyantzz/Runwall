@@ -327,7 +327,8 @@ class AuthManager:
         environment: str = "production",
         tier: str = "free",
         rate_limit_requests: int = 15,
-        rate_limit_period: str = "week"
+        rate_limit_period: str = "week",
+        db_session: Optional[AsyncSession] = None
     ) -> str:
         """Create a new API key for a user or service account with hashed storage."""
         if not user_id and not service_account_id:
@@ -338,8 +339,7 @@ class AuthManager:
         key_hash = hashlib.sha256(raw_secret.encode()).hexdigest()
         prefix = raw_secret[:8]
         
-        db_manager = get_db_manager()
-        async with db_manager.get_session_context() as db_session:
+        async def _save_key(session):
             new_key = APIKey(
                 tenant_id=tenant_id,
                 user_id=user_id,
@@ -355,7 +355,15 @@ class AuthManager:
                 rate_limit_period=rate_limit_period,
                 is_active=True
             )
-            db_session.add(new_key)
+            session.add(new_key)
+            
+        if db_session:
+            await _save_key(db_session)
+        else:
+            db_manager = get_db_manager()
+            async with db_manager.get_session_context() as session:
+                await _save_key(session)
+                await session.commit()
             
         logger.info("API key created", user_id=user_id, service_account_id=service_account_id, name=name, tier=tier)
         return api_key
