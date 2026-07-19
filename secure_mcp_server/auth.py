@@ -408,6 +408,8 @@ class AuthManager:
                 user = result.scalar_one_or_none()
                 if user:
                     ctx = self._build_context(user)
+                    ctx["api_key_id"] = key_record.id
+                    ctx["tier"] = key_record.tier
                     ctx["api_key_permissions"] = key_record.permissions
                     return ctx
             elif key_record.service_account_id:
@@ -424,6 +426,8 @@ class AuthManager:
                         "tenant_id": sa.tenant_id,
                         "role": "admin" if is_sa_admin else "service_account",
                         "permissions": ["*"] if is_sa_admin else key_record.permissions,
+                        "api_key_id": key_record.id,
+                        "tier": key_record.tier,
                         "api_key_permissions": key_record.permissions
                     }
             

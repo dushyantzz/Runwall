@@ -104,8 +104,25 @@ class SecureMCPServer:
         async def auth_middleware(request, call_next):
             """Authentication middleware for all MCP requests."""
             self.mcp.current_request = request
-            # Extract user context from request if available
-            user_context = await self.auth_manager.get_user_context(request)
+            
+            # Extract user context from request state if already validated in HTTP middleware
+            user_context = None
+            if request and hasattr(request, "state") and hasattr(request.state, "user_context"):
+                user_context = request.state.user_context
+            
+            if not user_context:
+                user_context = await self.auth_manager.get_user_context(request)
+            
+            # Enforce API key authentication for HTTP/SSE requests
+            is_http = False
+            if request:
+                has_headers = bool(getattr(request, "headers", None))
+                has_query = bool(getattr(request, "query_params", None))
+                is_http = has_headers or has_query
+
+            if is_http and not user_context:
+                logger.warning("MCP HTTP request blocked: Invalid or missing API key token.")
+                raise PermissionError("Unauthorized: A valid API key ('token' query parameter or Bearer token) is required to access this MCP server.")
             
             # Anomaly detection for API keys
             token = None

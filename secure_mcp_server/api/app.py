@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -58,6 +59,71 @@ def create_app() -> FastAPI:
         redoc_url=None,
         lifespan=lifespan
     )
+
+    # Enforce API Key Authentication Middleware for MCP endpoints
+    @app.middleware("http")
+    async def mcp_token_auth_middleware(request: Request, call_next):
+        path = request.url.path
+        
+        # Protect MCP protocol endpoints: /mcp, /sse, /messages, and root /
+        mcp_paths = ["/mcp", "/sse", "/messages"]
+        is_mcp_request = any(path.startswith(p) for p in mcp_paths) or path == "/"
+        
+        if is_mcp_request and not path.startswith("/api/v1") and path not in ("/health", "/docs", "/redoc", "/openapi.json"):
+            token = None
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header[7:]
+            else:
+                query_params = request.query_params
+                q_token = (
+                    query_params.get("token") 
+                    or query_params.get("api_key") 
+                    or query_params.get("apiKey") 
+                    or query_params.get("authorization")
+                )
+                if q_token:
+                    if q_token.startswith("Bearer "):
+                        q_token = q_token[7:]
+                    token = q_token
+
+            authorized = False
+            if token and token.startswith("mcp_"):
+                from secure_mcp_server.auth import AuthManager
+                from secure_mcp_server.config import get_settings
+                
+                settings = get_settings()
+                auth_manager = AuthManager(settings)
+                
+                request_ip = request.client.host if request.client else None
+                if not request_ip:
+                    forwarded = request.headers.get("x-forwarded-for")
+                    if forwarded:
+                        request_ip = forwarded.split(",")[0].strip()
+                
+                try:
+                    ctx = await auth_manager.validate_api_key(
+                        api_key=token,
+                        request_ip=request_ip,
+                        environment=settings.environment
+                    )
+                    if ctx:
+                        authorized = True
+                        # Inject context into request state for downstream uses
+                        request.state.user_context = ctx
+                except Exception:
+                    pass
+
+            if not authorized:
+                return JSONResponse(
+                    status_code=401,
+                    content={
+                        "error": "Unauthorized",
+                        "detail": "A valid Runwall API Key ('token' query parameter or Bearer token) is required to access the MCP endpoints."
+                    }
+                )
+
+        return await call_next(request)
 
     # Add CORS middleware for UI access
     app.add_middleware(
