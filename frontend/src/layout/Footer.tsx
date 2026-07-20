@@ -20,13 +20,13 @@ const footerLinks = {
     { label: 'Documentation', to: '/docs' },
     { label: 'API Reference', to: '/docs/api' },
     { label: 'SDKs', to: '/docs/sdks' },
-    { label: 'GitHub', to: 'https://github.com', external: true },
+    { label: 'GitHub', to: 'https://github.com/dushyantzz/Runwall', external: true },
   ],
   Company: [
     { label: 'About', to: '/about' },
     { label: 'Blog', to: '/blog' },
     { label: 'Careers', to: '/careers' },
-    { label: 'Contact', to: '/contact' },
+    { label: 'Contact', to: 'mailto:dushyantkv508@gmail.com', external: true },
   ],
   Legal: [
     { label: 'Privacy', to: '/privacy' },
@@ -139,9 +139,8 @@ export default function Footer() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {[
-              { label: 'GitHub', href: 'https://github.com' },
-              { label: 'Twitter', href: 'https://twitter.com' },
-              { label: 'LinkedIn', href: 'https://linkedin.com' },
+              { label: 'GitHub', href: 'https://github.com/dushyantzz/Runwall' },
+              { label: 'LinkedIn', href: 'https://www.linkedin.com/company/runwall' },
             ].map(({ label, href }) => (
               <a
                 key={href}

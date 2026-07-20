@@ -1,7 +1,15 @@
 import { useState } from 'react';
-import { Check, Zap, Crown, Infinity, ArrowRight, Star, Shield, Copy, CheckCircle } from 'lucide-react';
+import { Check, Zap, Crown, Infinity, ArrowRight, Star, Shield, Copy, CheckCircle, Mail, Phone, ExternalLink, X } from 'lucide-react';
 import PaymentModal from '../components/PaymentModal';
 import { useAuth } from '../hooks/AuthContext';
+
+const LinkedinIcon = ({ size = 18, color = "#a855f7" }: { size?: number, color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect x="2" y="9" width="4" height="12" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
 
 // ── Tier data ─────────────────────────────────────────────────────────────────
 
@@ -71,6 +79,7 @@ const tiers = [
 export default function PricingPage() {
   const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
+  const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -114,7 +123,7 @@ export default function PricingPage() {
     } else if (action === 'upgrade') {
       setModalOpen(true);
     } else if (action === 'enterprise') {
-      window.open('mailto:sales@runwall.dev?subject=Enterprise%20Inquiry', '_blank');
+      setEnterpriseModalOpen(true);
     }
   };
 
@@ -379,6 +388,121 @@ export default function PricingPage() {
               }}
             >
               Go to Dashboard
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Enterprise Contact Modal */}
+      {enterpriseModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 20
+        }}>
+          <div style={{
+            background: '#0a0a0a', border: '1px solid #222222', borderRadius: 16,
+            padding: 32, maxWidth: 480, width: '100%', position: 'relative',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.8)'
+          }}>
+            <button
+              onClick={() => setEnterpriseModalOpen(false)}
+              style={{
+                position: 'absolute', top: 16, right: 16, background: 'none',
+                border: 'none', color: '#666', cursor: 'pointer', padding: 4
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            <div style={{
+              width: 48, height: 48, borderRadius: 12, background: 'rgba(168,85,247,0.1)',
+              border: '1px solid rgba(168,85,247,0.25)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', marginBottom: 16, color: '#a855f7'
+            }}>
+              <Infinity size={24} />
+            </div>
+
+            <h3 style={{ color: '#ffffff', fontSize: 20, fontWeight: 700, margin: '0 0 6px 0' }}>
+              Enterprise Custom Setup
+            </h3>
+            <p style={{ fontSize: 13, color: '#888888', margin: '0 0 24px 0', lineHeight: 1.5 }}>
+              Contact our founding engineering team directly for custom OPA policies, dedicated SLA guarantees, and on-premise execution.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Email */}
+              <a
+                href="mailto:dushyantkv508@gmail.com?subject=Runwall%20Enterprise%20Inquiry"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                  background: '#111111', border: '1px solid #222222', borderRadius: 10,
+                  textDecoration: 'none', transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = '#222222'}
+              >
+                <Mail size={18} color="#a855f7" />
+                <div style={{ flexGrow: 1 }}>
+                  <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase' }}>Email</div>
+                  <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 500 }}>dushyantkv508@gmail.com</div>
+                </div>
+                <ExternalLink size={14} color="#666" />
+              </a>
+
+              {/* Phone */}
+              <a
+                href="tel:+919451856439"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                  background: '#111111', border: '1px solid #222222', borderRadius: 10,
+                  textDecoration: 'none', transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = '#222222'}
+              >
+                <Phone size={18} color="#a855f7" />
+                <div style={{ flexGrow: 1 }}>
+                  <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase' }}>Phone / WhatsApp</div>
+                  <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 500 }}>+91 9451856439</div>
+                </div>
+                <ExternalLink size={14} color="#666" />
+              </a>
+
+              {/* LinkedIn */}
+              <a
+                href="https://www.linkedin.com/company/runwall"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                  background: '#111111', border: '1px solid #222222', borderRadius: 10,
+                  textDecoration: 'none', transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = '#222222'}
+              >
+                <LinkedinIcon size={18} color="#a855f7" />
+                <div style={{ flexGrow: 1 }}>
+                  <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase' }}>LinkedIn Company Page</div>
+                  <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 500 }}>linkedin.com/company/runwall</div>
+                </div>
+                <ExternalLink size={14} color="#666" />
+              </a>
+            </div>
+
+            <button
+              onClick={() => setEnterpriseModalOpen(false)}
+              style={{
+                marginTop: 20, width: '100%', padding: '10px 0', background: '#1a1a1a',
+                color: '#aaa', border: '1px solid #262626', borderRadius: 8, fontWeight: 600,
+                fontSize: 13, cursor: 'pointer'
+              }}
+            >
+              Close
             </button>
           </div>
         </div>

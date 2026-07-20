@@ -1189,7 +1189,7 @@ function PricingSection() {
               For organizations with security and compliance needs.
             </p>
 
-            <Link to="/contact" style={{
+            <Link to="/pricing" style={{
               textAlign: 'center',
               background: '#1a1a1a',
               color: '#ffffff',
@@ -1204,7 +1204,7 @@ function PricingSection() {
             onMouseEnter={(e) => e.currentTarget.style.background = '#222222'}
             onMouseLeave={(e) => e.currentTarget.style.background = '#1a1a1a'}
             >
-              Contact Us
+              Contact Sales
             </Link>
 
             <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
