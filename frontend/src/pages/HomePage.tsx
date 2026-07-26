@@ -631,7 +631,7 @@ function PricingSection() {
             </p>
 
             {user ? (
-              <Link to="/docs" style={{
+              <Link to="/pricing" style={{
                 textAlign: 'center',
                 background: 'var(--accent)',
                 color: '#000000',
@@ -648,7 +648,7 @@ function PricingSection() {
                 Go to Dashboard (Active)
               </Link>
             ) : (
-              <Link to="/signup" style={{
+              <Link to="/pricing" style={{
                 textAlign: 'center',
                 background: 'var(--accent)',
                 color: '#000000',
@@ -724,7 +724,7 @@ function PricingSection() {
             </p>
 
             {user ? (
-              <Link to="/docs" style={{
+              <Link to="/pricing" style={{
                 textAlign: 'center',
                 background: 'var(--accent)',
                 color: '#000000',
@@ -741,7 +741,7 @@ function PricingSection() {
                 Upgrade to Pro
               </Link>
             ) : (
-              <Link to="/signup" style={{
+              <Link to="/pricing" style={{
                 textAlign: 'center',
                 background: 'var(--accent)',
                 color: '#000000',
