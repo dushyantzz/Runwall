@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Check, Zap, Crown, Infinity, ArrowRight, Star, Shield, Copy, CheckCircle, Mail, Phone, ExternalLink, X } from 'lucide-react';
+import { 
+  Check, Zap, Crown, Infinity, ArrowRight, Copy, 
+  CheckCircle, Mail, Phone, ExternalLink, X, ChevronDown, ChevronUp 
+} from 'lucide-react';
 import PaymentModal from '../components/PaymentModal';
 import { useAuth } from '../hooks/AuthContext';
 
-const LinkedinIcon = ({ size = 18, color = "#a855f7" }: { size?: number, color?: string }) => (
+const LinkedinIcon = ({ size = 18, color = "#FFDA62" }: { size?: number, color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
     <rect x="2" y="9" width="4" height="12" />
@@ -11,73 +14,58 @@ const LinkedinIcon = ({ size = 18, color = "#a855f7" }: { size?: number, color?:
   </svg>
 );
 
-// ── Tier data ─────────────────────────────────────────────────────────────────
-
-const tiers = [
-  {
-    id: 'free',
-    name: 'Free',
-    price: '₹0',
-    period: '/month',
-    tagline: 'Get started with Runwall',
-    icon: <Zap size={20} />,
-    color: '#777777',
-    highlight: false,
-    features: [
-      '15 requests per week',
-      '60 requests per minute',
-      'Full Runwall security layer',
-      'OPA policy enforcement',
-      'Audit logs',
-      'Community support',
-    ],
-    cta: 'Start Free',
-    ctaAction: 'free',
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: '$7',
-    period: '/month',
-    tagline: 'Production-ready M-to-M security',
-    icon: <Crown size={20} />,
-    color: 'var(--accent)',
-    badge: 'MOST POPULAR',
-    highlight: true,
-    features: [
-      '2,000 requests per month',
-      'OPA + JWT Custom Governance',
-      'Instant plan renewals',
-      'Priority support',
-    ],
-    cta: 'Upgrade to Pro',
-    ctaAction: 'upgrade',
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    tagline: 'Tailored for scale and compliance',
-    icon: <Infinity size={20} />,
-    color: '#a855f7',
-    highlight: false,
-    features: [
-      'Unlimited rate limits',
-      'SLA guarantees',
-      'Custom OPA policies',
-      'On-premise option',
-      'Contract & invoicing',
-    ],
-    cta: 'Contact Sales',
-    ctaAction: 'enterprise',
-  },
-];
-
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── FAQ Accordion Item Component ──
+const AccordionItem = ({ question, answer }: { question: string; answer: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div style={{
+      borderBottom: '1px solid #1a1a1a',
+      padding: '20px 0',
+      transition: 'all 0.3s ease'
+    }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: 'none',
+          border: 'none',
+          color: '#ffffff',
+          fontSize: 16,
+          fontWeight: 600,
+          textAlign: 'left',
+          cursor: 'pointer',
+          padding: 0,
+          fontFamily: 'var(--font-display)',
+          gap: 16
+        }}
+      >
+        <span>{question}</span>
+        <span style={{ color: 'var(--accent)', flexShrink: 0 }}>
+          {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </span>
+      </button>
+      {isOpen && (
+        <div style={{
+          marginTop: 12,
+          color: '#888888',
+          fontSize: 14,
+          lineHeight: 1.6,
+          fontFamily: 'var(--font-body)',
+          animation: 'fade-slide 0.25s ease-out'
+        }}>
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function PricingPage() {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'developer' | 'workspace'>('developer');
   const [modalOpen, setModalOpen] = useState(false);
   const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
@@ -135,37 +123,239 @@ export default function PricingPage() {
     }
   };
 
+  // Pricing Tiers Definition matching the Webflow structure
+  const devTiers = [
+    {
+      id: 'free',
+      name: 'Free',
+      price: '₹0',
+      period: '/month',
+      tagline: 'Ideal for testing & sandbox development.',
+      icon: <Zap size={18} />,
+      color: '#777777',
+      highlight: false,
+      features: [
+        '15 requests per week',
+        '60 requests per minute limit',
+        'Full Runwall security layer',
+        'Basic OPA policy verification',
+        'Audit logs (24h retention)',
+        'Community forum support'
+      ],
+      cta: 'Start for Free',
+      ctaAction: 'free'
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: '$7',
+      period: '/month',
+      tagline: 'For production-grade agent security governance.',
+      icon: <Crown size={18} />,
+      color: 'var(--accent)',
+      badge: 'POPULAR',
+      highlight: true,
+      features: [
+        '2,000 requests per month',
+        'Custom OPA policy generation',
+        'Advanced JWT client validation',
+        'Instant credit renewals',
+        'Email priority support',
+        'Audit logs (30-day retention)'
+      ],
+      cta: 'Upgrade to Pro',
+      ctaAction: 'upgrade'
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: 'Custom',
+      period: '',
+      tagline: 'Tailored compliance for corporate networks.',
+      icon: <Infinity size={18} />,
+      color: '#a855f7',
+      highlight: false,
+      features: [
+        'Unlimited rate limits & connections',
+        'Dedicated SLA guarantees',
+        'Custom Rego rules development',
+        'On-premise broker gateway setup',
+        'Dedicated support engineer',
+        'Custom invoicing & billing contracts'
+      ],
+      cta: 'Contact Sales',
+      ctaAction: 'enterprise'
+    }
+  ];
+
+  const workspaceTiers = [
+    {
+      id: 'team-starter',
+      name: 'Team Starter',
+      price: '$49',
+      period: '/month',
+      tagline: 'Security governance for growing agent teams.',
+      icon: <Zap size={18} />,
+      color: '#777777',
+      highlight: false,
+      features: [
+        '50,000 requests per month',
+        'Shared API credentials for team projects',
+        'Central console log access for audit reports',
+        'Standard Slack notification alerts',
+        'Email business-day support',
+        'Audit logs (60-day retention)'
+      ],
+      cta: 'Contact Sales',
+      ctaAction: 'enterprise'
+    },
+    {
+      id: 'team-scale',
+      name: 'Team Scale',
+      price: '$199',
+      period: '/month',
+      tagline: 'SLA guarantees and isolated execution at scale.',
+      icon: <Crown size={18} />,
+      color: 'var(--accent)',
+      badge: 'RECOMMENDED',
+      highlight: true,
+      features: [
+        '500,000 requests per month',
+        'Advanced Sandbox isolated runtime',
+        'Custom webhook alert integrations',
+        'OPA policy dry-run shadow branches',
+        '99.9% uptime SLA guarantees',
+        'Audit logs (90-day retention)'
+      ],
+      cta: 'Contact Sales',
+      ctaAction: 'enterprise'
+    },
+    {
+      id: 'team-enterprise',
+      name: 'Enterprise Suite',
+      price: 'Custom',
+      period: '',
+      tagline: 'Full organizational isolation and auditing.',
+      icon: <Infinity size={18} />,
+      color: '#a855f7',
+      highlight: false,
+      features: [
+        'Unlimited workspace connections',
+        'Custom Rego policy consulting & writing',
+        'On-premise deployment isolation support',
+        'Dedicated success manager access',
+        '24/7 critical incident response hotline',
+        'Fully customized terms & invoice billing'
+      ],
+      cta: 'Contact Sales',
+      ctaAction: 'enterprise'
+    }
+  ];
+
+  const currentTiers = activeTab === 'developer' ? devTiers : workspaceTiers;
+
+  const faqs = [
+    {
+      category: 'Billing',
+      question: 'How do payments work on Runwall?',
+      answer: 'For the Pro plan, we use Razorpay to process subscriptions in INR/USD. You can securely set up recurring billing and cancel anytime in your billing panel. For Workspace and Enterprise plans, we offer custom invoicing.'
+    },
+    {
+      category: 'Billing',
+      question: 'Can I downgrade or cancel my subscription?',
+      answer: 'Yes! You can cancel your subscription at any time. When you cancel, your access continues until the end of your billing period, after which your account reverts to the Free tier.'
+    },
+    {
+      category: 'Security',
+      question: 'How does OPA policy enforcement work?',
+      answer: 'Runwall uses Open Policy Agent (OPA) internally. When an agent requests to connect to a tool (e.g. GitHub or a Database), Runwall evaluates the tool call parameters against your configured OPA rules and dynamically permits, intercepts, or audits the action.'
+    },
+    {
+      category: 'Security',
+      question: 'What is the MCP Gateway broker?',
+      answer: 'The Model Context Protocol (MCP) gateway acts as a proxy between your LLM agent (like Claude Desktop) and external APIs. Runwall provides a secure endpoint to verify agent tokens and policy bounds on every single call.'
+    },
+    {
+      category: 'Enterprise',
+      question: 'Do you support on-premise deployments?',
+      answer: 'Yes, we do. For our Enterprise customers, we support deploying the Runwall Gateway on your private cloud (AWS, GCP, Azure) or local network infrastructure via containerized deployments.'
+    }
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '0 0 80px' }}>
-
-      {/* Hero */}
-      <div style={{ textAlign: 'center', padding: '72px 24px 56px' }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: 'rgba(255,218,98,0.08)',
-          border: '1px solid rgba(255,218,98,0.2)',
-          borderRadius: 20, padding: '5px 14px',
-          color: 'var(--accent)', fontSize: 12, fontWeight: 600,
-          marginBottom: 20, letterSpacing: '0.04em',
-        }}>
-          <Star size={11} />
-          SIMPLE, TRANSPARENT PRICING
-        </div>
-
+    <div style={{ minHeight: '100vh', background: '#000000', color: '#ffffff', fontFamily: 'var(--font-body)', padding: '0 0 100px' }}>
+      
+      {/* Hero Header Section matching Webflow's "Our pricing" style */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 24px 48px' }}>
         <h1 style={{
-          color: 'var(--heading)', fontFamily: 'var(--font-display)',
-          fontSize: 'clamp(2rem, 5vw, 3.2rem)',
-          fontWeight: 800, lineHeight: 1.15, marginBottom: 16,
+          fontFamily: 'var(--font-display)',
+          fontSize: '3.75rem',
+          fontWeight: 300,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          color: '#ffffff',
+          marginBottom: 20
         }}>
-          Choose your Runwall plan
+          Our pricing
         </h1>
-        <p style={{ color: 'var(--body)', fontSize: 16, maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
-          Every plan includes the full Runwall security layer — OPA policies, audit logs, and AI threat detection.
+        <p style={{
+          fontSize: 14,
+          color: '#b4b4b4',
+          maxWidth: 620,
+          lineHeight: 1.6,
+          marginBottom: 40
+        }}>
+          Select the optimal plan to audit, govern, and secure your autonomous AI agent integrations.
         </p>
+
+        {/* Tab Switcher: matching Webflow's flat button bar */}
+        <div style={{
+          display: 'inline-flex',
+          background: '#0c0c0c',
+          border: '1px solid #1c1c1c',
+          borderRadius: 30,
+          padding: 4,
+          marginBottom: 16
+        }}>
+          <button
+            onClick={() => setActiveTab('developer')}
+            style={{
+              padding: '10px 24px',
+              borderRadius: 26,
+              border: 'none',
+              background: activeTab === 'developer' ? 'var(--accent)' : 'transparent',
+              color: activeTab === 'developer' ? '#000000' : '#ffffff',
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              fontFamily: 'var(--font-display)'
+            }}
+          >
+            Developer Keys
+          </button>
+          <button
+            onClick={() => setActiveTab('workspace')}
+            style={{
+              padding: '10px 24px',
+              borderRadius: 26,
+              border: 'none',
+              background: activeTab === 'workspace' ? 'var(--accent)' : 'transparent',
+              color: activeTab === 'workspace' ? '#000000' : '#ffffff',
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              fontFamily: 'var(--font-display)'
+            }}
+          >
+            Workspace Teams
+          </button>
+        </div>
 
         {errorMsg && (
           <div style={{
-            maxWidth: 500, margin: '24px auto 0', padding: '12px 16px',
+            maxWidth: 500, margin: '24px 0 0', padding: '14px 18px',
             background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
             borderRadius: 8, color: 'var(--destructive)', fontSize: 13, fontWeight: 500
           }}>
@@ -175,142 +365,293 @@ export default function PricingPage() {
 
         {loading && (
           <div style={{ color: 'var(--accent)', fontSize: 14, marginTop: 24, fontWeight: 600 }}>
-            Generating your key, please wait...
+            Generating your credential, please wait...
           </div>
         )}
       </div>
 
-      {/* Cards grid */}
+      {/* Main Pricing Grid */}
       <div style={{
+        maxWidth: 1200,
+        margin: '0 auto',
+        padding: '0 24px 80px',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: 24, maxWidth: 1040, margin: '0 auto', padding: '0 24px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: 32
       }}>
-        {tiers.map((tier) => (
+        {currentTiers.map((tier) => (
           <div
             key={tier.id}
             style={{
+              background: '#08080a',
+              border: tier.highlight ? '1px solid var(--accent)' : '1px solid #1c1c1c',
+              borderRadius: 12,
+              padding: '36px 30px',
+              boxShadow: tier.highlight ? '0 0 40px rgba(255,218,98,0.05)' : 'none',
+              display: 'flex',
+              flexDirection: 'column',
               position: 'relative',
-              background: tier.highlight ? 'var(--card-hover)' : 'var(--card-bg)',
-              border: `1px solid ${tier.highlight ? 'rgba(255,218,98,0.3)' : 'var(--border)'}`,
-              borderRadius: 16, padding: 28,
-              boxShadow: tier.highlight ? '0 0 40px rgba(255,218,98,0.06)' : 'none',
-              display: 'flex', flexDirection: 'column',
-              transition: 'transform 0.2s, box-shadow 0.2s',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)';
-              (e.currentTarget as HTMLDivElement).style.boxShadow = tier.highlight
-                ? '0 16px 60px rgba(255,218,98,0.1)'
-                : '0 16px 40px rgba(0,0,0,0.3)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-              (e.currentTarget as HTMLDivElement).style.boxShadow = tier.highlight
-                ? '0 0 40px rgba(255,218,98,0.06)'
-                : 'none';
-            }}
+            className="pricing-card"
           >
-            {/* Popular badge */}
+            {/* Highlighted Badge */}
             {tier.badge && (
               <div style={{
-                position: 'absolute', top: -12, left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'var(--accent)', color: '#000',
-                borderRadius: 20, padding: '3px 14px',
-                fontSize: 11, fontWeight: 700, letterSpacing: '0.05em',
-                whiteSpace: 'nowrap',
+                position: 'absolute',
+                top: 20,
+                right: 24,
+                background: 'var(--accent-dim)',
+                border: '1px solid var(--accent-border)',
+                borderRadius: 20,
+                padding: '4px 12px',
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'var(--accent)',
+                letterSpacing: '0.06em',
+                fontFamily: 'var(--font-mono)'
               }}>
                 {tier.badge}
               </div>
             )}
 
-            {/* Tier header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{
-                width: 38, height: 38, borderRadius: 8,
-                background: `${tier.color}18`,
-                border: `1px solid ${tier.color}30`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: tier.color,
-              }}>
-                {tier.icon}
+            {/* Plan Info */}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 20, fontWeight: 400, color: '#ffffff', fontFamily: 'var(--font-display)', marginBottom: 6 }}>
+                {tier.name}
               </div>
-              <div>
-                <div style={{ color: 'var(--heading)', fontWeight: 700, fontSize: 16 }}>{tier.name}</div>
-                <div style={{ color: 'var(--muted)', fontSize: 12 }}>{tier.tagline}</div>
+              <div style={{ fontSize: 13, color: '#888888', minHeight: 40, lineHeight: 1.5 }}>
+                {tier.tagline}
               </div>
             </div>
 
-            {/* Price */}
-            <div style={{ marginBottom: 20 }}>
-              <span style={{ color: tier.color, fontWeight: 800, fontSize: 36 }}>{tier.price}</span>
-              {tier.period && <span style={{ color: 'var(--muted)', fontSize: 14 }}>{tier.period}</span>}
+            {/* Price section */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 32 }}>
+              <span style={{ fontSize: 44, fontWeight: 300, color: '#ffffff', letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>{tier.price}</span>
+              {tier.period && <span style={{ fontSize: 14, color: '#666666', fontFamily: 'var(--font-mono)' }}>{tier.period}</span>}
             </div>
 
-            {/* Features */}
-            <ul style={{ listStyle: 'none', flexGrow: 1, marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {tier.features.map((f) => (
-                <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <Check size={14} style={{ color: tier.color, flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ color: 'var(--body)', fontSize: 13, lineHeight: 1.5 }}>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            {/* CTA */}
+            {/* CTA Button */}
             <button
               onClick={() => handleCta(tier.ctaAction)}
               style={{
-                width: '100%', padding: '11px 0',
-                background: tier.highlight ? tier.color : 'transparent',
-                color: tier.highlight ? '#000' : tier.color,
-                border: `1px solid ${tier.color}`,
+                width: '100%',
+                padding: '13px 0',
+                background: tier.highlight ? 'var(--accent)' : 'transparent',
+                color: tier.highlight ? '#000000' : 'var(--accent)',
+                border: `1px solid var(--accent)`,
                 borderRadius: 8,
-                fontWeight: 700, fontSize: 14,
+                fontWeight: 500,
+                fontSize: 14,
+                fontFamily: 'var(--font-display)',
                 cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 transition: 'all 0.2s',
+                marginBottom: 36,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8
               }}
-              onMouseEnter={e => {
-                if (!tier.highlight) {
-                  (e.currentTarget as HTMLButtonElement).style.background = `${tier.color}15`;
-                }
-              }}
-              onMouseLeave={e => {
-                if (!tier.highlight) {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                }
+              className="pricing-cta-button"
+            >
+              <span>{tier.cta}</span>
+              <ArrowRight size={15} />
+            </button>
+
+            {/* Divider */}
+            <div style={{ borderTop: '1px solid #161616', marginBottom: 28 }} />
+
+            {/* Features List */}
+            <div style={{ flexGrow: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#666666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>
+                Key features include:
+              </div>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {tier.features.map((feat) => (
+                  <li key={feat} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <Check size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 1 }} />
+                    <span style={{ fontSize: 13, color: '#b4b4b4', lineHeight: 1.5 }}>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add-ons Section (copied from Webflow Add-on card design system) */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 80px' }}>
+        <div style={{ borderTop: '1px solid #161616', paddingTop: 60, marginBottom: 40 }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '2.5rem',
+            fontWeight: 300,
+            color: '#ffffff',
+            marginBottom: 8,
+            letterSpacing: '-0.02em'
+          }}>
+            Add-ons
+          </h2>
+          <p style={{ fontSize: 14, color: '#888888' }}>
+            Optimize your agent isolation and logging parameters with custom enhancements.
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap: 24
+        }}>
+          {[
+            { name: 'Audit Replay', desc: 'Inspect and replay agent console history for up to 90 days.', price: '$15/mo' },
+            { name: 'Rego Sandbox', desc: 'Run custom Open Policy Agent (OPA) guidelines in dry-run branches.', price: '$29/mo' },
+            { name: 'Dedicated Proxy', desc: 'Custom MCP gateway hostname with static outbound egress IPs.', price: '$49/mo' },
+            { name: 'DLP Shield', desc: 'Scan agent tools outputs for PII, API tokens, and credentials.', price: '$99/mo' }
+          ].map((addon) => (
+            <div key={addon.name} style={{
+              background: '#08080a',
+              border: '1px solid #161616',
+              borderRadius: 8,
+              padding: '24px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>{addon.name}</div>
+                <div style={{ fontSize: 12, color: '#888888', lineHeight: 1.5, marginBottom: 20 }}>{addon.desc}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>{addon.price}</span>
+                <button
+                  onClick={() => setEnterpriseModalOpen(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                >
+                  <span>Add to plan</span>
+                  <ArrowRight size={12} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Symmetrical FAQ Section (copied from Webflow two-column layout) */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 80px' }}>
+        <div style={{
+          borderTop: '1px solid #161616',
+          paddingTop: 60,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(12, 1fr)',
+          gap: 32
+        }}>
+          {/* FAQ Left Column */}
+          <div style={{ gridColumn: 'span 4' }}>
+            <h2 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '2.5rem',
+              fontWeight: 300,
+              color: '#ffffff',
+              marginBottom: 12,
+              letterSpacing: '-0.02em'
+            }}>
+              Frequently asked questions
+            </h2>
+            <p style={{ fontSize: 14, color: '#b4b4b4', lineHeight: 1.5 }}>
+              Have questions about billing, security, or MCP configurations? Contact our team at{' '}
+              <a href="mailto:dushyantkv508@gmail.com" style={{ color: 'var(--accent)', textDecoration: 'none' }}>dushyantkv508@gmail.com</a>.
+            </p>
+          </div>
+
+          {/* FAQ Right Column (Accordion List) */}
+          <div style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column' }}>
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} question={faq.question} answer={faq.answer} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Callout Banner matching Webflow's Callout */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+        <div style={{
+          background: 'radial-gradient(circle at top right, #111111 0%, #060606 100%)',
+          border: '1px solid #1a1a1a',
+          borderRadius: 12,
+          padding: '60px 48px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 32
+        }}>
+          <div>
+            <h2 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '2.5rem',
+              fontWeight: 300,
+              color: '#ffffff',
+              marginBottom: 10,
+              letterSpacing: '-0.02em'
+            }}>
+              Get started for free
+            </h2>
+            <p style={{ fontSize: 14, color: '#b4b4b4', maxWidth: 480, lineHeight: 1.6 }}>
+              Join hundreds of developers securing their autonomous model context protocol integrations today.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <button
+              onClick={() => handleCta('free')}
+              style={{
+                background: 'var(--accent)',
+                color: '#000000',
+                border: 'none',
+                borderRadius: 8,
+                padding: '14px 28px',
+                fontWeight: 500,
+                fontSize: 14,
+                cursor: 'pointer',
+                fontFamily: 'var(--font-display)',
+                boxShadow: '0 4px 20px rgba(255, 218, 98, 0.2)'
               }}
             >
-              {tier.cta}
-              <ArrowRight size={14} />
+              Start Free Trial
+            </button>
+            <button
+              onClick={() => setEnterpriseModalOpen(true)}
+              style={{
+                background: 'transparent',
+                color: '#ffffff',
+                border: '1px solid #262626',
+                borderRadius: 8,
+                padding: '14px 28px',
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: 'pointer',
+                fontFamily: 'var(--font-display)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = '#ffffff'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = '#262626'}
+            >
+              Talk to Sales
             </button>
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* Trust signals */}
-      <div style={{
-        maxWidth: 700, margin: '64px auto 0', padding: '0 24px',
-        display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center',
-      }}>
-        {[
-          { icon: <Shield size={14} />, text: 'PCI-DSS compliant via Razorpay' },
-          { icon: <Check size={14} />, text: 'Cancel anytime, no questions' },
-          { icon: <Zap size={14} />, text: 'Instant tier upgrade on payment' },
-        ].map(({ icon, text }) => (
-          <div key={text} style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            color: 'var(--muted)', fontSize: 12,
-          }}>
-            <span style={{ color: 'var(--accent)' }}>{icon}</span>
-            {text}
-          </div>
-        ))}
-      </div>
-
-      {/* Payment modal */}
+      {/* Payment Modals & Key Dialogs */}
       <PaymentModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -326,7 +667,6 @@ export default function PricingPage() {
         }}
       />
 
-      {/* Generated API Key Modal */}
       {generatedKey && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -379,7 +719,7 @@ export default function PricingPage() {
             <button
               onClick={() => {
                 setGeneratedKey(null);
-                window.location.href = '/'; // redirect to dashboard
+                window.location.href = '/';
               }}
               style={{
                 width: '100%', padding: '12px 0', background: 'var(--accent)',
@@ -393,7 +733,6 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* Enterprise Contact Modal */}
       {enterpriseModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -417,9 +756,9 @@ export default function PricingPage() {
             </button>
 
             <div style={{
-              width: 48, height: 48, borderRadius: 12, background: 'rgba(168,85,247,0.1)',
-              border: '1px solid rgba(168,85,247,0.25)', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', marginBottom: 16, color: '#a855f7'
+              width: 48, height: 48, borderRadius: 12, background: 'rgba(255,218,98,0.1)',
+              border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', marginBottom: 16, color: 'var(--accent)'
             }}>
               <Infinity size={24} />
             </div>
@@ -432,7 +771,6 @@ export default function PricingPage() {
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {/* Email */}
               <a
                 href="mailto:dushyantkv508@gmail.com?subject=Runwall%20Enterprise%20Inquiry"
                 target="_blank"
@@ -442,10 +780,10 @@ export default function PricingPage() {
                   background: '#111111', border: '1px solid #222222', borderRadius: 10,
                   textDecoration: 'none', transition: 'all 0.2s'
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#222222'}
               >
-                <Mail size={18} color="#a855f7" />
+                <Mail size={18} color="var(--accent)" />
                 <div style={{ flexGrow: 1 }}>
                   <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase' }}>Email</div>
                   <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 500 }}>dushyantkv508@gmail.com</div>
@@ -453,7 +791,6 @@ export default function PricingPage() {
                 <ExternalLink size={14} color="#666" />
               </a>
 
-              {/* Phone */}
               <a
                 href="tel:+919451856439"
                 style={{
@@ -461,10 +798,10 @@ export default function PricingPage() {
                   background: '#111111', border: '1px solid #222222', borderRadius: 10,
                   textDecoration: 'none', transition: 'all 0.2s'
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#222222'}
               >
-                <Phone size={18} color="#a855f7" />
+                <Phone size={18} color="var(--accent)" />
                 <div style={{ flexGrow: 1 }}>
                   <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase' }}>Phone / WhatsApp</div>
                   <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 500 }}>+91 9451856439</div>
@@ -472,7 +809,6 @@ export default function PricingPage() {
                 <ExternalLink size={14} color="#666" />
               </a>
 
-              {/* LinkedIn */}
               <a
                 href="https://www.linkedin.com/company/runwall"
                 target="_blank"
@@ -482,10 +818,10 @@ export default function PricingPage() {
                   background: '#111111', border: '1px solid #222222', borderRadius: 10,
                   textDecoration: 'none', transition: 'all 0.2s'
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#222222'}
               >
-                <LinkedinIcon size={18} color="#a855f7" />
+                <LinkedinIcon size={18} color="var(--accent)" />
                 <div style={{ flexGrow: 1 }}>
                   <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase' }}>LinkedIn Company Page</div>
                   <div style={{ fontSize: 13, color: '#ffffff', fontWeight: 500 }}>linkedin.com/company/runwall</div>
