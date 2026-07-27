@@ -803,25 +803,22 @@ function UserFeedbackSection() {
 
         .feedback-card {
           width: 380px;
-          background: #08080a;
-          border: 1px solid #1a1a20;
-          border-radius: 12px;
+          background: #000000;
+          border: 1px solid #333333;
+          border-radius: 8px;
           padding: 24px;
           display: flex;
           flex-direction: column;
           text-decoration: none;
           color: inherit;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+          transition: background 0.2s ease, border-color 0.2s ease;
           cursor: pointer;
           flex-shrink: 0;
         }
 
         .feedback-card:hover {
-          border-color: var(--accent);
-          transform: translateY(-4px);
-          box-shadow: 0 12px 35px rgba(255, 218, 98, 0.12);
-          background: #0d0d12;
+          background: #0a0a0a;
+          border-color: #555555;
         }
 
         .feedback-card-header {
@@ -842,7 +839,7 @@ function UserFeedbackSection() {
           font-weight: 700;
           font-size: 14px;
           font-family: var(--font-mono);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid #333333;
         }
 
         .feedback-name {
@@ -879,7 +876,7 @@ function UserFeedbackSection() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          border-top: 1px solid #141418;
+          border-top: 1px solid #222222;
           padding-top: 14px;
           margin-top: auto;
         }
