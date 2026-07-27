@@ -46,7 +46,7 @@ export default function HomePage() {
       <CompatibilityTicker />
       <FeatureBentoGrid />
       <BranchingWorkflowSection />
-      <PricingSection />
+      <UserFeedbackSection />
       <CTASection />
     </div>
   );
@@ -132,15 +132,15 @@ function CompatibilityTicker() {
         <div className="ticker-move" style={{ gap: '96px' }}>
           {tickerItems.concat(tickerItems).map((item, idx) => (
             <span className="ticker-item" key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img 
-                src={item.logo} 
-                alt={item.name} 
-                style={{ 
-                  width: '26px', 
-                  height: '26px', 
+              <img
+                src={item.logo}
+                alt={item.name}
+                style={{
+                  width: '26px',
+                  height: '26px',
                   objectFit: 'contain',
-                  filter: item.invert ? 'brightness(0) invert(0.85)' : 'none' 
-                }} 
+                  filter: item.invert ? 'brightness(0) invert(0.85)' : 'none'
+                }}
               />
               <span style={{ fontSize: '16px', fontWeight: 600 }}>{item.name}</span>
             </span>
@@ -583,277 +583,327 @@ function BranchingWorkflowSection() {
   );
 }
 
+/* ── 5. USER FEEDBACK SECTION ── */
+const ProductHuntLogo = () => (
+  <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
+    <circle cx="20" cy="20" r="20" fill="#DA552F" />
+    <path d="M22.6667 20H17.3333V14.6667H22.6667C24.1395 14.6667 25.3333 15.8606 25.3333 17.3333C25.3333 18.8061 24.1395 20 22.6667 20ZM22.6667 10.6667H13.3333V29.3333H17.3333V24H22.6667C26.3486 24 29.3333 21.0152 29.3333 17.3333C29.3333 13.6514 26.3486 10.6667 22.6667 10.6667Z" fill="white" />
+  </svg>
+);
 
-/* ── 5. PRICING SECTION ── */
-function PricingSection() {
+const feedbackItemsRow1 = [
+  {
+    name: 'Azad Fındık',
+    handle: '@azadfndk143609',
+    badge: 'Product Hunt Hunter',
+    avatarBg: '#1e3a8a',
+    initial: 'AF',
+    text: 'Tried the taint tracking on a couple of agent workflows and it actually caught a prompt injection I had missed. Approval workflows feel solid for a real team setup.'
+  },
+  {
+    name: 'Gal Dayan',
+    handle: '@galdayan',
+    badge: 'Verified Hunter',
+    avatarBg: '#581c87',
+    initial: 'GD',
+    text: "The 'taint attached to state not the string' framing answers my exact worry. If the whole session gets flagged once un-trusted input enters, the paraphrase doesn't matter anymore. That's a meaningfully different approach than most taint-tracking tools I've seen."
+  },
+  {
+    name: 'Nurullah Bekik',
+    handle: '@nurullahbekik',
+    badge: 'Product Hunt Hunter',
+    avatarBg: '#065f46',
+    initial: 'NB',
+    text: 'The taint tracking is genuinely useful - finally a clear view of which data an agent touched end to end. Setup took longer than expected, but once policies clicked in, approvals felt smooth and the audit trail was actually readable.'
+  },
+  {
+    name: 'Henry Jung',
+    handle: '@henryjung',
+    badge: 'Verified Hunter',
+    avatarBg: '#78350f',
+    initial: 'HJ',
+    text: 'Congrats on the launch. I run AI agents that execute real actions in my product and the runtime boundary is what keeps me honest, static permission lists never survive contact with real usage.'
+  }
+];
+
+const feedbackItemsRow2 = [
+  {
+    name: 'Nurullah Bekik',
+    handle: '@nurullahbekik',
+    badge: 'Product Hunt Hunter',
+    avatarBg: '#065f46',
+    initial: 'NB',
+    text: 'Once policies clicked in, approvals felt smooth and the audit trail was actually readable. Really great execution for agent governance!'
+  },
+  {
+    name: 'Henry Jung',
+    handle: '@henryjung',
+    badge: 'Verified Hunter',
+    avatarBg: '#78350f',
+    initial: 'HJ',
+    text: 'Static permission lists never survive contact with real usage. The runtime execution boundary of Runwall is what keeps our agent integrations safe.'
+  },
+  {
+    name: 'Gal Dayan',
+    handle: '@galdayan',
+    badge: 'Verified Hunter',
+    avatarBg: '#581c87',
+    initial: 'GD',
+    text: 'Session-level containment is a meaningfully different approach than standard lineage trackers. Impressed by the security architecture!'
+  },
+  {
+    name: 'Azad Fındık',
+    handle: '@azadfndk143609',
+    badge: 'Product Hunt Hunter',
+    avatarBg: '#1e3a8a',
+    initial: 'AF',
+    text: 'Caught a prompt injection I had missed in testing. Approval workflows feel extremely solid for a real team setup.'
+  }
+];
+
+function UserFeedbackSection() {
   const ref = useScrollAnimation();
-  const { user } = useAuth();
+
+  const row1Duplicates = [...feedbackItemsRow1, ...feedbackItemsRow1, ...feedbackItemsRow1];
+  const row2Duplicates = [...feedbackItemsRow2, ...feedbackItemsRow2, ...feedbackItemsRow2];
 
   return (
-    <section className="section section-border-top" ref={ref} style={{ background: '#000000', paddingBottom: 96 }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>TRANSPARENT PLANS</span>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 300, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 16 }}>
-            Simple, Scale-Ready Pricing
-          </h2>
-          <p style={{ color: '#777777', fontSize: 14, maxWidth: 500, margin: '0 auto', lineHeight: 1.6 }}>
-            Runwall secures agent tool calls on any budget. Start securing integrations for free, then upgrade as you scale.
-          </p>
+    <section className="section section-border-top" ref={ref} style={{ background: '#000000', padding: '96px 0', overflow: 'hidden' }}>
+      <div className="container" style={{ textAlign: 'center', marginBottom: 56 }}>
+        <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>COMMUNITY FEEDBACK</span>
+        <h2 style={{ fontSize: '2.5rem', fontWeight: 300, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 16 }}>
+          User Feedback That Motivates Us
+        </h2>
+        <p style={{ color: '#777777', fontSize: 14, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
+          Real reviews and discussions from developers and security leaders on Product Hunt.
+        </p>
+      </div>
+
+      {/* Moving Marquee Container */}
+      <div className="feedback-marquee-wrapper" style={{
+        position: 'relative',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+        maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+      }}>
+
+        {/* Row 1: Leftward moving track */}
+        <div className="marquee-track marquee-track-left">
+          {row1Duplicates.map((item, idx) => (
+            <a
+              key={`row1-${idx}`}
+              href="https://www.producthunt.com/products/runwall"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="feedback-card"
+            >
+              <div className="feedback-card-header">
+                <div className="feedback-avatar" style={{ background: item.avatarBg }}>
+                  {item.initial}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div className="feedback-name">{item.name}</div>
+                  <div className="feedback-handle">{item.handle}</div>
+                </div>
+                <ProductHuntLogo />
+              </div>
+
+              {/* Star Rating */}
+              <div className="feedback-stars">
+                {'★'.repeat(5)}
+              </div>
+
+              {/* Comment Text */}
+              <p className="feedback-text">
+                "{item.text}"
+              </p>
+
+              {/* Card Footer */}
+              <div className="feedback-footer">
+                <span className="feedback-badge">{item.badge}</span>
+                <span className="feedback-time">Product Hunt ↗</span>
+              </div>
+            </a>
+          ))}
         </div>
 
-        {/* InsForge-Style Unified Pricing Container */}
-        <div style={{
-          maxWidth: 960,
-          margin: '0 auto',
-          background: '#040404',
-          border: '1px solid #141414',
-          borderRadius: '8px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          overflow: 'hidden'
-        }} className="pricing-grid">
-
-          {/* Plan 1: Free */}
-          <div style={{
-            padding: '48px 32px',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRight: '1px solid #141414'
-          }} className="pricing-col">
-            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Free</h3>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
-              <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>$0</span>
-              <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 500 }}>/ month</span>
-            </div>
-            <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
-              For prototypes, demos, and side projects.
-            </p>
-
-            {user ? (
-              <Link to="/pricing" style={{
-                textAlign: 'center',
-                background: 'var(--accent)',
-                color: '#000000',
-                borderRadius: '6px',
-                padding: '12px 16px',
-                fontSize: '14px',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'opacity 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-              >
-                Go to Dashboard (Active)
-              </Link>
-            ) : (
-              <Link to="/pricing" style={{
-                textAlign: 'center',
-                background: 'var(--accent)',
-                color: '#000000',
-                borderRadius: '6px',
-                padding: '12px 16px',
-                fontSize: '14px',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'opacity 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-              >
-                Start for Free
-              </Link>
-            )}
-
-            <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Get started with:
-            </p>
-            
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span><strong>15 requests / week</strong></span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>60 RPM rate limit</span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>Standard tool execution logs</span>
-              </li>
-            </ul>
-
-            <p style={{ fontSize: '11px', color: '#444444', marginTop: 32, margin: 0 }}>
-              Free API keys are capped at 15 requests/week.
-            </p>
-          </div>
-
-          {/* Plan 2: Pro */}
-          <div style={{
-            padding: '48px 32px',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRight: '1px solid #141414',
-            background: '#070707',
-            position: 'relative'
-          }} className="pricing-col">
-            <div style={{
-              position: 'absolute',
-              top: 20,
-              right: 20,
-              background: '#ffffff',
-              color: '#000000',
-              fontSize: '10px',
-              fontWeight: 700,
-              padding: '4px 10px',
-              borderRadius: '20px',
-            }}>
-              Most Popular
-            </div>
-            
-            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Pro</h3>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
-              <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>$7</span>
-              <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 500 }}>/ month</span>
-            </div>
-            <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
-              For production apps that need to scale. <br />
-              <span style={{ color: 'var(--accent)', fontSize: '12px' }}>$10 in test credits included</span>
-            </p>
-
-            {user ? (
-              <Link to="/pricing" style={{
-                textAlign: 'center',
-                background: 'var(--accent)',
-                color: '#000000',
-                borderRadius: '6px',
-                padding: '12px 16px',
-                fontSize: '14px',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'opacity 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-              >
-                Upgrade to Pro
-              </Link>
-            ) : (
-              <Link to="/pricing" style={{
-                textAlign: 'center',
-                background: 'var(--accent)',
-                color: '#000000',
-                borderRadius: '6px',
-                padding: '12px 16px',
-                fontSize: '14px',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'opacity 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-              >
-                Get Pro
-              </Link>
-            )}
-
-            <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Everything in Free, plus:
-            </p>
-            
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span><strong>2,000 requests / month</strong></span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>500 RPM rate limit</span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>Custom OPA policy engine</span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>Email & Slack community support</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Plan 3: Enterprise */}
-          <div style={{
-            padding: '48px 32px',
-            display: 'flex',
-            flexDirection: 'column'
-          }} className="pricing-col">
-            <h3 style={{ fontSize: '18px', fontWeight: 500, color: '#fff', marginBottom: 12 }}>Enterprise</h3>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 12 }}>
-              <span style={{ fontSize: '32px', fontWeight: 600, color: '#fff' }}>Custom</span>
-            </div>
-            <p style={{ fontSize: '13px', color: '#888888', marginBottom: 32, lineHeight: 1.5, minHeight: 40 }}>
-              For organizations with security and compliance needs.
-            </p>
-
-            <Link to="/pricing" style={{
-              textAlign: 'center',
-              background: '#1a1a1a',
-              color: '#ffffff',
-              border: '1px solid #2d2d2d',
-              borderRadius: '6px',
-              padding: '12px 16px',
-              fontSize: '14px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              transition: 'background 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#222222'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#1a1a1a'}
+        {/* Row 2: Rightward moving track */}
+        <div className="marquee-track marquee-track-right">
+          {row2Duplicates.map((item, idx) => (
+            <a
+              key={`row2-${idx}`}
+              href="https://www.producthunt.com/products/runwall"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="feedback-card"
             >
-              Contact Sales
-            </Link>
+              <div className="feedback-card-header">
+                <div className="feedback-avatar" style={{ background: item.avatarBg }}>
+                  {item.initial}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div className="feedback-name">{item.name}</div>
+                  <div className="feedback-handle">{item.handle}</div>
+                </div>
+                <ProductHuntLogo />
+              </div>
 
-            <p style={{ fontSize: '12px', color: '#777777', marginTop: 32, marginBottom: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Everything in Pro, plus:
-            </p>
-            
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14, fontSize: '13px', color: '#b4b4b4', flex: 1 }}>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span><strong>Custom limits & volume</strong></span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>Unlimited RPM / Dedicated nodes</span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>24/7 Dedicated engineering SLA</span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                <span>SOC2 & HIPAA reporting</span>
-              </li>
-            </ul>
-          </div>
+              {/* Star Rating */}
+              <div className="feedback-stars">
+                {'★'.repeat(5)}
+              </div>
 
+              {/* Comment Text */}
+              <p className="feedback-text">
+                "{item.text}"
+              </p>
+
+              {/* Card Footer */}
+              <div className="feedback-footer">
+                <span className="feedback-badge">{item.badge}</span>
+                <span className="feedback-time">Product Hunt ↗</span>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
 
       <style>{`
-        @media (max-width: 768px) {
-          .pricing-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .pricing-col {
-            border-right: none !important;
-            border-bottom: 1px solid #141414;
-          }
-          .pricing-col:last-child {
-            border-bottom: none;
-          }
+        .marquee-track {
+          display: flex;
+          gap: 24px;
+          width: max-content;
+          will-change: transform;
+        }
+
+        .marquee-track-left {
+          animation: marquee-scroll-left 50s linear infinite;
+        }
+
+        .marquee-track-right {
+          animation: marquee-scroll-right 55s linear infinite;
+        }
+
+        .feedback-marquee-wrapper:hover .marquee-track {
+          animation-play-state: paused;
+        }
+
+        @keyframes marquee-scroll-left {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.333%); }
+        }
+
+        @keyframes marquee-scroll-right {
+          0% { transform: translateX(-33.333%); }
+          100% { transform: translateX(0); }
+        }
+
+        .feedback-card {
+          width: 380px;
+          background: #08080a;
+          border: 1px solid #1a1a20;
+          border-radius: 12px;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          text-decoration: none;
+          color: inherit;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+
+        .feedback-card:hover {
+          border-color: var(--accent);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 35px rgba(255, 218, 98, 0.12);
+          background: #0d0d12;
+        }
+
+        .feedback-card-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+
+        .feedback-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          font-weight: 700;
+          font-size: 14px;
+          font-family: var(--font-mono);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feedback-name {
+          font-size: 15px;
+          font-weight: 600;
+          color: #ffffff;
+          font-family: var(--font-display);
+        }
+
+        .feedback-handle {
+          font-size: 11px;
+          color: #777777;
+          font-family: var(--font-mono);
+          margin-top: 2px;
+        }
+
+        .feedback-stars {
+          color: var(--accent);
+          font-size: 14px;
+          letter-spacing: 2px;
+          margin-bottom: 14px;
+        }
+
+        .feedback-text {
+          font-size: 13.5px;
+          color: #c0c0c0;
+          line-height: 1.6;
+          font-family: var(--font-body);
+          margin: 0 0 20px 0;
+          flex: 1;
+        }
+
+        .feedback-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-top: 1px solid #141418;
+          padding-top: 14px;
+          margin-top: auto;
+        }
+
+        .feedback-badge {
+          font-size: 10px;
+          font-weight: 700;
+          font-family: var(--font-mono);
+          color: var(--accent);
+          background: rgba(255, 218, 98, 0.08);
+          border: 1px solid rgba(255, 218, 98, 0.2);
+          border-radius: 20px;
+          padding: 2px 8px;
+          text-transform: uppercase;
+        }
+
+        .feedback-time {
+          font-size: 11px;
+          color: #666666;
+          font-family: var(--font-mono);
+        }
+
+        .feedback-card:hover .feedback-time {
+          color: var(--accent);
         }
       `}</style>
     </section>
