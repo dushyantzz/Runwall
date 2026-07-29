@@ -513,9 +513,9 @@ export default function RunwallFlowDiagram() {
         elementsSelectable={false}
         zoomOnScroll={false}
         panOnScroll={false}
-        zoomOnPinch={false}
+        zoomOnPinch={true}
         zoomOnDoubleClick={false}
-        panOnDrag={false}
+        panOnDrag={true}
         proOptions={{ hideAttribution: true }}
       >
         <Background color="#121212" gap={20} size={1.2} />

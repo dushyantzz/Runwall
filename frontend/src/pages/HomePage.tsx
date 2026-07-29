@@ -163,13 +163,7 @@ function FeatureBentoGrid() {
     }}>
       <div className="container">
         {/* Header grid row */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 2fr',
-          borderBottom: '1px solid #333333',
-          paddingBottom: 40,
-          marginBottom: 0
-        }}>
+        <div className="bento-header-grid">
           <div>
             <h2 style={{
               fontSize: '2.25rem',
@@ -189,20 +183,59 @@ function FeatureBentoGrid() {
               Built-in policy, identity, risk, and control components that secure agent actions automatically.
             </p>
           </div>
-          <div style={{ position: 'relative', overflow: 'hidden', borderLeft: '1px solid #333333', paddingLeft: 40 }}>
+          <div style={{ position: 'relative', overflow: 'hidden', borderLeft: '1px solid #333333', paddingLeft: 40 }} className="bento-header-overlay-col">
             {/* Background grid representation */}
             <div className="grid-overlay" style={{ opacity: 0.4 }} />
           </div>
         </div>
 
         {/* Bento Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          borderLeft: '1px solid #333333',
-          borderRight: '1px solid #333333',
-          borderBottom: '1px solid #333333',
-        }}>
+        <div className="homepage-bento-grid">
+
+        <style>{`
+          .bento-header-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            border-bottom: 1px solid #333333;
+            padding-bottom: 40;
+            margin-bottom: 0;
+          }
+
+          .homepage-bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-left: 1px solid #333333;
+            border-right: 1px solid #333333;
+            border-bottom: 1px solid #333333;
+          }
+
+          @media (max-width: 900px) {
+            .homepage-bento-grid {
+              grid-template-columns: repeat(2, 1fr);
+            }
+          }
+
+          @media (max-width: 768px) {
+            .bento-header-grid {
+              grid-template-columns: 1fr;
+            }
+            .bento-header-overlay-col {
+              border-left: none !important;
+              padding-left: 0 !important;
+              height: 60px;
+              margin-top: 20px;
+            }
+          }
+
+          @media (max-width: 600px) {
+            .homepage-bento-grid {
+              grid-template-columns: 1fr;
+            }
+            .homepage-bento-grid > a {
+              border-right: none !important;
+            }
+          }
+        `}</style>
           {/* Card 1: Tool / MCP Registry */}
           <BentoCard
             to="/features/tool-mcp-registry"
@@ -819,6 +852,16 @@ function UserFeedbackSection() {
         .feedback-card:hover {
           background: #0a0a0a;
           border-color: #555555;
+        }
+
+        @media (max-width: 480px) {
+          .feedback-card {
+            width: 290px !important;
+            padding: 16px !important;
+          }
+          .feedback-text {
+            font-size: 12.5px !important;
+          }
         }
 
         .feedback-card-header {
