@@ -69,10 +69,37 @@ function HeroSection() {
 
       <div className="container" style={{ position: 'relative', textAlign: 'center', zIndex: 10 }}>
         {/* Product Hunt Badge */}
-        <div className="animate-fade-up" style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+        <div className="animate-fade-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24, gap: 12 }}>
           <a href="https://www.producthunt.com/products/runwall?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-runwall" target="_blank" rel="noopener noreferrer">
             <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1193799&amp;theme=light&amp;t=1783834347535" alt="Runwall - The firewall and execution governance gateway for AI agents | Product Hunt" style={{ width: 200, height: 43 }} width="200" height="43" />
           </a>
+
+          {/* Backed By Sarvam.ai */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '10px', 
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px solid #222222',
+            borderRadius: '24px',
+            padding: '6px 20px',
+            marginTop: 4
+          }}>
+            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Backed by</span>
+            <span style={{ 
+              fontFamily: 'var(--font-display)', 
+              fontWeight: 800, 
+              fontSize: '17px', 
+              letterSpacing: '-0.02em',
+              color: '#ffffff',
+              textTransform: 'none',
+              lineHeight: 1,
+              marginTop: '-1px'
+            }}>
+              sarvam<span style={{ color: '#7c8ba1' }}>.ai</span>
+            </span>
+            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Startup Program</span>
+          </div>
         </div>
 
         {/* Headline */}
