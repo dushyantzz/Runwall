@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { 
   Check, Zap, Crown, Infinity, ArrowRight, Copy, 
   CheckCircle, Mail, Phone, ExternalLink, X, ChevronDown, ChevronUp 
@@ -72,6 +73,21 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const pricingHelmet = (
+    <Helmet>
+      <title>Pricing — Runwall AI Agent Governance</title>
+      <meta name="description" content="Runwall pricing plans for AI agent governance. Start free with the developer plan or upgrade to Pro for advanced policy enforcement, risk scoring, taint tracking, and audit trails." />
+      <link rel="canonical" href="https://runwall.vercel.app/pricing" />
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content="https://runwall.vercel.app/pricing" />
+      <meta property="og:title" content="Pricing — Runwall AI Agent Governance" />
+      <meta property="og:description" content="Runwall pricing plans for AI agent governance. Start free with the developer plan or upgrade to Pro for advanced policy enforcement, risk scoring, taint tracking, and audit trails." />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Pricing — Runwall AI Agent Governance" />
+      <meta name="twitter:description" content="Start free or go Pro. Runwall provides agent-native execution governance with policy enforcement, risk scoring, and audit trails for AI agents on MCP servers." />
+    </Helmet>
+  );
 
   const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const API_BASE = rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`;
@@ -284,7 +300,7 @@ export default function PricingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#000000', color: '#ffffff', fontFamily: 'var(--font-body)', padding: '0 0 100px' }}>
-      
+      {pricingHelmet}
       {/* Hero Header Section matching Webflow's "Our pricing" style */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 24px 48px' }}>
         <h1 style={{

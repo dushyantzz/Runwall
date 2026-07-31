@@ -4,16 +4,246 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Enterprise-grade execution governance for AI agents. Policy enforcement, risk scoring, taint tracking, approval workflows, and audit trails — all in one platform." />
+
+    <!-- Primary Meta -->
     <title>Runwall — Execution Governance for AI Agents</title>
+    <meta name="description" content="Runwall is an agent-native execution governance platform. Policy enforcement, identity gateway, risk scoring, taint tracking, approval workflows, and audit trails for AI agents operating through MCP servers." />
+    <meta name="keywords" content="AI agent governance, MCP security, zero-trust AI agents, Model Context Protocol, AI policy enforcement, agent security, LLM governance, agentic AI, tool calling security, autonomous AI agents" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://runwall.vercel.app/" />
+
+    <!-- Bing Site Verification -->
     <meta name="msvalidate.01" content="0E8C1875032357C9B480F34FB2628AF1" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://runwall.vercel.app/" />
+    <meta property="og:title" content="Runwall — Execution Governance for AI Agents" />
+    <meta property="og:description" content="Runwall is an agent-native execution governance platform. Policy enforcement, identity gateway, risk scoring, taint tracking, approval workflows, and audit trails for AI agents operating through MCP servers." />
+    <meta property="og:image" content="https://runwall.vercel.app/logo.svg" />
+    <meta property="og:site_name" content="Runwall" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://runwall.vercel.app/" />
+    <meta name="twitter:title" content="Runwall — Execution Governance for AI Agents" />
+    <meta name="twitter:description" content="Runwall is an agent-native execution governance platform. Policy enforcement, identity gateway, risk scoring, taint tracking, approval workflows, and audit trails for AI agents operating through MCP servers." />
+    <meta name="twitter:image" content="https://runwall.vercel.app/logo.svg" />
 
     <!-- Google Fonts: Inter, Manrope, IBM Plex Mono, Fira Code -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- JSON-LD: SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Runwall",
+      "description": "Runwall is an agent-native execution governance platform that enforces zero-trust security policies for AI agents operating through MCP (Model Context Protocol) servers. It provides policy enforcement, identity verification, risk scoring, taint tracking, approval workflows, and full audit trails.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Cloud, Linux, Web",
+      "url": "https://runwall.vercel.app/",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Free",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Free tier for individual developers and small teams"
+        },
+        {
+          "@type": "Offer",
+          "name": "Pro",
+          "price": "49",
+          "priceCurrency": "USD",
+          "description": "Pro tier with advanced governance features for production teams"
+        }
+      ],
+      "featureList": [
+        "Policy Engine powered by Open Policy Agent (OPA)",
+        "Identity and Access Control with OAuth and token auth",
+        "Real-time Risk Scoring Engine",
+        "Taint Tracking and DLP for sensitive data",
+        "Approval Workflow Engine with human-in-the-loop gates",
+        "Immutable Audit Log and Evidence Replay",
+        "MCP Protocol Broker for Model Context Protocol servers",
+        "Sandbox Execution with isolated environments",
+        "Rate Limits, Quotas, and Budget Enforcement",
+        "Rollback and Compensating Actions",
+        "SLA Governance for agentic workloads",
+        "M2M Verification for multi-agent pipelines"
+      ],
+      "softwareVersion": "1.0",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Runwall",
+        "url": "https://runwall.vercel.app/"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Runwall",
+      "url": "https://runwall.vercel.app/",
+      "logo": "https://runwall.vercel.app/logo.svg",
+      "description": "Runwall builds agent-native execution governance infrastructure for AI agents and autonomous systems.",
+      "sameAs": [
+        "https://www.producthunt.com/products/runwall",
+        "https://www.linkedin.com/company/runwall/",
+        "https://github.com/dushyantzz/Runwall"
+      ],
+      "foundingDate": "2025",
+      "knowsAbout": [
+        "AI agent governance",
+        "Model Context Protocol",
+        "Zero-trust security",
+        "LLM security",
+        "Autonomous AI agents",
+        "MCP servers",
+        "Policy enforcement"
+      ]
+    }
+    </script>
+
+    <!-- JSON-LD: FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Runwall?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Runwall is an agent-native execution governance platform that sits between AI agents and the tools they call. It enforces zero-trust security policies, validates agent identity, scores risk for every action, tracks sensitive data flow, and maintains a full audit trail — ensuring AI agents operate safely and compliantly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Runwall secure MCP servers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Runwall acts as a security gateway in front of MCP (Model Context Protocol) servers. Every tool invocation from an AI agent passes through Runwall's policy engine (powered by Open Policy Agent) before execution. Runwall validates the agent's identity, evaluates the action against defined policies, scores the risk, checks for sensitive data taint, and either allows, blocks, or routes the action for human approval."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is zero-trust AI agent governance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Zero-trust AI agent governance means no agent action is trusted by default, regardless of the agent's identity or the simplicity of the action. Every tool call is verified, authorized, and logged. Runwall implements this model by requiring explicit policy approval for every action, enforcing least-privilege access, and maintaining immutable audit trails."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which AI agents work with Runwall?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Runwall works with all major MCP-compatible AI agents including Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Kiro, Trae, Windsurf, Cline, Qoder, Roo Code, and any custom agents that use the Model Context Protocol."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is taint tracking in Runwall?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Taint tracking in Runwall monitors the propagation of sensitive data (such as API keys, PII, or confidential content) through agent actions. When an agent reads sensitive data from one source, that taint label propagates to any downstream actions, enabling Runwall to block or flag operations that would cause a data leak."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Runwall support approval workflows?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Runwall includes a configurable Approval Workflow Engine that can require human-in-the-loop approval before executing high-risk agent actions. Teams can define which action types, risk score thresholds, or policy conditions trigger an approval request."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a free plan for Runwall?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Runwall offers a free tier suitable for individual developers and small teams exploring AI agent governance. A Pro plan is also available for teams needing advanced features and production-grade governance."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Runwall differ from a traditional API gateway?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Traditional API gateways handle traffic routing, rate limiting, and basic auth. Runwall is purpose-built for AI agents: it understands the MCP protocol, enforces semantic policies (not just HTTP rules), tracks data taint across multi-step agent workflows, supports human approval gates, and provides agentic-context audit logs — capabilities that generic API gateways do not provide."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
+    <!-- SEO Content: Visible to crawlers, hidden visually. DO NOT REMOVE. -->
+    <div id="seo-content" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;" aria-hidden="true">
+      <h1>Runwall — The Agent-Native Execution Governance Platform</h1>
+
+      <p>Runwall is an agent-native execution governance platform that enforces zero-trust security policies for AI agents operating through MCP (Model Context Protocol) servers, providing policy enforcement, identity verification, risk scoring, taint tracking, approval workflows, and full audit trails for autonomous AI systems. Backed by the Sarvam AI Startup Program.</p>
+
+      <h2>How Runwall Works</h2>
+      <p>Runwall sits as a security and governance layer between AI agents and the external tools they call. Every tool invocation passes through Runwall's policy engine before execution, ensuring agents operate safely and compliantly without slowing down development.</p>
+
+      <h2>Core Features</h2>
+      <ul>
+        <li><strong>Policy Engine (OPA)</strong>: Fine-grained access policies for every tool call, powered by Open Policy Agent</li>
+        <li><strong>Identity &amp; Access Control</strong>: OAuth and token-based identity verification for every agent session</li>
+        <li><strong>Risk Scoring Engine</strong>: Real-time risk assessment for each tool invocation before execution</li>
+        <li><strong>Taint Tracking &amp; DLP</strong>: Track sensitive data flow across agent actions to prevent leaks</li>
+        <li><strong>Approval Workflow Engine</strong>: Human-in-the-loop approval gates for high-risk operations</li>
+        <li><strong>Audit Log &amp; Evidence Replay</strong>: Immutable, replayable audit trail of all agent actions</li>
+        <li><strong>MCP Protocol Broker</strong>: Native integration with Model Context Protocol servers</li>
+        <li><strong>Sandbox Execution</strong>: Isolated execution environments per agent or per operation</li>
+        <li><strong>Rate Limits &amp; Quotas</strong>: Per-tenant, per-agent resource caps and budget enforcement</li>
+        <li><strong>Rollback &amp; Compensating Actions</strong>: Automated rollback for failed or policy-violating operations</li>
+        <li><strong>SLA Governance</strong>: Uptime and performance enforcement for agentic workloads</li>
+        <li><strong>M2M Verification</strong>: Machine-to-machine authentication for multi-agent pipelines</li>
+        <li><strong>Tool &amp; MCP Registry</strong>: Centralized registry of all allowed tools and MCP servers</li>
+        <li><strong>Tenant Management</strong>: Multi-tenant architecture with per-tenant governance rules</li>
+      </ul>
+
+      <h2>Compatible AI Agents</h2>
+      <p>Runwall works with Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Kiro, Trae, Windsurf, Cline, Qoder, Roo Code, and any AI agent that uses the Model Context Protocol (MCP).</p>
+
+      <h2>FAQ</h2>
+
+      <h3>What is Runwall?</h3>
+      <p>Runwall is an agent-native execution governance platform that sits between AI agents and the tools they call. It enforces zero-trust security policies, validates agent identity, scores risk for every action, tracks sensitive data flow, and maintains a full audit trail — ensuring AI agents operate safely and compliantly.</p>
+
+      <h3>How does Runwall secure MCP servers?</h3>
+      <p>Runwall acts as a security gateway in front of MCP (Model Context Protocol) servers. Every tool invocation from an AI agent passes through Runwall's policy engine (powered by Open Policy Agent) before execution. Runwall validates the agent's identity, evaluates the action against defined policies, scores the risk, checks for sensitive data taint, and either allows, blocks, or routes the action for human approval.</p>
+
+      <h3>What is zero-trust AI agent governance?</h3>
+      <p>Zero-trust AI agent governance means no agent action is trusted by default, regardless of the agent's identity or the simplicity of the action. Every tool call is verified, authorized, and logged. Runwall implements this model by requiring explicit policy approval for every action, enforcing least-privilege access, and maintaining immutable audit trails.</p>
+
+      <h3>Which AI agents work with Runwall?</h3>
+      <p>Runwall works with all major MCP-compatible AI agents including Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Kiro, Trae, Windsurf, Cline, Qoder, Roo Code, and any custom agents that use the Model Context Protocol.</p>
+
+      <h3>What is taint tracking in Runwall?</h3>
+      <p>Taint tracking in Runwall monitors the propagation of sensitive data (such as API keys, PII, or confidential content) through agent actions. When an agent reads sensitive data from one source, that taint label propagates to any downstream actions, enabling Runwall to block or flag operations that would cause a data leak.</p>
+
+      <h3>Does Runwall support approval workflows?</h3>
+      <p>Yes. Runwall includes a configurable Approval Workflow Engine that can require human-in-the-loop approval before executing high-risk agent actions. Teams can define which action types, risk score thresholds, or policy conditions trigger an approval request.</p>
+
+      <h3>Is there a free plan for Runwall?</h3>
+      <p>Yes, Runwall offers a free tier suitable for individual developers and small teams exploring AI agent governance. A Pro plan is also available for teams needing advanced features and production-grade governance.</p>
+
+      <h3>How does Runwall differ from a traditional API gateway?</h3>
+      <p>Traditional API gateways handle traffic routing, rate limiting, and basic auth. Runwall is purpose-built for AI agents: it understands the MCP protocol, enforces semantic policies, tracks data taint across multi-step agent workflows, supports human approval gates, and provides agentic-context audit logs.</p>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

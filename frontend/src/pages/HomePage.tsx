@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   Lock, Database, Play, FileText,
@@ -42,6 +43,18 @@ const tickerItems = [
 export default function HomePage() {
   return (
     <div style={{ background: '#000000', color: '#b4b4b4', minHeight: '100vh' }}>
+      <Helmet>
+        <title>Runwall — Execution Governance for AI Agents</title>
+        <meta name="description" content="Runwall is an agent-native execution governance platform. Policy enforcement, identity gateway, risk scoring, taint tracking, approval workflows, and audit trails for AI agents on MCP servers." />
+        <link rel="canonical" href="https://runwall.vercel.app/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://runwall.vercel.app/" />
+        <meta property="og:title" content="Runwall — Execution Governance for AI Agents" />
+        <meta property="og:description" content="Agent-native execution governance. Policy engine, risk scoring, taint tracking, approval workflows, and audit trails for AI agents on MCP servers." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Runwall — Execution Governance for AI Agents" />
+        <meta name="twitter:description" content="Agent-native execution governance. Policy engine, risk scoring, taint tracking, approval workflows, and audit trails for AI agents on MCP servers." />
+      </Helmet>
       <HeroSection />
       <CompatibilityTicker />
       <FeatureBentoGrid />

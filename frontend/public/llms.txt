@@ -1,0 +1,57 @@
+# Runwall
+
+> Runwall is an agent-native execution governance platform that enforces zero-trust security policies for AI agents operating through MCP (Model Context Protocol) servers, providing policy enforcement, identity verification, risk scoring, taint tracking, approval workflows, and full audit trails.
+
+## What Runwall Does
+
+Runwall sits as a security gateway between AI agents (Claude, Codex, Cursor, Copilot, etc.) and the external tools and APIs they call. Every tool invocation passes through Runwall's governance layer before execution, ensuring agents can only perform actions that comply with your organization's policies.
+
+## Key Capabilities
+
+- **Policy Engine (OPA)**: Define and enforce fine-grained access policies for every tool call using Open Policy Agent (OPA) logic
+- **Identity & Access Control**: OAuth and token-based identity verification for every agent session
+- **Risk Scoring Engine**: Real-time risk assessment for each tool invocation before execution
+- **Taint Tracking & DLP**: Track sensitive data flow across agent actions to prevent leaks
+- **Approval Workflow Engine**: Human-in-the-loop approval gates for high-risk operations
+- **Audit Log & Evidence Replay**: Immutable, replayable audit trail of all agent actions
+- **MCP Protocol Broker**: Native integration with Model Context Protocol servers
+- **Sandbox Execution**: Isolated execution environments per agent or per operation
+- **Rate Limits & Quotas**: Per-tenant, per-agent resource caps and budget enforcement
+- **Rollback & Compensating Actions**: Automated rollback for failed or policy-violating operations
+- **SLA Governance**: Uptime and performance enforcement for agentic workloads
+- **M2M Verification**: Machine-to-machine authentication for multi-agent pipelines
+
+## Who Uses Runwall
+
+Teams building autonomous AI agents, multi-agent pipelines, or AI-powered developer tooling who need enterprise-grade governance, compliance, and security controls without building them from scratch.
+
+## Backed By
+
+Backed by the **Sarvam AI Startup Program**.
+
+Featured on **Product Hunt**.
+
+## Links
+
+- Homepage: https://runwall.vercel.app/
+- Documentation: https://runwall.vercel.app/docs
+- Pricing: https://runwall.vercel.app/pricing
+- Sitemap: https://runwall.vercel.app/sitemap.xml
+- GitHub: https://github.com/dushyantzz/Runwall
+- LinkedIn: https://www.linkedin.com/company/runwall/
+- Product Hunt: https://www.producthunt.com/products/runwall
+
+## Key Technical Facts
+
+- Supports all major MCP-compatible AI agents (Claude Code, Codex, Cursor, Copilot, Kiro, Trae, Windsurf, Cline, Qoder, Roo Code)
+- Policy enforcement powered by Open Policy Agent (OPA)
+- Real-time taint propagation and DLP tracking
+- Approval workflows with configurable human gates
+- Immutable audit trail with evidence replay capability
+- Multi-tenant architecture with per-tenant governance rules
+- Sandbox isolation per execution profile
+- CLI and API access
+
+## Contact / Social
+
+- Product Hunt: https://www.producthunt.com/products/runwall

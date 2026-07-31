@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   BookOpen, ChevronRight, ChevronDown, Search,
   Info,
@@ -104,6 +105,13 @@ export default function DocsPage() {
     section.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const pageTitle = activeDoc.id === 'introduction'
+    ? 'Runwall Docs — AI Agent Governance Documentation'
+    : `${activeDoc.title} — Runwall Docs`;
+  const pageDescription = activeDoc.id === 'introduction'
+    ? 'Documentation for Runwall — the agent-native execution governance platform. Learn how to set up policy enforcement, risk scoring, taint tracking, approval workflows, and audit trails for AI agents.'
+    : `Learn about ${activeDoc.title} in Runwall — the AI agent execution governance platform with policy enforcement, risk scoring, and audit trails for MCP servers.`;
+
   return (
     <div style={{
       display: 'flex',
@@ -113,6 +121,16 @@ export default function DocsPage() {
       fontFamily: 'var(--font-body)',
       paddingTop: '60px' // Offset fixed navbar
     }}>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={`https://runwall.vercel.app/docs/${activeDoc.id === 'introduction' ? '' : activeDoc.id}`} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={`https://runwall.vercel.app/docs/${activeDoc.id}`} />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+      </Helmet>
       {/* ── 1. LEFT SIDEBAR ── */}
       <aside style={{
         width: '280px',
