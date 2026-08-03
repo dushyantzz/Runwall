@@ -117,29 +117,29 @@ function HeroSection() {
 
         {/* Headline */}
         <h1 className="animate-fade-up delay-100" style={{
-          fontSize: '3.75rem',
-          maxWidth: 900,
+          fontSize: '3.5rem',
+          maxWidth: 1100,
           margin: '0 auto 24px',
-          lineHeight: 1.1,
-          fontWeight: 300,
+          lineHeight: 1.2,
+          fontWeight: 100,
           color: '#ffffff',
           letterSpacing: '-0.02em',
         }}>
-          <span style={{ color: 'var(--accent)' }}>The Agent-Native</span>
+          You wouldn't deploy code without tests.
           <br />
-          Execution Governance Platform
+          <span style={{ color: 'var(--accent)' }}>Don't deploy agents without Runwall.</span>
         </h1>
 
         {/* Subheading */}
         <p className="animate-fade-up delay-200" style={{
-          maxWidth: 620,
+          maxWidth: 720,
           margin: '0 auto 36px',
-          fontSize: 14,
+          fontSize: 17,
+          fontStyle: 'italic',
           color: '#b4b4b4',
           lineHeight: 1.6,
         }}>
-          Policy engine, identity gateway, risk scoring, taint tracking, approvals, and sandboxing.
-          Every component built for AI autonomous agents to operate safely end-to-end through CLI and tools.
+          Runwall sits between your agent and everything it can touch — blocking bad actions, logging every move, and flagging anything risky before damage is done
         </p>
 
 
