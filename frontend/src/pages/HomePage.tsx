@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   Lock, Database, Play, FileText,
-  Clock, ArrowUpRight
+  Clock, ArrowUpRight, ChevronDown
 } from 'lucide-react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { useAuth } from '../hooks/AuthContext';
@@ -60,6 +61,7 @@ export default function HomePage() {
       <FeatureBentoGrid />
       <BranchingWorkflowSection />
       <UserFeedbackSection />
+      <FAQSection />
       <CTASection />
     </div>
   );
@@ -73,32 +75,35 @@ function HeroSection() {
     <section style={{
       position: 'relative',
       overflow: 'hidden',
-      paddingTop: 160,
-      paddingBottom: 100,
+      paddingTop: 'clamp(100px, 14vw, 160px)',
+      paddingBottom: 'clamp(60px, 10vw, 100px)',
       borderBottom: '1px solid #333333'
     }}>
       {/* Grid overlay */}
       <div className="grid-overlay" style={{ opacity: 0.8 }} />
 
       <div className="container" style={{ position: 'relative', textAlign: 'center', zIndex: 10 }}>
-        {/* Product Hunt Badge */}
+        {/* Product Hunt Badge + Sarvam Badge */}
         <div className="animate-fade-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24, gap: 12 }}>
           <a href="https://www.producthunt.com/products/runwall?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-runwall" target="_blank" rel="noopener noreferrer">
-            <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1193799&amp;theme=light&amp;t=1783834347535" alt="Runwall - The firewall and execution governance gateway for AI agents | Product Hunt" style={{ width: 200, height: 43 }} width="200" height="43" />
+            <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1193799&amp;theme=light&amp;t=1783834347535" alt="Runwall - The firewall and execution governance gateway for AI agents | Product Hunt" style={{ width: 200, height: 43 }} width="200" height="43" loading="lazy" />
           </a>
 
           {/* Backed By Sarvam.ai */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '10px', 
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '8px 10px', 
             background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid #222222',
             borderRadius: '24px',
-            padding: '6px 20px',
-            marginTop: 4
+            padding: '6px 16px',
+            marginTop: 4,
+            maxWidth: '100%',
           }}>
-            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Backed by</span>
+            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Backed by</span>
             <span style={{ 
               fontFamily: 'var(--font-display)', 
               fontWeight: 800, 
@@ -107,17 +112,17 @@ function HeroSection() {
               color: '#ffffff',
               textTransform: 'none',
               lineHeight: 1,
-              marginTop: '-1px'
+              whiteSpace: 'nowrap',
             }}>
               sarvam<span style={{ color: '#7c8ba1' }}>.ai</span>
             </span>
-            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Startup Program</span>
+            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Startup Program</span>
           </div>
         </div>
 
         {/* Headline */}
         <h1 className="animate-fade-up delay-100" style={{
-          fontSize: '3.5rem',
+          fontSize: 'clamp(1.875rem, 6vw, 3.5rem)',
           maxWidth: 1100,
           margin: '0 auto 24px',
           lineHeight: 1.2,
@@ -134,7 +139,7 @@ function HeroSection() {
         <p className="animate-fade-up delay-200" style={{
           maxWidth: 720,
           margin: '0 auto 36px',
-          fontSize: 17,
+          fontSize: 'clamp(15px, 2.5vw, 17px)',
           fontStyle: 'italic',
           color: '#b4b4b4',
           lineHeight: 1.6,
@@ -144,7 +149,7 @@ function HeroSection() {
 
 
         {/* Action Buttons */}
-        <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 48 }}>
+        <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 48 }}>
           {user ? (
             <Link to="/docs" className="btn-trendy-primary">
               Go to Dashboard
@@ -249,7 +254,7 @@ function FeatureBentoGrid() {
             border-bottom: 1px solid #333333;
           }
 
-          @media (max-width: 900px) {
+          @media (max-width: 1024px) {
             .homepage-bento-grid {
               grid-template-columns: repeat(2, 1fr);
             }
@@ -267,7 +272,7 @@ function FeatureBentoGrid() {
             }
           }
 
-          @media (max-width: 600px) {
+          @media (max-width: 640px) {
             .homepage-bento-grid {
               grid-template-columns: 1fr;
             }
@@ -623,7 +628,7 @@ function BranchingWorkflowSection() {
         {/* Title */}
         <div style={{ marginBottom: 64 }}>
           <h2 style={{
-            fontSize: '2.5rem',
+            fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
             fontWeight: 300,
             color: '#ffffff',
             marginBottom: 16,
@@ -744,7 +749,7 @@ function UserFeedbackSection() {
     <section className="section section-border-top" ref={ref} style={{ background: '#000000', padding: '96px 0', overflow: 'hidden' }}>
       <div className="container" style={{ textAlign: 'center', marginBottom: 56 }}>
         <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>COMMUNITY FEEDBACK</span>
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 300, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 16 }}>
+        <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', fontWeight: 300, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 16 }}>
           User Feedback That Motivates Us
         </h2>
         <p style={{ color: '#777777', fontSize: 14, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
@@ -991,6 +996,100 @@ function UserFeedbackSection() {
 }
 
 
+/* ── 7. FAQ SECTION ── */
+const faqItems = [
+  {
+    q: 'What is Runwall?',
+    a: 'Runwall is an agent-native execution governance platform that sits between AI agents and the tools they call. It enforces zero-trust security policies, validates agent identity, scores risk for every action, tracks sensitive data flow, and maintains a full audit trail — ensuring AI agents operate safely and compliantly.'
+  },
+  {
+    q: 'How does Runwall secure MCP servers?',
+    a: 'Runwall acts as a security gateway in front of MCP (Model Context Protocol) servers. Every tool invocation from an AI agent passes through Runwall\'s policy engine (powered by Open Policy Agent) before execution. Runwall validates the agent\'s identity, evaluates the action against defined policies, scores the risk, checks for sensitive data taint, and either allows, blocks, or routes the action for human approval.'
+  },
+  {
+    q: 'What is zero-trust AI agent governance?',
+    a: 'Zero-trust AI agent governance means no agent action is trusted by default, regardless of the agent\'s identity or the simplicity of the action. Every tool call is verified, authorized, and logged. Runwall implements this model by requiring explicit policy approval for every action, enforcing least-privilege access, and maintaining immutable audit trails.'
+  },
+  {
+    q: 'Which AI agents work with Runwall?',
+    a: 'Runwall works with all major MCP-compatible AI agents including Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Kiro, Trae, Windsurf, Cline, Qoder, Roo Code, and any custom agents that use the Model Context Protocol.'
+  },
+  {
+    q: 'What is taint tracking in Runwall?',
+    a: 'Taint tracking in Runwall monitors the propagation of sensitive data (such as API keys, PII, or confidential content) through agent actions. When an agent reads sensitive data from one source, that taint label propagates to any downstream actions, enabling Runwall to block or flag operations that would cause a data leak.'
+  },
+  {
+    q: 'Does Runwall support approval workflows?',
+    a: 'Yes. Runwall includes a configurable Approval Workflow Engine that can require human-in-the-loop approval before executing high-risk agent actions. Teams can define which action types, risk score thresholds, or policy conditions trigger an approval request.'
+  },
+  {
+    q: 'Is there a free plan for Runwall?',
+    a: 'Yes, Runwall offers a free tier suitable for individual developers and small teams exploring AI agent governance. A Pro plan is also available for teams needing advanced features and production-grade governance.'
+  },
+  {
+    q: 'How does Runwall differ from a traditional API gateway?',
+    a: 'Traditional API gateways handle traffic routing, rate limiting, and basic auth. Runwall is purpose-built for AI agents: it understands the MCP protocol, enforces semantic policies (not just HTTP rules), tracks data taint across multi-step agent workflows, supports human approval gates, and provides agentic-context audit logs — capabilities that generic API gateways do not provide.'
+  },
+];
+
+function FAQSection() {
+  const ref = useScrollAnimation();
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const toggle = (i: number) => setOpenIndex(openIndex === i ? null : i);
+
+  return (
+    <section className="section section-border-top" ref={ref} style={{ background: '#000000', borderBottom: '1px solid #333333' }}>
+      <div className="container">
+        <div style={{ marginBottom: 48 }}>
+          <span className="mono-label" style={{ marginBottom: 12, display: 'block', fontSize: 11 }}>FAQ</span>
+          <h2 style={{
+            fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
+            fontWeight: 300,
+            color: '#ffffff',
+            letterSpacing: '-0.02em',
+            marginBottom: 8,
+          }}>
+            Frequently Asked Questions
+          </h2>
+          <p style={{ color: '#777777', fontSize: 14, maxWidth: 520, lineHeight: 1.6 }}>
+            Everything you need to know about Runwall and AI agent governance.
+          </p>
+        </div>
+
+        <div style={{ maxWidth: 800, borderTop: '1px solid #222222' }}>
+          {faqItems.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div key={i} className="faq-item">
+                <button
+                  className="faq-question"
+                  onClick={() => toggle(i)}
+                  aria-expanded={isOpen}
+                  id={`faq-q-${i}`}
+                  aria-controls={`faq-a-${i}`}
+                >
+                  <span>{item.q}</span>
+                  <ChevronDown size={18} className={`faq-chevron${isOpen ? ' open' : ''}`} />
+                </button>
+                <div
+                  className={`faq-answer${isOpen ? ' open' : ''}`}
+                  id={`faq-a-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-q-${i}`}
+                  style={{ maxHeight: isOpen ? '400px' : '0' }}
+                >
+                  <div className="faq-answer-inner">{item.a}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ── 6. CTA SECTION ── */
 function CTASection() {
   const { user } = useAuth();
@@ -1016,7 +1115,7 @@ function CTASection() {
           Deploy enterprise-grade execution governance in minutes.
           Start free, scale to millions of agent actions.
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12 }}>
           {user ? (
             <Link to="/docs" className="btn-trendy-primary">
               Go to Dashboard

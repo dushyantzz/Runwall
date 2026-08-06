@@ -52,7 +52,7 @@ html {
 
 body {
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--body);
   background: var(--bg);
@@ -102,19 +102,19 @@ h6 {
 }
 
 h1 {
-  font-size: 4.25rem;
+  font-size: clamp(2rem, 6vw, 4.25rem);
   font-weight: 300;
   /* Thinner display font */
   letter-spacing: -0.03em;
 }
 
 h2 {
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 4.5vw, 2.5rem);
   font-weight: 400;
 }
 
 h3 {
-  font-size: 1.75rem;
+  font-size: clamp(1.25rem, 3.5vw, 1.75rem);
   font-weight: 450;
 }
 
@@ -125,15 +125,15 @@ h4 {
 
 @media (max-width: 768px) {
   h1 {
-    font-size: 2.75rem;
+    font-size: clamp(1.875rem, 8vw, 2.75rem);
   }
 
   h2 {
-    font-size: 2rem;
+    font-size: clamp(1.375rem, 6vw, 2rem);
   }
 
   h3 {
-    font-size: 1.5rem;
+    font-size: clamp(1.125rem, 4.5vw, 1.5rem);
   }
 }
 
@@ -175,7 +175,13 @@ pre {
 
 @media (max-width: 768px) {
   .container {
-    padding: 0 24px;
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
   }
 }
 
@@ -199,6 +205,24 @@ pre {
   border-bottom: 1px solid #333333;
 }
 
+@media (max-width: 768px) {
+  .section {
+    padding: 64px 0;
+  }
+  .section-sm {
+    padding: 48px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    padding: 48px 0;
+  }
+  .section-sm {
+    padding: 36px 0;
+  }
+}
+
 /* ── BUTTONS ── */
 .btn {
   display: inline-flex;
@@ -209,6 +233,7 @@ pre {
   font-size: 14px;
   font-weight: 500;
   padding: 10px 20px;
+  min-height: 44px;
   border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
@@ -492,6 +517,7 @@ pre {
   font-weight: 700;
   font-size: 14px;
   padding: 10px 24px;
+  min-height: 44px;
   border-radius: 6px;
   border: 1px solid var(--accent);
   cursor: pointer;
@@ -521,6 +547,7 @@ pre {
   font-weight: 600;
   font-size: 14px;
   padding: 10px 24px;
+  min-height: 44px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
@@ -562,11 +589,13 @@ pre {
   padding-right: 24px;
   margin-right: 24px;
   font-family: var(--font-display);
+  flex-shrink: 0;
 }
 
 .ticker-wrap {
   overflow: hidden;
   flex: 1;
+  min-width: 0;
 }
 
 .ticker-move {
@@ -574,6 +603,15 @@ pre {
   gap: 60px;
   white-space: nowrap;
   animation: ticker-slide 30s linear infinite;
+}
+
+@media (max-width: 480px) {
+  .ticker-title {
+    display: none;
+  }
+  .ticker-container {
+    padding: 12px 16px;
+  }
 }
 
 @keyframes ticker-slide {
@@ -610,4 +648,90 @@ pre {
   --color-success: #FFDA62;
   --color-warning: #f59e0b;
   --color-destructive: #ef4444;
+}
+
+/* ── FLOW DIAGRAM RESPONSIVE ── */
+.flow-diagram-desktop {
+  display: block;
+}
+.flow-diagram-mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .flow-diagram-desktop {
+    display: none;
+  }
+  .flow-diagram-mobile {
+    display: flex;
+  }
+}
+
+/* ── FAQ ACCORDION ── */
+.faq-item {
+  border-bottom: 1px solid #222222;
+}
+
+.faq-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 20px 0;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  gap: 16px;
+  transition: color 0.2s ease;
+}
+
+.faq-question:hover {
+  color: var(--accent);
+}
+
+.faq-chevron {
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #555555;
+}
+
+.faq-chevron.open {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+.faq-answer {
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+  max-height: 0;
+}
+
+.faq-answer.open {
+  opacity: 1;
+}
+
+.faq-answer-inner {
+  padding-bottom: 20px;
+  font-size: 15px;
+  color: #888888;
+  line-height: 1.7;
+  font-family: var(--font-body);
+}
+
+@media (max-width: 768px) {
+  .faq-question {
+    font-size: 15px;
+    padding: 18px 0;
+  }
+  .faq-answer-inner {
+    font-size: 14px;
+  }
 }

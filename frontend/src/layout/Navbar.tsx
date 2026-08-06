@@ -244,6 +244,8 @@ export default function Navbar() {
         <button
           className="mobile-toggle"
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle navigation menu"
+          aria-expanded={mobileOpen}
           style={{
             display: 'none',
             background: 'none',
@@ -251,6 +253,10 @@ export default function Navbar() {
             color: 'var(--heading)',
             cursor: 'pointer',
             padding: 8,
+            minWidth: 44,
+            minHeight: 44,
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -270,7 +276,8 @@ export default function Navbar() {
             gap: 4,
           }}
         >
-          <Link to="/docs" style={{ padding: '8px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 13 }}>Documentation</Link>
+          <Link to="/docs" style={{ padding: '10px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', minHeight: 44 }}>Documentation</Link>
+          <Link to="/pricing" style={{ padding: '10px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', minHeight: 44 }}>Pricing</Link>
           <div style={{ borderTop: '1px solid #333333', margin: '8px 0' }} />
           {user ? (
             <>
@@ -286,12 +293,13 @@ export default function Navbar() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 6,
-                  padding: '8px 10px',
+                  padding: '10px 10px',
+                  minHeight: 44,
                   background: 'rgba(0, 180, 216, 0.1)',
                   border: '1px solid rgba(0, 180, 216, 0.3)',
                   borderRadius: '6px',
                   color: '#00b4d8',
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: 600,
                   cursor: 'pointer'
                 }}
@@ -309,12 +317,13 @@ export default function Navbar() {
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   gap: 6,
-                  padding: '8px 10px',
+                  padding: '10px 10px',
+                  minHeight: 44,
                   background: 'none',
                   border: '1px solid var(--border)',
                   borderRadius: '6px',
                   color: 'var(--heading)',
-                  fontSize: 13,
+                  fontSize: 14,
                   cursor: 'pointer'
                 }}
               >
@@ -323,7 +332,7 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            <Link to="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>Sign Up</Link>
+            <Link to="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: 8, minHeight: 44 }}>Sign Up Free</Link>
           )}
         </div>
       )}

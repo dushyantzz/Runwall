@@ -458,78 +458,219 @@ export default function RunwallFlowDiagram() {
     },
   ];
 
-  return (
-    <div style={{
-      width: '100%',
-      height: '640px',
-      background: 'radial-gradient(circle at 50% 50%, #030303 0%, #000000 100%)',
-      border: '1px solid #121212',
-      borderRadius: '12px',
-      position: 'relative',
-      overflow: 'hidden',
-      boxShadow: '0 24px 64px rgba(0,0,0,0.85)',
-      animation: 'fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
-    }}>
-      {/* Background Grid Accent overlay */}
-      <div className="grid-overlay" style={{ opacity: 0.22, pointerEvents: 'none' }} />
+  // Mobile-friendly static representation
+  const mobileAgents = [
+    { label: 'Claude Code', color: '#FFDA62' },
+    { label: 'Cursor', color: '#FFDA62' },
+    { label: 'GitHub Copilot', color: '#FFDA62' },
+    { label: 'OpenAI Codex', color: '#FFDA62' },
+  ];
+  const mobileTools = [
+    { label: 'GitHub API', color: '#FFDA62', status: 'Allowed' },
+    { label: 'Prod Database', color: '#f59e0b', status: 'Audited' },
+    { label: 'Slack Webhook', color: '#FFDA62', status: 'Allowed' },
+    { label: 'Salesforce CRM', color: '#ef4444', status: 'Blocked' },
+  ];
+  const mobileFeatures = [
+    'Policy Engine (OPA)', 'Identity & Access Control', 'Risk Scoring Engine',
+    'Taint Tracking & DLP', 'Approval Workflows', 'Audit Log & Replay',
+    'MCP Protocol Broker', 'Sandbox Execution', 'Rate Limits & Caps',
+    'Rollback Actions', 'SLA Governance', 'M2M Verification',
+  ];
 
-      {/* Top Banner Tagline */}
-      <div style={{
-        position: 'absolute',
-        bottom: 24,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        zIndex: 20,
-        pointerEvents: 'none'
+  return (
+    <>
+      {/* ── DESKTOP: Full ReactFlow Diagram ── */}
+      <div className="flow-diagram-desktop" style={{
+        width: '100%',
+        height: '640px',
+        background: 'radial-gradient(circle at 50% 50%, #030303 0%, #000000 100%)',
+        border: '1px solid #121212',
+        borderRadius: '12px',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.85)',
+        animation: 'fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
       }}>
+        <div className="grid-overlay" style={{ opacity: 0.22, pointerEvents: 'none' }} />
+
         <div style={{
-          display: 'inline-block',
-          background: 'rgba(10,10,12,0.85)',
-          border: '1px solid #1a1a1a',
-          borderRadius: 6,
-          padding: '10px 28px',
-          color: '#ffffff',
-          fontSize: 14,
-          fontWeight: 700,
-          fontFamily: 'var(--font-mono)',
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          boxShadow: '0 12px 48px rgba(0,0,0,0.9)',
-          backdropFilter: 'blur(8px)'
+          position: 'absolute',
+          bottom: 24,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          zIndex: 20,
+          pointerEvents: 'none'
         }}>
-          Runwall: The governance layer between your agents and your tools
+          <div style={{
+            display: 'inline-block',
+            background: 'rgba(10,10,12,0.85)',
+            border: '1px solid #1a1a1a',
+            borderRadius: 6,
+            padding: '10px 28px',
+            color: '#ffffff',
+            fontSize: 14,
+            fontWeight: 700,
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            boxShadow: '0 12px 48px rgba(0,0,0,0.9)',
+            backdropFilter: 'blur(8px)'
+          }}>
+            Runwall: The governance layer between your agents and your tools
+          </div>
+        </div>
+
+        <ReactFlow
+          nodes={initialNodes}
+          edges={initialEdges}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.05 }}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          zoomOnScroll={false}
+          panOnScroll={false}
+          zoomOnPinch={false}
+          zoomOnDoubleClick={false}
+          panOnDrag={false}
+          preventScrolling={false}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background color="#121212" gap={20} size={1.2} />
+        </ReactFlow>
+      </div>
+
+      {/* ── MOBILE: Static vertical stacked diagram ── */}
+      <div className="flow-diagram-mobile" style={{
+        flexDirection: 'column',
+        gap: 0,
+        width: '100%',
+        background: 'radial-gradient(circle at 50% 20%, #060606 0%, #000000 100%)',
+        border: '1px solid #1a1a1a',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        padding: '24px 16px',
+      }}>
+        {/* AI Agents column */}
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--accent)', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 12, textAlign: 'center' }}>
+            AI AGENTS
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {mobileAgents.map((agent, i) => (
+              <div key={i} style={{
+                background: 'rgba(10,10,12,0.85)',
+                border: '1px solid rgba(255,218,98,0.25)',
+                borderRadius: 8,
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: agent.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', fontFamily: 'var(--font-display)' }}>{agent.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Arrow down */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0', color: 'var(--accent)' }}>
+          <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
+            <path d="M10 0 L10 24 M4 18 L10 30 L16 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+
+        {/* Runwall Core */}
+        <div style={{
+          background: 'rgba(4,4,6,0.9)',
+          border: '1px solid rgba(255,218,98,0.45)',
+          borderRadius: 10,
+          padding: '16px',
+          marginBottom: 4,
+          boxShadow: '0 0 24px rgba(255,218,98,0.08)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src="/logo.svg" alt="Runwall" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-display)', letterSpacing: '0.01em' }}>Runwall</div>
+              <div style={{ fontSize: 9, color: 'var(--accent)', fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>MCP Security Gateway</div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {mobileFeatures.map((feat, i) => (
+              <div key={i} style={{
+                padding: '8px 10px',
+                background: 'rgba(15,15,18,0.7)',
+                border: '1px solid rgba(255,255,255,0.04)',
+                borderRadius: 6,
+                fontSize: 11,
+                color: '#f0f0f0',
+                fontWeight: 500,
+                fontFamily: 'var(--font-body)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}>
+                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+                {feat}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Arrow down */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0', color: 'var(--accent)' }}>
+          <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
+            <path d="M10 0 L10 24 M4 18 L10 30 L16 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+
+        {/* External Tools */}
+        <div>
+          <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#888', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 12, textAlign: 'center' }}>
+            EXTERNAL TOOLS & APIs
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {mobileTools.map((tool, i) => (
+              <div key={i} style={{
+                background: 'rgba(10,10,12,0.85)',
+                border: `1px solid ${tool.color === '#ef4444' ? 'rgba(239,68,68,0.35)' : tool.color === '#f59e0b' ? 'rgba(245,158,11,0.35)' : 'rgba(255,218,98,0.25)'}`,
+                borderRadius: 8,
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: tool.color, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#ffffff', fontFamily: 'var(--font-display)' }}>{tool.label}</div>
+                  <div style={{ fontSize: 10, color: tool.color, fontFamily: 'var(--font-mono)', marginTop: 2 }}>{tool.status}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom label */}
+        <div style={{ textAlign: 'center', marginTop: 20, padding: '10px 16px', background: 'rgba(10,10,12,0.7)', border: '1px solid #1a1a1a', borderRadius: 6 }}>
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#888', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            Runwall: The governance layer between your agents and your tools
+          </span>
         </div>
       </div>
 
-      <ReactFlow
-        nodes={initialNodes}
-        edges={initialEdges}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.05 }}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        zoomOnScroll={false}
-        panOnScroll={false}
-        zoomOnPinch={false}
-        zoomOnDoubleClick={false}
-        panOnDrag={false}
-        preventScrolling={false}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background color="#121212" gap={20} size={1.2} />
-      </ReactFlow>
-
-      {/* Embedding Custom Flow Diagram Styles */}
       <style>{`
         @keyframes fade-in {
           from { opacity: 0; transform: scale(0.99); }
           to { opacity: 1; transform: scale(1); }
         }
 
-        /* Subtle Trending floating animations for nodes */
         .trending-floating-1 {
           animation: float-1 6s ease-in-out infinite;
         }
@@ -545,7 +686,6 @@ export default function RunwallFlowDiagram() {
           50% { transform: translateY(4px); }
         }
 
-        /* Core shield pulse */
         .core-shield-pulse {
           animation: shield-glow 2.5s infinite ease-in-out;
         }
@@ -560,7 +700,6 @@ export default function RunwallFlowDiagram() {
           }
         }
 
-        /* Hover glows on nodes and cards */
         .agent-flow-node:hover {
           border-color: var(--accent) !important;
           box-shadow: 0 0 35px rgba(255, 218, 98, 0.25) !important;
@@ -589,13 +728,12 @@ export default function RunwallFlowDiagram() {
           box-shadow: 0 0 35px rgba(239, 68, 68, 0.2) !important;
         }
 
-        /* Custom react flow default label override */
         .react-flow__node-default {
           padding: 0 !important;
           background: transparent !important;
           border: none !important;
         }
       `}</style>
-    </div>
+    </>
   );
 }
