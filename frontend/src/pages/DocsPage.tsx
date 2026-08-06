@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   BookOpen, ChevronRight, ChevronDown, Search,
-  Info,
+  Info, Menu, X,
   Fingerprint, Building2, Puzzle, FileCode2, Radio, BarChart3,
   Route, GitBranch, ClipboardList, RotateCcw, Gauge, Box
 } from 'lucide-react';
@@ -43,6 +43,7 @@ export default function DocsPage() {
   const { pageId = 'introduction' } = useParams<{ pageId: string }>();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileDocsMenuOpen, setIsMobileDocsMenuOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     'getting-started': true,
     'features': true
@@ -115,6 +116,7 @@ export default function DocsPage() {
   return (
     <div style={{
       display: 'flex',
+      flexDirection: 'column',
       minHeight: 'calc(100vh - 60px)',
       background: '#000000',
       color: 'var(--body, #b4b4b4)',
@@ -131,21 +133,66 @@ export default function DocsPage() {
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
       </Helmet>
-      {/* ── 1. LEFT SIDEBAR ── */}
-      <aside style={{
-        width: '280px',
-        background: '#050505',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
+
+      {/* ── MOBILE STICKY DOCS SUB-HEADER ── */}
+      <div className="docs-mobile-bar" style={{
+        display: 'none',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 16px',
+        background: '#08080a',
+        borderBottom: '1px solid #1c1c1c',
+        position: 'sticky',
         top: '60px',
-        bottom: 0,
-        left: 0,
-        zIndex: 10,
-        overflowY: 'auto'
-      }} className="docs-sidebar">
-        {/* Search */}
-        <div style={{ padding: '16px', borderBottom: '1px solid #141414' }}>
+        zIndex: 20,
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ffffff', fontWeight: 600 }}>
+          <BookOpen size={16} style={{ color: 'var(--accent)' }} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '210px' }}>
+            {activeDoc.title}
+          </span>
+        </div>
+        <button
+          onClick={() => setIsMobileDocsMenuOpen(!isMobileDocsMenuOpen)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(255, 218, 98, 0.1)',
+            border: '1px solid rgba(255, 218, 98, 0.3)',
+            color: 'var(--accent)',
+            borderRadius: '6px',
+            padding: '6px 12px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            minHeight: '36px'
+          }}
+        >
+          {isMobileDocsMenuOpen ? <X size={14} /> : <Menu size={14} />}
+          <span>{isMobileDocsMenuOpen ? 'Close' : 'Docs Menu'}</span>
+        </button>
+      </div>
+
+      {/* ── MOBILE SIDEBAR DRAWER OVERLAY ── */}
+      {isMobileDocsMenuOpen && (
+        <div className="docs-mobile-drawer" style={{
+          position: 'fixed',
+          top: '108px', // 60px header + 48px docs subheader
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: '#050505',
+          zIndex: 90,
+          overflowY: 'auto',
+          padding: '20px 16px 40px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px'
+        }}>
+          {/* Search */}
           <div style={{ position: 'relative' }}>
             <Search size={14} style={{
               position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
@@ -159,52 +206,37 @@ export default function DocsPage() {
               style={{
                 width: '100%',
                 background: '#0a0a0a',
-                border: '1px solid #1c1c1c',
+                border: '1px solid #222222',
                 borderRadius: '6px',
-                padding: '8px 12px 8px 34px',
-                fontSize: '13px',
+                padding: '10px 12px 10px 34px',
+                fontSize: '14px',
                 color: 'var(--heading, #ffffff)',
                 outline: 'none',
+                boxSizing: 'border-box'
               }}
             />
           </div>
-        </div>
 
-        {/* Navigation Categories */}
-        <nav style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {CATEGORIES.map(category => {
-            const categoryItems = filteredSections.filter(item => item.category === category.id);
-            if (categoryItems.length === 0) return null;
+          {/* Categories and links */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {CATEGORIES.map(category => {
+              const categoryItems = filteredSections.filter(item => item.category === category.id);
+              if (categoryItems.length === 0) return null;
 
-            const isExpanded = expandedCategories[category.id];
-
-            return (
-              <div key={category.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <button
-                  onClick={() => toggleCategory(category.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--heading, #ffffff)',
-                    fontSize: '12px',
-                    fontWeight: 600,
+              return (
+                <div key={category.id} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{
+                    color: 'var(--accent, #FFDA62)',
+                    fontSize: '11px',
+                    fontWeight: 700,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    padding: '6px 0',
-                    cursor: 'pointer',
-                    outline: 'none'
-                  }}
-                >
-                  <span>{category.label}</span>
-                  {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                </button>
+                    letterSpacing: '0.1em',
+                    padding: '4px 0',
+                  }}>
+                    {category.label}
+                  </div>
 
-                {isExpanded && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {categoryItems.map(item => {
                       const isActive = item.id === activeDoc.id;
                       const Icon = item.icon || BookOpen;
@@ -212,81 +244,200 @@ export default function DocsPage() {
                       return (
                         <button
                           key={item.id}
-                          onClick={() => navigate(`/docs/${item.id}`)}
+                          onClick={() => {
+                            navigate(`/docs/${item.id}`);
+                            setIsMobileDocsMenuOpen(false);
+                          }}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
+                            gap: '12px',
                             width: '100%',
-                            background: isActive ? 'rgba(255, 218, 98, 0.08)' : 'transparent',
-                            border: 'none',
-                            borderRadius: '4px',
-                            color: isActive ? 'var(--accent, #FFDA62)' : '#b4b4b4',
-                            fontSize: '13px',
-                            padding: '8px 10px',
+                            background: isActive ? 'rgba(255, 218, 98, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+                            border: isActive ? '1px solid rgba(255, 218, 98, 0.35)' : '1px solid #1a1a1a',
+                            borderRadius: '8px',
+                            color: isActive ? 'var(--accent, #FFDA62)' : '#ffffff',
+                            fontSize: '14px',
+                            fontWeight: isActive ? 600 : 400,
+                            padding: '12px 14px',
+                            minHeight: '48px',
                             cursor: 'pointer',
-                            textAlign: 'left',
-                            transition: 'all 0.15s ease',
-                            outline: 'none'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isActive) e.currentTarget.style.color = '#ffffff';
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isActive) e.currentTarget.style.color = '#b4b4b4';
+                            textAlign: 'left'
                           }}
                         >
-                          <Icon size={14} style={{ opacity: isActive ? 1 : 0.6 }} />
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {item.title}
-                          </span>
+                          <Icon size={18} style={{ color: isActive ? 'var(--accent)' : '#888888', flexShrink: 0 }} />
+                          <span style={{ flex: 1 }}>{item.title}</span>
+                          {isActive && <ChevronRight size={14} style={{ color: 'var(--accent)' }} />}
                         </button>
                       );
                     })}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-      </aside>
+                </div>
+              );
+            })}
+          </nav>
+        </div>
+      )}
 
-      {/* ── 2. MAIN DOCS CONTENT ── */}
-      <main style={{
-        marginLeft: '280px',
-        flexGrow: 1,
-        padding: '40px 48px 80px',
-        maxWidth: '1200px',
-        zIndex: 1,
-        minWidth: 0
-      }} className="docs-content">
-        {/* Breadcrumbs */}
-        <div style={{
+      <div style={{ display: 'flex', flexGrow: 1, position: 'relative' }}>
+        {/* ── 1. LEFT SIDEBAR (Desktop) ── */}
+        <aside style={{
+          width: '280px',
+          background: '#050505',
           display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          fontSize: '12px',
-          color: 'var(--muted, #777777)',
-          marginBottom: '20px'
-        }}>
-          <span>Docs</span>
-          <ChevronRight size={10} />
-          <span>{activeCategory?.label}</span>
-          <ChevronRight size={10} />
-          <span style={{ color: 'var(--accent, #FFDA62)' }}>{activeDoc.title}</span>
-        </div>
+          flexDirection: 'column',
+          position: 'fixed',
+          top: '60px',
+          bottom: 0,
+          left: 0,
+          zIndex: 10,
+          overflowY: 'auto'
+        }} className="docs-sidebar">
+          {/* Search */}
+          <div style={{ padding: '16px', borderBottom: '1px solid #141414' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={14} style={{
+                position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+                color: 'var(--muted, #777777)'
+              }} />
+              <input
+                type="text"
+                placeholder="Search docs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  background: '#0a0a0a',
+                  border: '1px solid #1c1c1c',
+                  borderRadius: '6px',
+                  padding: '8px 12px 8px 34px',
+                  fontSize: '13px',
+                  color: 'var(--heading, #ffffff)',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          </div>
 
-        {/* Dynamic Doc Rendering */}
-        <div>
-          {activeDoc.component}
-        </div>
-      </main>
+          {/* Navigation Categories */}
+          <nav style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {CATEGORIES.map(category => {
+              const categoryItems = filteredSections.filter(item => item.category === category.id);
+              if (categoryItems.length === 0) return null;
+
+              const isExpanded = expandedCategories[category.id];
+
+              return (
+                <div key={category.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <button
+                    onClick={() => toggleCategory(category.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--heading, #ffffff)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      padding: '6px 0',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                  >
+                    <span>{category.label}</span>
+                    {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  </button>
+
+                  {isExpanded && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '4px' }}>
+                      {categoryItems.map(item => {
+                        const isActive = item.id === activeDoc.id;
+                        const Icon = item.icon || BookOpen;
+
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => navigate(`/docs/${item.id}`)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              width: '100%',
+                              background: isActive ? 'rgba(255, 218, 98, 0.08)' : 'transparent',
+                              border: 'none',
+                              borderRadius: '4px',
+                              color: isActive ? 'var(--accent, #FFDA62)' : '#b4b4b4',
+                              fontSize: '13px',
+                              padding: '8px 10px',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all 0.15s ease',
+                              outline: 'none'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isActive) e.currentTarget.style.color = '#ffffff';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive) e.currentTarget.style.color = '#b4b4b4';
+                            }}
+                          >
+                            <Icon size={14} style={{ opacity: isActive ? 1 : 0.6 }} />
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {item.title}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* ── 2. MAIN DOCS CONTENT ── */}
+        <main style={{
+          marginLeft: '280px',
+          flexGrow: 1,
+          padding: '40px 48px 80px',
+          maxWidth: '1200px',
+          zIndex: 1,
+          minWidth: 0
+        }} className="docs-content">
+          {/* Breadcrumbs */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '12px',
+            color: 'var(--muted, #777777)',
+            marginBottom: '20px'
+          }}>
+            <span>Docs</span>
+            <ChevronRight size={10} />
+            <span>{activeCategory?.label}</span>
+            <ChevronRight size={10} />
+            <span style={{ color: 'var(--accent, #FFDA62)' }}>{activeDoc.title}</span>
+          </div>
+
+          {/* Dynamic Doc Rendering */}
+          <div>
+            {activeDoc.component}
+          </div>
+        </main>
+      </div>
 
       {/* Mobile adaptation CSS override */}
       <style>{`
         @media (max-width: 768px) {
           .docs-sidebar { display: none !important; }
-          .docs-content { marginLeft: 0 !important; padding: 24px !important; }
+          .docs-content { margin-left: 0 !important; padding: 20px 16px 60px !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+          .docs-mobile-bar { display: flex !important; }
         }
       `}</style>
     </div>

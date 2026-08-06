@@ -564,7 +564,7 @@ export default function PricingPage() {
 
       {/* Symmetrical FAQ Section (copied from Webflow two-column layout) */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 80px' }}>
-        <div style={{
+        <div className="pricing-faq-grid" style={{
           borderTop: '1px solid #161616',
           paddingTop: 60,
           display: 'grid',
@@ -572,7 +572,7 @@ export default function PricingPage() {
           gap: 32
         }}>
           {/* FAQ Left Column */}
-          <div style={{ gridColumn: 'span 4' }}>
+          <div className="pricing-faq-left" style={{ gridColumn: 'span 4' }}>
             <h2 style={{
               fontFamily: 'var(--font-display)',
               fontSize: '2.5rem',
@@ -590,12 +590,28 @@ export default function PricingPage() {
           </div>
 
           {/* FAQ Right Column (Accordion List) */}
-          <div style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column' }}>
+          <div className="pricing-faq-right" style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column' }}>
             {faqs.map((faq, index) => (
               <AccordionItem key={index} question={faq.question} answer={faq.answer} />
             ))}
           </div>
         </div>
+
+        <style>{`
+          @media (max-width: 768px) {
+            .pricing-faq-grid {
+              grid-template-columns: 1fr !important;
+              gap: 24px !important;
+            }
+            .pricing-faq-left,
+            .pricing-faq-right {
+              grid-column: span 12 !important;
+            }
+            .pricing-faq-left {
+              margin-bottom: 12px;
+            }
+          }
+        `}</style>
       </div>
 
       {/* Bottom Callout Banner matching Webflow's Callout */}

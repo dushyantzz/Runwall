@@ -159,6 +159,12 @@ pre {
   font-family: var(--font-code);
 }
 
+pre {
+  overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* ── LAYOUT CONTAINERS ── */
 .container {
   width: 100%;
