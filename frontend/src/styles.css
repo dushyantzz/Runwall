@@ -608,7 +608,7 @@ pre {
   display: inline-flex;
   gap: 60px;
   white-space: nowrap;
-  animation: ticker-slide 30s linear infinite;
+  animation: ticker-slide 9s linear infinite;
 }
 
 @media (max-width: 480px) {

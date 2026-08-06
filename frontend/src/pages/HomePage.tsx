@@ -858,11 +858,11 @@ function UserFeedbackSection() {
         }
 
         .marquee-track-left {
-          animation: marquee-scroll-left 50s linear infinite;
+          animation: marquee-scroll-left 12s linear infinite;
         }
 
         .marquee-track-right {
-          animation: marquee-scroll-right 55s linear infinite;
+          animation: marquee-scroll-right 13s linear infinite;
         }
 
         .feedback-marquee-wrapper:hover .marquee-track {

@@ -577,10 +577,30 @@ export default function RunwallFlowDiagram() {
           </div>
         </div>
 
-        {/* Arrow down */}
+        {/* Animated Arrow down */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0', color: 'var(--accent)' }}>
-          <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
-            <path d="M10 0 L10 24 M4 18 L10 30 L16 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="24" height="40" viewBox="0 0 24 40" fill="none" style={{ overflow: 'visible' }}>
+            <path 
+              d="M12 0 L12 34" 
+              stroke="rgba(255, 218, 98, 0.15)" 
+              strokeWidth="2" 
+              strokeLinecap="round"
+            />
+            <path 
+              d="M12 0 L12 34" 
+              stroke="var(--accent)" 
+              strokeWidth="2" 
+              strokeDasharray="6 6" 
+              strokeLinecap="round"
+              className="flowing-dash-mobile"
+            />
+            <path 
+              d="M6 28 L12 34 L18 28" 
+              stroke="var(--accent)" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
 
@@ -624,10 +644,30 @@ export default function RunwallFlowDiagram() {
           </div>
         </div>
 
-        {/* Arrow down */}
+        {/* Animated Arrow down */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0', color: 'var(--accent)' }}>
-          <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
-            <path d="M10 0 L10 24 M4 18 L10 30 L16 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="24" height="40" viewBox="0 0 24 40" fill="none" style={{ overflow: 'visible' }}>
+            <path 
+              d="M12 0 L12 34" 
+              stroke="rgba(255, 218, 98, 0.15)" 
+              strokeWidth="2" 
+              strokeLinecap="round"
+            />
+            <path 
+              d="M12 0 L12 34" 
+              stroke="var(--accent)" 
+              strokeWidth="2" 
+              strokeDasharray="6 6" 
+              strokeLinecap="round"
+              className="flowing-dash-mobile"
+            />
+            <path 
+              d="M6 28 L12 34 L18 28" 
+              stroke="var(--accent)" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
 
@@ -726,6 +766,18 @@ export default function RunwallFlowDiagram() {
         .tool-flow-node[style*="rgba(239, 68, 68"]:hover {
           border-color: #ef4444 !important;
           box-shadow: 0 0 35px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .flowing-dash-mobile {
+          animation: flow-down-dash 1.2s linear infinite;
+        }
+        @keyframes flow-down-dash {
+          from {
+            stroke-dashoffset: 12;
+          }
+          to {
+            stroke-dashoffset: 0;
+          }
         }
 
         .react-flow__node-default {
