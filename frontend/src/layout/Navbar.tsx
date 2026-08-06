@@ -263,77 +263,69 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Full-Screen Mobile Menu Overlay (InsForge style) */}
       {mobileOpen && (
-        <div
-          className="mobile-menu"
-          style={{
-            background: '#000000',
-            borderTop: '1px solid #333333',
-            padding: '16px 24px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
-          }}
-        >
-          <Link to="/docs" style={{ padding: '10px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', minHeight: 44 }}>Documentation</Link>
-          <Link to="/pricing" style={{ padding: '10px 10px', color: '#b4b4b4', textDecoration: 'none', fontSize: 14, display: 'flex', alignItems: 'center', minHeight: 44 }}>Pricing</Link>
-          <div style={{ borderTop: '1px solid #333333', margin: '8px 0' }} />
-          {user ? (
-            <>
-              <button
-                onClick={() => {
-                  setModalOpen(true);
-                  setMobileOpen(false);
-                }}
-                style={{
-                  width: '100%',
-                  marginTop: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  padding: '10px 10px',
-                  minHeight: 44,
-                  background: 'rgba(0, 180, 216, 0.1)',
-                  border: '1px solid rgba(0, 180, 216, 0.3)',
-                  borderRadius: '6px',
-                  color: '#00b4d8',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                <Key size={14} />
-                API Keys
-              </button>
-              <button 
-                onClick={signOut} 
-                className="btn btn-secondary" 
-                style={{ 
-                  width: '100%', 
-                  marginTop: 8, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  gap: 6,
-                  padding: '10px 10px',
-                  minHeight: 44,
-                  background: 'none',
-                  border: '1px solid var(--border)',
-                  borderRadius: '6px',
-                  color: 'var(--heading)',
-                  fontSize: 14,
-                  cursor: 'pointer'
-                }}
-              >
-                <LogOut size={14} />
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link to="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: 8, minHeight: 44 }}>Sign Up Free</Link>
-          )}
+        <div className="mobile-menu-overlay">
+          {/* Close button at top right */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation menu"
+            style={{
+              position: 'absolute',
+              top: 16,
+              right: 20,
+              background: 'none',
+              border: 'none',
+              color: '#ffffff',
+              cursor: 'pointer',
+              padding: 8,
+              minWidth: 44,
+              minHeight: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 101,
+            }}
+          >
+            <X size={24} />
+          </button>
+
+          {/* Nav links — large, centered like InsForge */}
+          <nav style={{ flex: 1 }}>
+            <Link to="/docs" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>Documentation</Link>
+            <Link to="/pricing" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>Pricing</Link>
+          </nav>
+
+          {/* Action buttons at bottom */}
+          <div className="mobile-menu-actions">
+            {user ? (
+              <>
+                <button
+                  onClick={() => { setModalOpen(true); setMobileOpen(false); }}
+                  className="mobile-menu-btn-primary"
+                >
+                  <Key size={16} style={{ marginRight: 8 }} />
+                  API Keys
+                </button>
+                <button
+                  onClick={signOut}
+                  className="mobile-menu-btn-secondary"
+                >
+                  <LogOut size={16} style={{ marginRight: 8 }} />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/signup" className="mobile-menu-btn-primary" onClick={() => setMobileOpen(false)}>
+                  Sign Up Free
+                </Link>
+                <Link to="/login" className="mobile-menu-btn-secondary" onClick={() => setMobileOpen(false)}>
+                  Login
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       )}
 

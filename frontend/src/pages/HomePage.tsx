@@ -149,7 +149,7 @@ function HeroSection() {
 
 
         {/* Action Buttons */}
-        <div className="animate-fade-up delay-300" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 48 }}>
+        <div className="animate-fade-up delay-300 hero-cta-group" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 48 }}>
           {user ? (
             <Link to="/docs" className="btn-trendy-primary">
               Go to Dashboard
@@ -627,7 +627,7 @@ function BranchingWorkflowSection() {
       <div className="container" style={{ position: 'relative', zIndex: 10 }}>
         {/* Title */}
         <div style={{ marginBottom: 64 }}>
-          <h2 style={{
+          <h2 className="branching-section-title" style={{
             fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
             fontWeight: 300,
             color: '#ffffff',
@@ -1115,7 +1115,7 @@ function CTASection() {
           Deploy enterprise-grade execution governance in minutes.
           Start free, scale to millions of agent actions.
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12 }} className="cta-button-group">
           {user ? (
             <Link to="/docs" className="btn-trendy-primary">
               Go to Dashboard

@@ -735,3 +735,232 @@ pre {
     font-size: 14px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   INSFORGE-INSPIRED MOBILE OVERRIDES
+   Philosophy: Full-width CTAs, centered content, full-screen
+   nav, tight feature cards, generous breathing room
+   ══════════════════════════════════════════════════════════ */
+
+/* ── GLOBAL MOBILE OVERFLOW GUARD ── */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Prevent any child from busting out of viewport */
+  section, div[class] {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* ── MOBILE NAV: FULL-SCREEN OVERLAY (InsForge style) ── */
+@media (max-width: 900px) {
+  .mobile-menu-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 99 !important;
+    background: #000000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 80px 32px 40px !important;
+    overflow-y: auto !important;
+    animation: mobile-menu-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes mobile-menu-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .mobile-menu-nav-link {
+    font-family: var(--font-display) !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 16px 0 !important;
+    display: block !important;
+    border-bottom: 1px solid #111111 !important;
+    transition: color 0.2s ease !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .mobile-menu-nav-link:hover {
+    color: var(--accent) !important;
+  }
+
+  .mobile-menu-actions {
+    margin-top: auto;
+    padding-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobile-menu-btn-primary {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 16px 24px !important;
+    background: var(--accent) !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: var(--font-display) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    min-height: 52px !important;
+  }
+
+  .mobile-menu-btn-secondary {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 16px 24px !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    border: 1px solid #333333 !important;
+    border-radius: 8px !important;
+    font-family: var(--font-display) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    min-height: 52px !important;
+  }
+}
+
+/* ── HERO SECTION MOBILE (InsForge style) ── */
+@media (max-width: 768px) {
+  /* Ensure the hero container doesn't cause overflow */
+  .hero-section-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Hero CTA buttons go full-width on mobile like InsForge */
+  .hero-cta-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .hero-cta-group .btn-trendy-primary,
+  .hero-cta-group .btn-trendy-secondary {
+    width: 100% !important;
+    text-align: center !important;
+    font-size: 16px !important;
+    padding: 14px 20px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Hero h1 tight line-height on mobile */
+  .hero-heading {
+    line-height: 1.15 !important;
+    letter-spacing: -0.03em !important;
+  }
+}
+
+/* ── BENTO GRID MOBILE: InsForge-style tight cards ── */
+@media (max-width: 640px) {
+  /* Remove wasted empty card space — tight & content-driven */
+  .bento-card-inner {
+    padding: 20px 16px !important;
+  }
+
+  /* Section title goes center on mobile like InsForge */
+  .bento-header-title {
+    text-align: center !important;
+    margin-bottom: 32px !important;
+  }
+
+  .bento-header-title p {
+    margin: 0 auto !important;
+  }
+}
+
+/* ── FEATURE SECTION: InsForge list style on mobile ── */
+@media (max-width: 768px) {
+  /* Section headings center-align like InsForge */
+  .section-title-block {
+    text-align: center !important;
+    margin-bottom: 40px !important;
+  }
+
+  .section-title-block p {
+    margin: 0 auto !important;
+    max-width: 340px !important;
+  }
+}
+
+/* ── FEEDBACK MARQUEE: narrower cards on mobile ── */
+@media (max-width: 480px) {
+  .feedback-card {
+    width: 280px !important;
+    padding: 16px !important;
+  }
+  .feedback-name {
+    font-size: 13px !important;
+  }
+  .feedback-text {
+    font-size: 12px !important;
+  }
+}
+
+/* ── CTA SECTION MOBILE ── */
+@media (max-width: 640px) {
+  .cta-button-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto !important;
+  }
+
+  .cta-button-group .btn-trendy-primary,
+  .cta-button-group .btn-trendy-secondary {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 14px 20px !important;
+  }
+}
+
+/* ── PREVENT LARGE FIXED-PIXEL WIDTHS ON MOBILE ── */
+@media (max-width: 768px) {
+  /* Any element with fixed large px width that could overflow */
+  [style*="width: 600"],
+  [style*="width: 700"],
+  [style*="width: 800"],
+  [style*="width: 900"],
+  [style*="width: 1000"],
+  [style*="width: 1100"],
+  [style*="width: 1200"],
+  [style*="width: 1280"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ── BRANCHING WORKFLOW SECTION ── */
+@media (max-width: 768px) {
+  .branching-section-title {
+    text-align: center !important;
+  }
+}
