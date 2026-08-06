@@ -53,9 +53,6 @@ export default function DocsPage() {
     setExpandedCategories(prev => ({ ...prev, [catId]: !prev[catId] }));
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
 
   const docSections: DocSection[] = [
     // Getting Started
@@ -69,7 +66,7 @@ export default function DocsPage() {
       id: 'quickstart',
       title: 'Quick Start Guide',
       category: 'getting-started',
-      component: <QuickStartDoc onCopy={copyToClipboard} />
+      component: <QuickStartDoc />
     },
     {
       id: 'functions',
@@ -518,7 +515,10 @@ function IntroductionDoc() {
   );
 }
 
-function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
+function QuickStartDoc() {
+  const [configCopied, setConfigCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
   const mcpConfig = `{
   "mcpServers": {
     "runwall": {
@@ -531,6 +531,35 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
     }
   }
 }`;
+
+  const linkContent = "https://calm-cloud-km6b6.run.mcp-use.com/mcp?token=<your-api-key>";
+
+  const handleCopy = async (text: string, type: 'config' | 'link') => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      if (type === 'config') {
+        setConfigCopied(true);
+        setTimeout(() => setConfigCopied(false), 2000);
+      } else {
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      }
+    } catch (err) {
+      console.error("Copy failed: ", err);
+    }
+  };
 
   return (
     <article style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} id="quickstart">
@@ -565,17 +594,21 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
 
       <div style={{ position: 'relative' }}>
         <button
-          onClick={() => onCopy(mcpConfig)}
+          onClick={() => handleCopy(mcpConfig, 'config')}
           style={{
             position: 'absolute', right: '12px', top: '12px',
-            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
-            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer',
-            transition: 'background 0.2s'
+            background: configCopied ? 'rgba(255, 218, 98, 0.15)' : '#1c1c1c', 
+            border: configCopied ? '1px solid var(--accent)' : '1px solid #333', 
+            borderRadius: '4px',
+            color: configCopied ? 'var(--accent)' : '#fff', 
+            padding: '4px 8px', fontSize: '11px', cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontWeight: configCopied ? 600 : 400
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = '#2a2a2a'}
-          onMouseLeave={(e) => e.currentTarget.style.background = '#1c1c1c'}
+          onMouseEnter={(e) => { if (!configCopied) e.currentTarget.style.background = '#2a2a2a'; }}
+          onMouseLeave={(e) => { if (!configCopied) e.currentTarget.style.background = '#1c1c1c'; }}
         >
-          Copy Config
+          {configCopied ? '✓ Copied!' : 'Copy Config'}
         </button>
         <pre style={{
           background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
@@ -594,17 +627,21 @@ function QuickStartDoc({ onCopy }: { onCopy: (t: string) => void }) {
 
       <div style={{ position: 'relative' }}>
         <button
-          onClick={() => onCopy("https://calm-cloud-km6b6.run.mcp-use.com/mcp?token=<your-api-key>")}
+          onClick={() => handleCopy(linkContent, 'link')}
           style={{
             position: 'absolute', right: '12px', top: '12px',
-            background: '#1c1c1c', border: '1px solid #333', borderRadius: '4px',
-            color: '#fff', padding: '4px 8px', fontSize: '11px', cursor: 'pointer',
-            transition: 'background 0.2s'
+            background: linkCopied ? 'rgba(255, 218, 98, 0.15)' : '#1c1c1c', 
+            border: linkCopied ? '1px solid var(--accent)' : '1px solid #333', 
+            borderRadius: '4px',
+            color: linkCopied ? 'var(--accent)' : '#fff', 
+            padding: '4px 8px', fontSize: '11px', cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontWeight: linkCopied ? 600 : 400
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = '#2a2a2a'}
-          onMouseLeave={(e) => e.currentTarget.style.background = '#1c1c1c'}
+          onMouseEnter={(e) => { if (!linkCopied) e.currentTarget.style.background = '#2a2a2a'; }}
+          onMouseLeave={(e) => { if (!linkCopied) e.currentTarget.style.background = '#1c1c1c'; }}
         >
-          Copy Link
+          {linkCopied ? '✓ Copied!' : 'Copy Link'}
         </button>
         <pre style={{
           background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
