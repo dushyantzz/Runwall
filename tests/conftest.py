@@ -2,6 +2,7 @@ import os
 # Force test environment variables before anything else loads
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["SECRET_KEY"] = "test-secret-key-that-is-long-enough-for-security-checks-12345"
+os.environ["ADMIN_PASSWORD"] = "test-admin-password"
 os.environ["ENVIRONMENT"] = "testing"
 os.environ["ENABLE_INTENT_POLICY"] = "True"
 os.environ["ENABLE_INPUT_SANITIZATION"] = "True"

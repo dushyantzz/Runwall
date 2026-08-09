@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False, validation_alias="DEBUG")
     environment: str = Field(default="production", validation_alias="ENVIRONMENT")
     
-    secret_key: str = Field(default="runwall-secret-key-temporary-change-in-production-12345", description="Secret key for JWT tokens", validation_alias="SECRET_KEY")
+    secret_key: str = Field(..., description="Secret key for JWT tokens", validation_alias="SECRET_KEY")
     access_token_expire_minutes: int = Field(default=30, validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES")
     refresh_token_expire_days: int = Field(default=7, validation_alias="REFRESH_TOKEN_EXPIRE_DAYS")
     algorithm: str = Field(default="HS256", validation_alias="ALGORITHM")
@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     
     # Admin Settings
     admin_username: str = Field(default="admin", validation_alias="ADMIN_USERNAME")
-    admin_password: str = Field(default="admin123", validation_alias="ADMIN_PASSWORD")
+    admin_password: str = Field(..., validation_alias="ADMIN_PASSWORD")
     admin_email: str = Field(default="admin@example.com", validation_alias="ADMIN_EMAIL")
 
     # Governance — Intent-Aware Execution Policy Engine
