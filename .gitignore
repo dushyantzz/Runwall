@@ -36,4 +36,5 @@ Frontend prompts/
 next_steps.md
 execution_governance_features.md
 Runwall_Crawllability.md
-GRAPHIFY.md/
+GRAPHIFY.md
+__pycache__/
