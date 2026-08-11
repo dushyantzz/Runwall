@@ -17,14 +17,14 @@ import uvicorn
 from fastapi import Request
 from secure_mcp_server.api.app import app as api_app
 
-from .config import Settings, get_settings
-from .auth import AuthManager
-from .tools import ToolRegistry
-from .security import SecurityManager
-from .monitoring import MetricsCollector
-from .database import DatabaseManager
-from .context import ContextManager
-from .governance import (
+from secure_mcp_server.config import Settings, get_settings
+from secure_mcp_server.auth import AuthManager
+from secure_mcp_server.tools import ToolRegistry
+from secure_mcp_server.security import SecurityManager
+from secure_mcp_server.monitoring import MetricsCollector
+from secure_mcp_server.database import DatabaseManager
+from secure_mcp_server.context import ContextManager
+from secure_mcp_server.governance import (
     IntentClassifier,
     RiskScorer,
     PolicyEvaluator,
