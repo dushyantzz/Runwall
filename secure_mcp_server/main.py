@@ -5,6 +5,9 @@ import os
 import signal
 import sys
 from pathlib import Path
+
+# Fix for build-time inspections (e.g. fastmcp.cloud) where root is not in python path
+sys.path.append(str(Path(__file__).parent.parent.resolve()))
 from typing import Any, Dict, List, Optional
 
 from fastmcp import FastMCP
@@ -308,7 +311,7 @@ class SecureMCPServer:
             if not self._check_admin_access(user_context):
                 raise Exception("Admin privileges required")
             
-            metrics = await self.metrics_collector.get_current_metrics()
+            metrics = self.metrics_collector.get_current_metrics()
             return str(metrics)
     
     def _register_prompts(self):
@@ -346,7 +349,7 @@ class SecureMCPServer:
             metric_type: str = "all"
         ) -> List[Dict[str, Any]]:
             """Generate performance analysis prompt with system metrics."""
-            metrics = await self.metrics_collector.get_performance_metrics(
+            metrics = self.metrics_collector.get_performance_metrics(
                 metric_type=metric_type
             )
             
