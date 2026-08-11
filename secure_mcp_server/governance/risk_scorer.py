@@ -172,6 +172,8 @@ class RiskScorer:
         user_context: Dict[str, Any],
         tool_metadata: Optional[Dict[str, Any]] = None,
         raw_arguments: Optional[Dict[str, Any]] = None,
+        semantic_result: Optional[Any] = None,
+        semantic_fusion: Optional[Any] = None,
     ) -> RiskScore:
         """Compute composite risk score for a classified intent.
 
@@ -188,6 +190,13 @@ class RiskScorer:
             Optional raw tool arguments dict used for content-based risk scanning.
             When provided, dangerous patterns in string values (e.g. ``rm -rf /``)
             directly increase the risk score.
+        semantic_result:
+            Optional ``ClassificationResult`` from the Indic-Aware Semantic Risk
+            Layer.  When provided alongside ``semantic_fusion``, the structural
+            and semantic scores are fused into the final composite.
+        semantic_fusion:
+            Optional ``RiskFusion`` instance that combines the structural and
+            semantic risk scores.  Only used when ``semantic_result`` is provided.
 
         Returns
         -------
@@ -224,6 +233,19 @@ class RiskScorer:
             composite = max(composite, 0.70)   # Dangerous content -> at least HIGH
         elif content_risk_score >= 0.50:
             composite = max(composite, 0.45)   # Medium-risk content -> at least MEDIUM
+
+        # ── Semantic Risk Fusion (Indic-Aware Layer) ──────────────────────
+        # When the semantic layer has produced a result, fuse it with the
+        # structural score.  This is purely additive — the semantic signal
+        # supplements, never replaces, the structural assessment.
+        if semantic_result is not None and semantic_fusion is not None:
+            composite = semantic_fusion.fuse(composite, semantic_result)
+            logger.debug(
+                "Semantic fusion applied",
+                structural_score=composite,
+                semantic_score=semantic_result.risk_score,
+                degraded=semantic_result.degraded,
+            )
 
         level = self._score_to_level(composite)
         explanation = self._build_explanation(composite, level, factors, intent, content_risk_score)

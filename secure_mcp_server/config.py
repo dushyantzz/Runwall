@@ -115,6 +115,16 @@ class Settings(BaseSettings):
     pro_tier_requests: int = Field(default=2000, validation_alias="PRO_TIER_REQUESTS")
     pro_tier_price_paise: int = Field(default=67400, validation_alias="PRO_TIER_PRICE_PAISE")
 
+    # ── Indic-Aware Semantic Risk Layer ───────────────────────────────────
+    enable_semantic_risk_layer: bool = Field(
+        default=False,
+        description=(
+            "Feature flag for the Indic-Aware Semantic Risk Layer. "
+            "When False, the layer is completely inactive."
+        ),
+        validation_alias="ENABLE_SEMANTIC_RISK_LAYER",
+    )
+
 
 # Global settings instance
 _settings: Optional[Settings] = None
