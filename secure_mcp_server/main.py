@@ -441,6 +441,11 @@ class SecureMCPServer:
         logger.info("Cleanup complete")
 
 
+# Global instance for FastMCP inspector auto-discovery
+_global_server = SecureMCPServer()
+mcp = _global_server.mcp
+
+
 async def amain():
     """Async entry point for the secure MCP server."""
     try:
@@ -448,9 +453,9 @@ async def amain():
         logger.info("Loading settings")
         settings = get_settings()
         
-        # Create server
-        logger.info("Creating MCP server")
-        server = SecureMCPServer(settings)
+        # Use global server
+        logger.info("Using global MCP server instance")
+        server = _global_server
         
         # Initialize server
         logger.info("Initializing server")
