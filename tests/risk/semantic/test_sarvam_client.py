@@ -83,7 +83,7 @@ class TestSuccessfulClassification:
 
         assert result.risk_score == 0.1
         assert result.degraded is False
-        assert result.model_used == "sarvam-m4"
+        assert result.model_used == "sarvam-105b"
         http.post.assert_called_once()
 
     @pytest.mark.asyncio

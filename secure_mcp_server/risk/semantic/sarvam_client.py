@@ -81,7 +81,7 @@ class SarvamClient(RiskClassifierProtocol):
         Injected ``httpx.AsyncClient`` — tests can substitute a fake.
         If ``None``, a default client is created internally.
     model:
-        Model identifier to use (default: ``sarvam-m4``).
+        Model identifier to use (default: ``sarvam-105b``).
     max_retries:
         Maximum number of retries on transient errors (default: 2).
     """
@@ -92,7 +92,7 @@ class SarvamClient(RiskClassifierProtocol):
         base_url: str = "https://api.sarvam.ai",
         timeout_seconds: float = 30.0,
         http_client: Any = None,
-        model: str = "sarvam-m4",
+        model: str = "sarvam-105b",
         max_retries: int = 2,
     ) -> None:
         self._api_key = api_key

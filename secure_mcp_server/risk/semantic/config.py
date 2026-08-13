@@ -61,7 +61,7 @@ class SemanticRiskConfig(BaseSettings):
     )
 
     sarvam_model: str = Field(
-        default="sarvam-m4",
+        default="sarvam-105b",
         description="Sarvam model identifier to use",
         validation_alias="SARVAM_MODEL",
     )

@@ -21,7 +21,7 @@ def _make_result(tokens_used: int = 1000) -> ClassificationResult:
     return ClassificationResult(
         risk_score=0.5,
         reasoning="test",
-        model_used="sarvam-m4",
+        model_used="sarvam-105b",
         tokens_used=tokens_used,
     )
 

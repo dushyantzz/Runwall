@@ -10,7 +10,7 @@ def _make_result(risk_score: float = 0.5, degraded: bool = False, reason: str = 
     return ClassificationResult(
         risk_score=risk_score,
         reasoning="test",
-        model_used="sarvam-m4",
+        model_used="sarvam-105b",
         tokens_used=100,
         degraded=degraded,
         degraded_reason=reason,
