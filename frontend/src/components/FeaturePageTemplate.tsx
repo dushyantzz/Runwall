@@ -56,6 +56,15 @@ export interface FeaturePageData {
     question: string;
     answer: string;
   }[];
+
+  trustModel?: {
+    heading: string;
+    description: string;
+    groups: {
+      groupTitle: string;
+      items: { question: string; answer: string }[];
+    }[];
+  };
 }
 
 import PlaygroundConsole from './PlaygroundConsole';
@@ -76,6 +85,7 @@ export default function FeaturePageTemplate({ data }: { data: FeaturePageData })
       <WorkflowSection data={data} />
       <CodeExampleSection data={data} />
       <FAQSection data={data} />
+      {data.trustModel && <TrustModelSection data={data} />}
       <PlaygroundConsole title={data.title} />
       <FeatureCTA data={data} />
     </div>
@@ -447,6 +457,47 @@ function FAQSection({ data }: { data: FeaturePageData }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {data.faq.map((item) => (
             <FAQItem key={item.question} question={item.question} answer={item.answer} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── 9b. Trust Model Deep-Dive ── */
+function TrustModelSection({ data }: { data: FeaturePageData }) {
+  const ref = useScrollAnimation();
+  if (!data.trustModel) return null;
+  const { heading, description, groups } = data.trustModel;
+  return (
+    <section className="section section-border-top" ref={ref}>
+      <div className="container" style={{ maxWidth: 760 }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <span className="mono-label" style={{ display: 'block', marginBottom: 12 }}>TRUST MODEL</span>
+          <h2>{heading}</h2>
+          <p style={{ color: 'var(--muted)', maxWidth: 600, margin: '16px auto 0', lineHeight: 1.7 }}>
+            {description}
+          </p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          {groups.map((group) => (
+            <div key={group.groupTitle}>
+              <h4 style={{
+                fontSize: 13,
+                fontWeight: 600,
+                textTransform: 'uppercase' as const,
+                letterSpacing: '0.08em',
+                color: 'var(--accent)',
+                marginBottom: 12,
+                paddingBottom: 8,
+                borderBottom: '1px solid var(--border)',
+              }}>{group.groupTitle}</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {group.items.map((item) => (
+                  <FAQItem key={item.question} question={item.question} answer={item.answer} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>

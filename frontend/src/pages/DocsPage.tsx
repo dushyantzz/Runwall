@@ -5,7 +5,7 @@ import {
   BookOpen, ChevronRight, ChevronDown, Search,
   Info, Menu, X,
   Fingerprint, Building2, Puzzle, FileCode2, Radio, BarChart3,
-  Route, GitBranch, ClipboardList, RotateCcw, Gauge, Box
+  Route, GitBranch, ClipboardList, RotateCcw, Gauge, Box, Languages
 } from 'lucide-react';
 
 // Import all 12 feature components
@@ -21,6 +21,7 @@ import AuditEvidenceReplay from './features/AuditEvidenceReplay';
 import RollbackCompensating from './features/RollbackCompensating';
 import QuotasBudgetsRateLimits from './features/QuotasBudgetsRateLimits';
 import SandboxingExecutionProfiles from './features/SandboxingExecutionProfiles';
+import IndicSemanticRiskLayer from './features/IndicSemanticRiskLayer';
 
 /* ─────────────────────────────────────────────────────────────
    TYPES & CONTEXT DATA
@@ -36,6 +37,7 @@ interface DocSection {
 
 const CATEGORIES = [
   { id: 'getting-started', label: 'Getting Started' },
+  { id: 'whats-new', label: "What's New" },
   { id: 'features', label: 'Core Features' }
 ];
 
@@ -46,6 +48,7 @@ export default function DocsPage() {
   const [isMobileDocsMenuOpen, setIsMobileDocsMenuOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     'getting-started': true,
+    'whats-new': true,
     'features': true
   });
 
@@ -80,6 +83,8 @@ export default function DocsPage() {
       category: 'getting-started',
       component: <AgentIntegrationDoc />
     },
+    // What's New
+    { id: 'indic-semantic-risk-layer', title: 'Indic Semantic Risk Layer', icon: Languages, category: 'whats-new', component: <IndicSemanticRiskLayer /> },
     // Core Features
     { id: 'identity-access-control', title: 'Identity & Access Control', icon: Fingerprint, category: 'features', component: <IdentityAccessControl /> },
     { id: 'tenant-management', title: 'Tenant & Org Management', icon: Building2, category: 'features', component: <TenantManagement /> },
