@@ -7,6 +7,7 @@ import asyncio
 import json
 import os
 import re
+import shlex
 from typing import Any, Dict, List, Optional
 
 import structlog
@@ -116,9 +117,9 @@ class OPAPolicyEvaluator:
         
         # 3. Attempt to run OPA
         try:
-            # Check if OPA exists and execute evaluation
+            # Check if OPA exists and execute evaluation (use shlex.quote to prevent command injection)
             proc = await asyncio.create_subprocess_shell(
-                f'opa eval -d {policy_file_path} "data.secure_mcp.governance" -I',
+                f'opa eval -d {shlex.quote(policy_file_path)} "data.secure_mcp.governance" -I',
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
