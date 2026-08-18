@@ -7,6 +7,7 @@ from typing import Dict, Any
 import subprocess
 import asyncio
 import structlog
+import shlex
 
 from .base import BaseConnector, ConnectorMetadata
 
@@ -48,9 +49,17 @@ class ShellConnector(BaseConnector):
         logger.info("Executing shell command via connector", command=command, cwd=allowed_cwd)
         
         try:
-            # We use asyncio.create_subprocess_shell
-            proc = await asyncio.create_subprocess_shell(
-                command,
+            # We use asyncio.create_subprocess_exec with shlex to prevent command injection
+            try:
+                args = shlex.split(command)
+            except ValueError as e:
+                return {"success": False, "error": f"Invalid command syntax: {str(e)}"}
+
+            if not args:
+                return {"success": False, "error": "command is empty"}
+
+            proc = await asyncio.create_subprocess_exec(
+                *args,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 cwd=allowed_cwd
