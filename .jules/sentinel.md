@@ -12,3 +12,7 @@
 **Vulnerability:** The `ShellConnector` in `secure_mcp_server/connectors/shell.py` used `asyncio.create_subprocess_shell` with unsanitized user input (`command`), leading to a critical command injection risk.
 **Learning:** Using `shell=True` (or `create_subprocess_shell`) with user-provided arguments evaluates shell metacharacters, allowing attackers to execute arbitrary commands (e.g., using `;` or `&&`).
 **Prevention:** Always use `asyncio.create_subprocess_exec` (or `subprocess.run` without `shell=True`) and parse arguments securely using `shlex.split()`.
+## 2024-05-18 - Command Injection Risk in OPA Evaluator
+**Vulnerability:** `asyncio.create_subprocess_shell` was used with a path containing a tenant ID, presenting a risk of command injection, despite `shlex.quote`.
+**Learning:** Even with escaping, using `shell=True` or `create_subprocess_shell` is risky when dealing with dynamic inputs. Passing arguments as an array to `create_subprocess_exec` is a much stronger defense as it bypasses shell interpretation entirely.
+**Prevention:** Always use `asyncio.create_subprocess_exec` with an explicit list of arguments rather than interpolating strings for shell commands.
