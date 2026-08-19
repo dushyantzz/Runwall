@@ -7,3 +7,8 @@
 **Vulnerability:** The `policy_file_path` derived from user input (`tenant_id`) was directly interpolated into a shell command in `asyncio.create_subprocess_shell` without sanitization in `secure_mcp_server/governance/opa_evaluator.py`.
 **Learning:** Shell command construction using string formatting is highly susceptible to command injection if any part of the string contains unescaped user-controlled input.
 **Prevention:** Always use `shlex.quote` to properly escape variables before interpolating them into shell commands, or avoid `shell=True`/`create_subprocess_shell` entirely and pass the command and arguments as a list to `create_subprocess_exec`.
+
+## 2026-08-18 - Command Injection Vulnerability in ShellConnector
+**Vulnerability:** The `ShellConnector` in `secure_mcp_server/connectors/shell.py` used `asyncio.create_subprocess_shell` with unsanitized user input (`command`), leading to a critical command injection risk.
+**Learning:** Using `shell=True` (or `create_subprocess_shell`) with user-provided arguments evaluates shell metacharacters, allowing attackers to execute arbitrary commands (e.g., using `;` or `&&`).
+**Prevention:** Always use `asyncio.create_subprocess_exec` (or `subprocess.run` without `shell=True`) and parse arguments securely using `shlex.split()`.
