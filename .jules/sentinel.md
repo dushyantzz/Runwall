@@ -16,3 +16,8 @@
 **Vulnerability:** `asyncio.create_subprocess_shell` was used with a path containing a tenant ID, presenting a risk of command injection, despite `shlex.quote`.
 **Learning:** Even with escaping, using `shell=True` or `create_subprocess_shell` is risky when dealing with dynamic inputs. Passing arguments as an array to `create_subprocess_exec` is a much stronger defense as it bypasses shell interpretation entirely.
 **Prevention:** Always use `asyncio.create_subprocess_exec` with an explicit list of arguments rather than interpolating strings for shell commands.
+
+## 2026-08-21 - Path Traversal in OPA Evaluator
+**Vulnerability:** The `tenant_id` was directly interpolated into the `policy_file_path` without sanitization in `secure_mcp_server/governance/opa_evaluator.py`, leading to a path traversal vulnerability.
+**Learning:** User-provided inputs, even implicit ones like `tenant_id`, must be sanitized before being used in file system operations like `os.path.join`.
+**Prevention:** Always sanitize inputs meant for file paths by removing unsafe characters (e.g., using `re.sub(r"[^a-zA-Z0-9_-]", "", input)`).
