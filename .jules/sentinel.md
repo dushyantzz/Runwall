@@ -21,3 +21,8 @@
 **Vulnerability:** The `tenant_id` was directly interpolated into the `policy_file_path` without sanitization in `secure_mcp_server/governance/opa_evaluator.py`, leading to a path traversal vulnerability.
 **Learning:** User-provided inputs, even implicit ones like `tenant_id`, must be sanitized before being used in file system operations like `os.path.join`.
 **Prevention:** Always sanitize inputs meant for file paths by removing unsafe characters (e.g., using `re.sub(r"[^a-zA-Z0-9_-]", "", input)`).
+
+## 2024-05-18 - Replacing Insecure Python eval()
+**Vulnerability:** A `_calculator_tool` implementation used Python's native `eval()` function with an allowed-characters regex filter. However, `eval()` is notoriously difficult to sandbox and often leads to arbitrary code execution (RCE) and trivial Denial of Service (DoS, e.g. via `9**9**9` or sequence multiplication `[1]*10**9`).
+**Learning:** Even with strict character limits, `eval()` presents critical security risks in Python, and simple regular expressions or disabled namespaces (`__builtins__: {}`) cannot reliably stop DoS or edge-case bypasses. Furthermore, using AST-based parsers naively may still permit memory exhaustion if you permit `ast.List` alongside multiplication, allowing `[1] * large_num`.
+**Prevention:** Eliminate `eval()`. Use the `ast` module to construct a rigid Abstract Syntax Tree (AST) node visitor (`ast.NodeVisitor` or custom walker). Whitelist strictly safe mathematical operators (`ast.Add`, `ast.Sub`, etc.), explicitly reject unneeded types like `ast.List`, and strictly cap memory-intensive operations (e.g. `ast.Pow` right-side values should be limited).

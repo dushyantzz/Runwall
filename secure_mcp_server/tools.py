@@ -903,24 +903,71 @@ class ToolRegistry:
             raise ValueError("Missing required parameter: expression")
         
         try:
-            # Safe evaluation using limited namespace
+            import ast
+            import operator
+
+            allowed_operators = {
+                ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+                ast.Div: operator.truediv, ast.Pow: operator.pow, ast.BitXor: operator.xor,
+                ast.BitAnd: operator.and_, ast.BitOr: operator.or_,
+                ast.USub: operator.neg, ast.UAdd: operator.pos, ast.Mod: operator.mod
+            }
+
             allowed_names = {
-                "__builtins__": {},
                 "abs": abs, "round": round, "min": min, "max": max,
                 "sum": sum, "pow": pow, "int": int, "float": float,
                 "sqrt": math.sqrt, "sin": math.sin, "cos": math.cos,
                 "tan": math.tan, "log": math.log, "exp": math.exp,
-                "math": math
+                "pi": math.pi, "e": math.e
             }
             
-            # Remove dangerous characters (added %, &, |, ^ for bitwise and modulo)
-            safe_chars = set('0123456789+-*/%&|^.() abcdefghijklmnopqrstuvwxyz')
-            cleaned_expr = ''.join(c for c in expression.lower() if c in safe_chars)
+            def _eval_node(node):
+                if isinstance(node, ast.Constant):
+                    if not isinstance(node.value, (int, float)):
+                        raise ValueError("Only numbers allowed")
+                    return node.value
+                elif isinstance(node, ast.Name):
+                    if node.id in allowed_names and isinstance(allowed_names[node.id], (int, float)):
+                        return allowed_names[node.id]
+                    raise ValueError(f"Variable '{node.id}' not allowed")
+                elif isinstance(node, ast.Attribute):
+                    if isinstance(node.value, ast.Name) and node.value.id == "math":
+                        if node.attr in allowed_names and isinstance(allowed_names[node.attr], (int, float)):
+                            return allowed_names[node.attr]
+                    raise ValueError(f"Attribute '{node.attr}' not allowed")
+                elif isinstance(node, ast.BinOp):
+                    left = _eval_node(node.left)
+                    right = _eval_node(node.right)
+                    if isinstance(node.op, ast.Pow) and (not isinstance(right, (int, float)) or right > 100):
+                        raise ValueError("Power too large")
+                    if type(node.op) not in allowed_operators:
+                        raise ValueError(f"Operator {type(node.op).__name__} not allowed")
+                    return allowed_operators[type(node.op)](left, right)
+                elif isinstance(node, ast.UnaryOp):
+                    if type(node.op) not in allowed_operators:
+                        raise ValueError(f"Operator {type(node.op).__name__} not allowed")
+                    return allowed_operators[type(node.op)](_eval_node(node.operand))
+                elif isinstance(node, ast.Call):
+                    if isinstance(node.func, ast.Name):
+                        func_name = node.func.id
+                        if func_name in allowed_names:
+                            args = [_eval_node(arg) for arg in node.args]
+                            return allowed_names[func_name](*args)
+                    elif isinstance(node.func, ast.Attribute):
+                        if isinstance(node.func.value, ast.Name) and node.func.value.id == "math":
+                            func_name = node.func.attr
+                            if func_name in allowed_names:
+                                args = [_eval_node(arg) for arg in node.args]
+                                return allowed_names[func_name](*args)
+                    raise ValueError("Function call not allowed")
+                else:
+                    raise TypeError(f"Unsupported operation: {type(node).__name__}")
             
-            if not cleaned_expr.strip():
-                raise ValueError("Empty or invalid expression")
-            
-            result = eval(cleaned_expr, allowed_names, {})
+            if not expression.strip():
+                raise ValueError("Empty expression")
+
+            tree = ast.parse(expression, mode='eval')
+            result = _eval_node(tree.body)
             
             return {
                 "expression": expression,
