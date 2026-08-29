@@ -30,3 +30,7 @@
 **Vulnerability:** FastAPI's `CORSMiddleware` was configured with `allow_origins=["*"]` and `allow_credentials=True`.
 **Learning:** Using a wildcard for allowed origins along with allowing credentials is a security risk as it permits any website to make authenticated requests to the API on behalf of the user, leading to cross-origin attacks (like CSRF). Moreover, modern browsers and FastAPI block this specific combination.
 **Prevention:** Always specify an explicit list of allowed origins in CORS configuration. Ensure this list is manageable via environment variables for different environments instead of hardcoding `*`.
+## 2025-02-28 - Restrict CORS Configuration
+**Vulnerability:** FastAPIs CORSMiddleware configuration was pulling `allow_origins` directly from the environment variables while hardcoding `allow_credentials=True`.
+**Learning:** If the environment supplies `['*']` as the allowed origin when credentials are permitted, it violates the CORS specification and exposes the system to CSRF vulnerabilities and data exfiltration.
+**Prevention:** Filter out wildcard characters `*` from `allowed_origins` before configuring CORS middleware when `allow_credentials` is `True`. Implement a safe fallback, like localhost, if the filtered list ends up empty.
