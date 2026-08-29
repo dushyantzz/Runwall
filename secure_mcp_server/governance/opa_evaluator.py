@@ -7,6 +7,7 @@ import asyncio
 import json
 import os
 import re
+import shlex
 from typing import Any, Dict, List, Optional
 
 import structlog
@@ -72,7 +73,10 @@ class OPAPolicyEvaluator:
         # Determine path to evaluate
         policy_file_path = self.default_policy
         if db_policy_rego:
-            policy_file_path = os.path.join(self.policy_dir, f"active_db_{tenant_id}.rego")
+            safe_tenant_id = re.sub(r'[^a-zA-Z0-9_-]', '', str(tenant_id))
+            if not safe_tenant_id:
+                safe_tenant_id = "default"
+            policy_file_path = os.path.join(self.policy_dir, f"active_db_{safe_tenant_id}.rego")
             try:
                 with open(policy_file_path, "w", encoding="utf-8") as f:
                     f.write(db_policy_rego)
@@ -116,9 +120,9 @@ class OPAPolicyEvaluator:
         
         # 3. Attempt to run OPA
         try:
-            # Check if OPA exists and execute evaluation
-            proc = await asyncio.create_subprocess_shell(
-                f'opa eval -d {policy_file_path} "data.secure_mcp.governance" -I',
+            # Check if OPA exists and execute evaluation (use exec to prevent command injection)
+            proc = await asyncio.create_subprocess_exec(
+                'opa', 'eval', '-d', policy_file_path, 'data.secure_mcp.governance', '-I',
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
