@@ -60,11 +60,15 @@ class MCPAuthASGIMiddleware:
             return
 
         path = scope.get("path", "")
-        # Protect MCP protocol endpoints: /mcp, /sse, /messages, and root /
-        mcp_paths = ["/mcp", "/sse", "/messages"]
-        is_mcp_request = any(path.startswith(p) for p in mcp_paths) or path == "/"
+        # Protect MCP protocol endpoints only: /mcp, /sse, /messages
+        mcp_paths = ("/mcp", "/sse", "/messages")
+        is_mcp_request = any(path.startswith(p) for p in mcp_paths)
 
-        if is_mcp_request and not path.startswith("/api/v1") and path not in ("/health", "/docs", "/redoc", "/openapi.json"):
+        # Paths that should never require MCP API-key auth
+        public_paths = ("/health", "/docs", "/redoc", "/openapi.json",
+                        "/robots.txt", "/favicon.ico", "/sitemap.xml")
+
+        if is_mcp_request and not path.startswith("/api/v1") and path not in public_paths:
             # Extract query parameters
             query_string = scope.get("query_string", b"").decode("utf-8")
             from urllib.parse import parse_qs

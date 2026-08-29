@@ -90,6 +90,9 @@ async def downgrade_expired_subscriptions() -> int:
 async def _cron_loop() -> None:
     """Background loop that runs downgrade_expired_subscriptions every hour."""
     logger.info("Billing cron started", interval_seconds=CRON_INTERVAL_SECONDS)
+    # Allow time for database initialization to complete before the first run.
+    # Without this, the cron can fire before create_all finishes on cold start.
+    await asyncio.sleep(5)
     while True:
         try:
             count = await downgrade_expired_subscriptions()

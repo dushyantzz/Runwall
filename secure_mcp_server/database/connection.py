@@ -51,13 +51,16 @@ class DatabaseManager:
             expire_on_commit=False
         )
         
-        # Create tables (only if not in production to optimize cold-starts)
+        # Always create tables — create_all is idempotent (IF NOT EXISTS).
+        # Skipping in production causes missing-table errors on ephemeral
+        # storage (e.g. Render free tier where the DB is recreated on cold start).
+        async with self.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        
         from secure_mcp_server.config import get_settings
         settings = get_settings()
         
         if settings.environment != "production":
-            async with self.engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
             
             # Seed default policy rules if table is empty
             async with self.session_factory() as session:
