@@ -217,9 +217,14 @@ def create_app() -> FastAPI:
     app.add_middleware(MCPAuthASGIMiddleware)
 
     # Add CORS middleware for UI access
+    # Prevent CORS vulnerability: do not allow '*' when allow_credentials=True
+    allowed_origins = [origin for origin in get_settings().allowed_origins if origin != "*"]
+    if not allowed_origins:
+        allowed_origins = ["http://localhost:3000"]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=get_settings().allowed_origins,
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
