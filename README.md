@@ -270,15 +270,19 @@ flowchart LR
 
 ### Option A — Use Hosted Runwall (Recommended)
 
-No setup required. Connect your AI client directly to the hosted Runwall endpoint.
+No complex setup required. Connect your AI client directly to the hosted Runwall endpoint.
 
-**Runwall MCP Endpoint**
+**Runwall Public Gateway**
 
 ```
-URL:       https://calm-cloud-km6b6.run.mcp-use.com/mcp
-Transport: Streamable HTTP
-Auth:      API Key (Bearer token)
+URL:         https://mcp.runwall.in/mcp
+Quickstart:  https://mcp.runwall.in/
+Transport:   Streamable HTTP (MCP Specification)
+Auth:        API Key (Authorization: Bearer <api_key>) — strictly required
 ```
+
+> [!IMPORTANT]
+> **API Key Required:** An API key is required for every request to `https://mcp.runwall.in/mcp`. There is no unauthenticated or anonymous access. Unauthenticated requests are immediately rejected with HTTP 401.
 
 **Claude Desktop / Cursor / VS Code — Remote URL**
 
@@ -286,7 +290,7 @@ Auth:      API Key (Bearer token)
 {
   "mcpServers": {
     "runwall": {
-      "url": "https://calm-cloud-km6b6.run.mcp-use.com/mcp",
+      "url": "https://mcp.runwall.in/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -304,7 +308,8 @@ Auth:      API Key (Bearer token)
       "command": "npx",
       "args": ["-y", "@runwall/mcp"],
       "env": {
-        "RUNWALL_API_KEY": "YOUR_API_KEY"
+        "RUNWALL_API_KEY": "YOUR_API_KEY",
+        "RUNWALL_URL": "https://mcp.runwall.in/mcp"
       }
     }
   }
@@ -319,7 +324,7 @@ Auth:      API Key (Bearer token)
     {
       "type": "url",
       "name": "runwall",
-      "url": "https://calm-cloud-km6b6.run.mcp-use.com/mcp",
+      "url": "https://mcp.runwall.in/mcp",
       "authorization_token": "YOUR_API_KEY"
     }
   ],
@@ -357,7 +362,7 @@ async def run_governed_tool(api_key, tool_name, arguments):
         "params": {"name": tool_name, "arguments": arguments}
     }
     response = await httpx.post(
-        "https://calm-cloud-km6b6.run.mcp-use.com/mcp",
+        "https://mcp.runwall.in/mcp",
         json=payload,
         headers=headers,
     )
@@ -372,16 +377,16 @@ That's it — your agent is now authenticated, rate-limited, taint-tracked, audi
 
 | Client | Recommended Method | Config Key / Reference |
 |---|---|---|
-| **Claude Desktop / Claude Code** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
-| **Cursor** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
-| **VS Code (Cline)** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
-| **Windsurf** | Stdio wrapper or Remote URL | `url: https://calm-cloud-km6b6.run.mcp-use.com/mcp` or `npx -y @runwall/mcp` |
+| **Claude Desktop / Claude Code** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.in/mcp` or `npx -y @runwall/mcp` |
+| **Cursor** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.in/mcp` or `npx -y @runwall/mcp` |
+| **VS Code (Cline)** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.in/mcp` or `npx -y @runwall/mcp` |
+| **Windsurf** | Stdio wrapper or Remote URL | `url: https://mcp.runwall.in/mcp` or `npx -y @runwall/mcp` |
 | **Trae / Qoder / Copilot** | Settings panel configuration | Configure via the built-in MCP panel (Stdio connection) |
 | **KIRO / Codex / Custom Agents** | HTTP POST to `/mcp` gateway | `Authorization: Bearer YOUR_KEY` (Streamable HTTP) |
 
 **Transport Support:**
-- **Primary**: Streamable HTTP at `/mcp` (recommended)
-- **Legacy**: SSE at `/sse` (backward compatible, deprecated)
+- **Primary**: Streamable HTTP at `https://mcp.runwall.in/mcp` (recommended)
+- **Legacy**: SSE at `https://mcp.runwall.in/sse` (backward compatible)
 
 ---
 
@@ -438,7 +443,7 @@ server_params = StdioServerParameters(
     args=["-y", "@runwall/mcp"],
     env={
         "RUNWALL_API_KEY": "YOUR_API_KEY",
-        "RUNWALL_URL": "https://calm-cloud-km6b6.run.mcp-use.com/mcp"
+        "RUNWALL_URL": "https://mcp.runwall.in/mcp"
     }
 )
 
@@ -467,7 +472,7 @@ def runwall_tool(tool_name: str, arguments: dict) -> str:
         "method": "tools/call",
         "params": {"name": tool_name, "arguments": arguments}
     }
-    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    res = httpx.post("https://mcp.runwall.in/mcp", json=payload, headers=headers)
     return res.text
 
 # Define Governed DBA Agent
@@ -495,7 +500,7 @@ user_proxy = autogen.UserProxyAgent(name="user_proxy", code_execution_config=Fal
 def calculator(expression: str) -> str:
     headers = {"Authorization": "Bearer YOUR_API_KEY"}
     payload = {"method": "tools/call", "params": {"name": "calculator", "arguments": {"expression": expression}}}
-    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    res = httpx.post("https://mcp.runwall.in/mcp", json=payload, headers=headers)
     return res.json().get("result", {}).get("content", [{}])[0].get("text", "Error")
 ```
 

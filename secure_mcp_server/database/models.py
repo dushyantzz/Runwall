@@ -218,6 +218,7 @@ class APIKey(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_used: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     # ── Billing & Subscription fields ──────────────────────────────────────
     tier: Mapped[str] = mapped_column(String(20), default="free", index=True)
@@ -226,6 +227,14 @@ class APIKey(Base):
     subscription_end_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     rate_limit_requests: Mapped[int] = mapped_column(Integer, default=15)            # quota per period
     rate_limit_period: Mapped[str] = mapped_column(String(20), default="week")       # week / month / custom
+    
+    @property
+    def label(self) -> str:
+        return self.name
+
+    @property
+    def key_prefix(self) -> str:
+        return self.prefix
     
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="api_keys")

@@ -144,3 +144,7 @@ def reload_settings() -> Settings:
     global _settings
     _settings = None
     return get_settings()
+
+
+# Export PLAN_LIMITS for unified configuration access
+from .plan_limits import PLAN_LIMITS, get_plan_limits

@@ -319,6 +319,7 @@ docker run -d -p 8000:8000 \
 
 ## External References
 
-- **Hosted Endpoint:** `https://calm-cloud-km6b6.run.mcp-use.com/mcp`
+- **Hosted Endpoint:** `https://mcp.runwall.in/mcp`
+- **Quickstart:** `https://mcp.runwall.in/`
 - **NPM Package:** `npx -y @runwall/mcp` (MCP stdio bridge)
-- **Admin Docs:** `http://localhost:8000/docs`
+- **Admin Docs:** `https://mcp.runwall.in/docs` (Admin credentials required)

@@ -531,13 +531,13 @@ function QuickStartDoc() {
       "args": ["-y", "@runwall/mcp"],
       "env": {
         "RUNWALL_API_KEY": "<your-api-key>",
-        "RUNWALL_URL": "https://calm-cloud-km6b6.run.mcp-use.com/mcp"
+        "RUNWALL_URL": "https://mcp.runwall.in/mcp"
       }
     }
   }
 }`;
 
-  const linkContent = "https://calm-cloud-km6b6.run.mcp-use.com/mcp?token=<your-api-key>";
+  const linkContent = "https://mcp.runwall.in/mcp";
 
   const handleCopy = async (text: string, type: 'config' | 'link') => {
     try {
@@ -652,7 +652,7 @@ function QuickStartDoc() {
           background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: '6px',
           padding: '16px', overflowX: 'auto', fontSize: '13px', fontFamily: 'var(--font-mono)'
         }}>
-          <code>https://calm-cloud-km6b6.run.mcp-use.com/mcp?token=&lt;your-api-key&gt;</code>
+          <code>https://mcp.runwall.in/mcp</code>
         </pre>
       </div>
 
@@ -932,7 +932,7 @@ server_params = StdioServerParameters(
     args=["-y", "@runwall/mcp"],
     env={
         "RUNWALL_API_KEY": "YOUR_API_KEY",
-        "RUNWALL_URL": "https://calm-cloud-km6b6.run.mcp-use.com/mcp"
+        "RUNWALL_URL": "https://mcp.runwall.in/mcp"
     }
 )
 
@@ -969,7 +969,7 @@ def runwall_tool(tool_name: str, arguments: dict) -> str:
         "method": "tools/call",
         "params": {"name": tool_name, "arguments": arguments}
     }
-    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    res = httpx.post("https://mcp.runwall.in/mcp", json=payload, headers=headers)
     return res.text
 
 # Define Governed Security Agent
@@ -1007,7 +1007,7 @@ user_proxy = autogen.UserProxyAgent(name="user_proxy", code_execution_config=Fal
 def calculator(expression: str) -> str:
     headers = {"Authorization": "Bearer YOUR_API_KEY"}
     payload = {"method": "tools/call", "params": {"name": "calculator", "arguments": {"expression": expression}}}
-    res = httpx.post("https://calm-cloud-km6b6.run.mcp-use.com/mcp", json=payload, headers=headers)
+    res = httpx.post("https://mcp.runwall.in/mcp", json=payload, headers=headers)
     return res.json().get("result", {}).get("content", [{}])[0].get("text", "Error")`}</code>
       </pre>
 
@@ -1027,7 +1027,7 @@ import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 
 // 1. Establish SSE Transport with API Key header
 const transport = new SSEClientTransport(
-  new URL("https://calm-cloud-km6b6.run.mcp-use.com/sse"),
+  new URL("https://mcp.runwall.in/sse"),
   {
     eventSourceInitDict: {
       headers: {
