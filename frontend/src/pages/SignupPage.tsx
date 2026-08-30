@@ -56,7 +56,6 @@ export default function SignupPage() {
       if (error) {
         setError(error.message);
       } else {
-        // Direct navigation to target page (or home/docs)
         navigate(redirectTarget, { replace: true });
       }
     } catch (err: any) {
@@ -90,49 +89,54 @@ export default function SignupPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: 'calc(100vh - 120px)',
+      minHeight: '100vh',
       background: '#000000',
-      padding: '24px',
+      padding: '110px 24px 60px',
       position: 'relative',
+      boxSizing: 'border-box',
     }}>
-      {/* Background glow elements */}
+      {/* Background ambient radial glow */}
       <div style={{
         position: 'absolute',
-        top: '20%',
+        top: '25%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '350px',
-        height: '350px',
-        background: 'radial-gradient(circle, rgba(255, 218, 98, 0.04) 0%, rgba(0,0,0,0) 70%)',
+        width: '450px',
+        height: '450px',
+        background: 'radial-gradient(circle, rgba(255, 218, 98, 0.05) 0%, rgba(0,0,0,0) 70%)',
         zIndex: 0,
         pointerEvents: 'none',
       }} />
 
+      {/* Pricing-style Card Container */}
       <div style={{
         width: '100%',
-        maxWidth: '420px',
-        background: 'var(--card-bg, #141414)',
-        border: '1px solid var(--border, #262626)',
-        borderRadius: '12px',
-        padding: '32px',
+        maxWidth: '440px',
+        background: '#08080a',
+        border: '1px solid var(--accent)',
+        borderRadius: 12,
+        padding: '36px 32px',
+        boxShadow: '0 0 40px rgba(255,218,98,0.06), 0 20px 40px rgba(0,0,0,0.8)',
         zIndex: 1,
-        boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+        position: 'relative',
+        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
       }}>
-        {/* Title */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        {/* Card Header matching Pricing Tier info */}
+        <div style={{ marginBottom: 28, textAlign: 'center' }}>
           <h2 style={{
-            fontSize: '24px',
-            fontWeight: 600,
-            color: 'var(--heading, #ffffff)',
-            marginBottom: '8px',
+            fontSize: 24,
+            fontWeight: 400,
+            color: '#ffffff',
+            marginBottom: 8,
             fontFamily: 'var(--font-display)',
             letterSpacing: '-0.02em',
           }}>
             Create an Account
           </h2>
           <p style={{
-            fontSize: '14px',
-            color: 'var(--muted, #777777)',
+            fontSize: 13,
+            color: '#888888',
+            lineHeight: 1.5,
             fontFamily: 'var(--font-body)',
           }}>
             Get instant access to Runwall Gateway & Documentation
@@ -147,8 +151,8 @@ export default function SignupPage() {
             gap: '10px',
             background: 'rgba(239, 68, 68, 0.08)',
             border: '1px solid rgba(239, 68, 68, 0.25)',
-            borderRadius: '6px',
-            padding: '12px',
+            borderRadius: '8px',
+            padding: '12px 14px',
             marginBottom: '20px',
             color: '#ef4444',
             fontSize: '13px',
@@ -159,25 +163,26 @@ export default function SignupPage() {
         )}
 
         {/* Signup Form */}
-        <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Email */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {/* Email Field */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label htmlFor="email" style={{
-              fontSize: '12px',
-              fontWeight: 500,
-              color: 'var(--body, #b4b4b4)',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#888888',
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.06em',
+              fontFamily: 'var(--font-mono)',
             }}>
               Email Address
             </label>
             <div style={{ position: 'relative' }}>
               <Mail size={16} style={{
                 position: 'absolute',
-                left: '12px',
+                left: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: 'var(--muted, #777777)',
+                color: '#666666',
               }} />
               <input
                 id="email"
@@ -188,40 +193,47 @@ export default function SignupPage() {
                 placeholder="developer@company.com"
                 style={{
                   width: '100%',
-                  background: '#0a0a0a',
-                  border: '1px solid var(--border, #262626)',
-                  borderRadius: '6px',
-                  padding: '10px 12px 10px 38px',
-                  color: 'var(--heading, #ffffff)',
+                  background: '#030304',
+                  border: '1px solid #1c1c1c',
+                  borderRadius: '8px',
+                  padding: '12px 14px 12px 42px',
+                  color: '#ffffff',
                   fontSize: '14px',
                   fontFamily: 'var(--font-body)',
                   outline: 'none',
-                  transition: 'border-color 0.2s',
+                  transition: 'all 0.2s',
                 }}
-                onFocus={(e) => (e.target.style.borderColor = 'var(--accent, #FFDA62)')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #262626)')}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent)';
+                  e.target.style.boxShadow = '0 0 12px rgba(255,218,98,0.12)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#1c1c1c';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
 
-          {/* Password */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {/* Password Field */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label htmlFor="password" style={{
-              fontSize: '12px',
-              fontWeight: 500,
-              color: 'var(--body, #b4b4b4)',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#888888',
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.06em',
+              fontFamily: 'var(--font-mono)',
             }}>
               Password
             </label>
             <div style={{ position: 'relative' }}>
               <Lock size={16} style={{
                 position: 'absolute',
-                left: '12px',
+                left: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: 'var(--muted, #777777)',
+                color: '#666666',
               }} />
               <input
                 id="password"
@@ -232,30 +244,36 @@ export default function SignupPage() {
                 placeholder="•••••••• (min 6 characters)"
                 style={{
                   width: '100%',
-                  background: '#0a0a0a',
-                  border: '1px solid var(--border, #262626)',
-                  borderRadius: '6px',
-                  padding: '10px 38px 10px 38px',
-                  color: 'var(--heading, #ffffff)',
+                  background: '#030304',
+                  border: '1px solid #1c1c1c',
+                  borderRadius: '8px',
+                  padding: '12px 42px 12px 42px',
+                  color: '#ffffff',
                   fontSize: '14px',
                   fontFamily: 'var(--font-body)',
                   outline: 'none',
-                  transition: 'border-color 0.2s',
+                  transition: 'all 0.2s',
                 }}
-                onFocus={(e) => (e.target.style.borderColor = 'var(--accent, #FFDA62)')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #262626)')}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent)';
+                  e.target.style.boxShadow = '0 0 12px rgba(255,218,98,0.12)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#1c1c1c';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute',
-                  right: '12px',
+                  right: '14px',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   background: 'none',
                   border: 'none',
-                  color: 'var(--muted, #777777)',
+                  color: '#666666',
                   cursor: 'pointer',
                   padding: 0,
                   display: 'flex',
@@ -267,24 +285,25 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Confirm Password */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {/* Confirm Password Field */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label htmlFor="confirmPassword" style={{
-              fontSize: '12px',
-              fontWeight: 500,
-              color: 'var(--body, #b4b4b4)',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#888888',
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.06em',
+              fontFamily: 'var(--font-mono)',
             }}>
               Confirm Password
             </label>
             <div style={{ position: 'relative' }}>
               <Lock size={16} style={{
                 position: 'absolute',
-                left: '12px',
+                left: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: 'var(--muted, #777777)',
+                color: '#666666',
               }} />
               <input
                 id="confirmPassword"
@@ -295,66 +314,89 @@ export default function SignupPage() {
                 placeholder="••••••••"
                 style={{
                   width: '100%',
-                  background: '#0a0a0a',
-                  border: '1px solid var(--border, #262626)',
-                  borderRadius: '6px',
-                  padding: '10px 12px 10px 38px',
-                  color: 'var(--heading, #ffffff)',
+                  background: '#030304',
+                  border: '1px solid #1c1c1c',
+                  borderRadius: '8px',
+                  padding: '12px 14px 12px 42px',
+                  color: '#ffffff',
                   fontSize: '14px',
                   fontFamily: 'var(--font-body)',
                   outline: 'none',
-                  transition: 'border-color 0.2s',
+                  transition: 'all 0.2s',
                 }}
-                onFocus={(e) => (e.target.style.borderColor = 'var(--accent, #FFDA62)')}
-                onBlur={(e) => (e.target.style.borderColor = 'var(--border, #262626)')}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent)';
+                  e.target.style.boxShadow = '0 0 12px rgba(255,218,98,0.12)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#1c1c1c';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Pricing-style Primary CTA Button */}
           <button
             type="submit"
             disabled={loading}
             style={{
-              background: 'var(--accent, #FFDA62)',
+              width: '100%',
+              padding: '13px 0',
+              background: 'var(--accent)',
               color: '#000000',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '12px',
-              fontSize: '14px',
+              border: '1px solid var(--accent)',
+              borderRadius: 8,
               fontWeight: 600,
+              fontSize: 14,
+              fontFamily: 'var(--font-display)',
               cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
+              gap: 8,
               opacity: loading ? 0.7 : 1,
-              transition: 'opacity 0.2s',
-              marginTop: '8px',
+              transition: 'all 0.2s',
+              marginTop: 4,
             }}
-            onMouseEnter={(e) => { if(!loading) e.currentTarget.style.opacity = '0.9'; }}
-            onMouseLeave={(e) => { if(!loading) e.currentTarget.style.opacity = '1'; }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.opacity = '0.92';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
           >
-            {loading ? 'Creating account...' : 'Create Free Account'}
-            {!loading && <ArrowRight size={16} />}
+            <span>{loading ? 'Creating account...' : 'Create Free Account'}</span>
+            {!loading && <ArrowRight size={15} />}
           </button>
         </form>
 
-        {/* Divider */}
+        {/* Divider matching Pricing Card style */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          margin: '20px 0',
-          color: 'var(--muted, #777777)',
-          fontSize: '11px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          fontFamily: 'var(--font-body)',
+          position: 'relative',
+          borderTop: '1px solid #161616',
+          margin: '28px 0 24px',
+          textAlign: 'center',
         }}>
-          <div style={{ flex: 1, height: '1px', background: '#262626' }} />
-          <span>or</span>
-          <div style={{ flex: 1, height: '1px', background: '#262626' }} />
+          <span style={{
+            position: 'relative',
+            top: '-9px',
+            background: '#08080a',
+            padding: '0 12px',
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#666666',
+            letterSpacing: '0.06em',
+            fontFamily: 'var(--font-mono)',
+          }}>
+            OR
+          </span>
         </div>
 
         {/* Google OAuth Button */}
@@ -363,28 +405,28 @@ export default function SignupPage() {
           onClick={handleGoogleLogin}
           style={{
             width: '100%',
-            background: '#0a0a0a',
+            background: '#040405',
             color: '#ffffff',
-            border: '1px solid #262626',
-            borderRadius: '6px',
-            padding: '12px',
+            border: '1px solid #1c1c1c',
+            borderRadius: 8,
+            padding: '12px 0',
             fontSize: '14px',
             fontWeight: 500,
+            fontFamily: 'var(--font-display)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '10px',
-            transition: 'background-color 0.2s, border-color 0.2s',
-            fontFamily: 'var(--font-body)',
+            transition: 'all 0.2s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#111111';
-            e.currentTarget.style.borderColor = '#444444';
+            e.currentTarget.style.background = '#0e0e11';
+            e.currentTarget.style.borderColor = '#333333';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#0a0a0a';
-            e.currentTarget.style.borderColor = '#262626';
+            e.currentTarget.style.background = '#040405';
+            e.currentTarget.style.borderColor = '#1c1c1c';
           }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24">
@@ -393,25 +435,28 @@ export default function SignupPage() {
             <path fill="#FBBC05" d="M5.61 14.73a7.22 7.22 0 010-4.46L1.65 7.2a11.96 11.96 0 000 9.6l3.96-3.07z"/>
             <path fill="#34A853" d="M12 23.5c3.24 0 5.97-1.07 7.96-2.92l-3.66-2.84c-1.01.68-2.31 1.08-4.3 1.08-2.96 0-5.46-2.03-6.36-4.97L1.69 16.9a11.96 11.96 0 0010.31 6.6z"/>
           </svg>
-          Sign up with Google
+          <span>Sign up with Google</span>
         </button>
 
-        {/* Login Redirect */}
+        {/* Login Redirect Footer */}
         <div style={{
           textAlign: 'center',
-          marginTop: '24px',
+          marginTop: '28px',
           fontSize: '13px',
-          color: 'var(--muted, #777777)',
+          color: '#888888',
           fontFamily: 'var(--font-body)',
         }}>
           Already have an account?{' '}
           <Link
             to={redirectTarget ? `/login?redirect=${encodeURIComponent(redirectTarget)}` : '/login'}
             style={{
-              color: 'var(--accent, #FFDA62)',
+              color: 'var(--accent)',
               textDecoration: 'none',
-              fontWeight: 500,
+              fontWeight: 600,
+              transition: 'opacity 0.2s',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
           >
             Sign In
           </Link>
