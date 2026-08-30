@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="Images/ChatGPT%20Image%20Jul%205,%202026,%2002_08_18%20PM.png" width="900" alt="Runwall Architecture" />
+  <img src="Images/runwall-flow-architecture.png" width="900" alt="Runwall Architecture & Flow" />
 </p>
 
 ---
