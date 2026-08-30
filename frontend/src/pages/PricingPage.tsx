@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { 
-  Check, Zap, Crown, Infinity, ArrowRight, Copy, 
+  Check, Zap, Crown, Infinity, Copy,
   CheckCircle, Mail, Phone, ExternalLink, X, ChevronDown, ChevronUp 
 } from 'lucide-react';
 import PaymentModal from '../components/PaymentModal';
@@ -66,7 +66,6 @@ const AccordionItem = ({ question, answer }: { question: string; answer: string 
 
 export default function PricingPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'developer' | 'workspace'>('developer');
   const [modalOpen, setModalOpen] = useState(false);
   const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
@@ -139,7 +138,7 @@ export default function PricingPage() {
     }
   };
 
-  // Pricing Tiers Definition matching the Webflow structure
+  // Pricing Tiers Definition (Developer API Keys)
   const devTiers = [
     {
       id: 'free',
@@ -204,77 +203,11 @@ export default function PricingPage() {
     }
   ];
 
-  const workspaceTiers = [
-    {
-      id: 'team-starter',
-      name: 'Team Starter',
-      price: '$49',
-      period: '/month',
-      tagline: 'Security governance for growing agent teams.',
-      icon: <Zap size={18} />,
-      color: '#777777',
-      highlight: false,
-      features: [
-        '50,000 requests per month',
-        'Shared API credentials for team projects',
-        'Central console log access for audit reports',
-        'Standard Slack notification alerts',
-        'Email business-day support',
-        'Audit logs (60-day retention)'
-      ],
-      cta: 'Contact Sales',
-      ctaAction: 'enterprise'
-    },
-    {
-      id: 'team-scale',
-      name: 'Team Scale',
-      price: '$199',
-      period: '/month',
-      tagline: 'SLA guarantees and isolated execution at scale.',
-      icon: <Crown size={18} />,
-      color: 'var(--accent)',
-      badge: 'RECOMMENDED',
-      highlight: true,
-      features: [
-        '500,000 requests per month',
-        'Advanced Sandbox isolated runtime',
-        'Custom webhook alert integrations',
-        'OPA policy dry-run shadow branches',
-        '99.9% uptime SLA guarantees',
-        'Audit logs (90-day retention)'
-      ],
-      cta: 'Contact Sales',
-      ctaAction: 'enterprise'
-    },
-    {
-      id: 'team-enterprise',
-      name: 'Enterprise Suite',
-      price: 'Custom',
-      period: '',
-      tagline: 'Full organizational isolation and auditing.',
-      icon: <Infinity size={18} />,
-      color: '#a855f7',
-      highlight: false,
-      features: [
-        'Unlimited workspace connections',
-        'Custom Rego policy consulting & writing',
-        'On-premise deployment isolation support',
-        'Dedicated success manager access',
-        '24/7 critical incident response hotline',
-        'Fully customized terms & invoice billing'
-      ],
-      cta: 'Contact Sales',
-      ctaAction: 'enterprise'
-    }
-  ];
-
-  const currentTiers = activeTab === 'developer' ? devTiers : workspaceTiers;
-
   const faqs = [
     {
       category: 'Billing',
       question: 'How do payments work on Runwall?',
-      answer: 'For the Pro plan, we use Razorpay to process subscriptions in INR/USD. You can securely set up recurring billing and cancel anytime in your billing panel. For Workspace and Enterprise plans, we offer custom invoicing.'
+      answer: 'For the Pro plan, we use Razorpay to process subscriptions in INR/USD. You can securely set up recurring billing and cancel anytime in your billing panel. For Enterprise plans, we offer custom invoicing.'
     },
     {
       category: 'Billing',
@@ -301,7 +234,7 @@ export default function PricingPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#000000', color: '#ffffff', fontFamily: 'var(--font-body)', padding: '0 0 100px' }}>
       {pricingHelmet}
-      {/* Hero Header Section matching Webflow's "Our pricing" style */}
+      {/* Hero Header Section */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '120px 24px 48px' }}>
         <h1 style={{
           fontFamily: 'var(--font-display)',
@@ -319,55 +252,10 @@ export default function PricingPage() {
           color: '#b4b4b4',
           maxWidth: 620,
           lineHeight: 1.6,
-          marginBottom: 40
+          marginBottom: 8
         }}>
           Select the optimal plan to audit, govern, and secure your autonomous AI agent integrations.
         </p>
-
-        {/* Tab Switcher: matching Webflow's flat button bar */}
-        <div style={{
-          display: 'inline-flex',
-          background: '#0c0c0c',
-          border: '1px solid #1c1c1c',
-          borderRadius: 30,
-          padding: 4,
-          marginBottom: 16
-        }}>
-          <button
-            onClick={() => setActiveTab('developer')}
-            style={{
-              padding: '10px 24px',
-              borderRadius: 26,
-              border: 'none',
-              background: activeTab === 'developer' ? 'var(--accent)' : 'transparent',
-              color: activeTab === 'developer' ? '#000000' : '#ffffff',
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              fontFamily: 'var(--font-display)'
-            }}
-          >
-            Developer Keys
-          </button>
-          <button
-            onClick={() => setActiveTab('workspace')}
-            style={{
-              padding: '10px 24px',
-              borderRadius: 26,
-              border: 'none',
-              background: activeTab === 'workspace' ? 'var(--accent)' : 'transparent',
-              color: activeTab === 'workspace' ? '#000000' : '#ffffff',
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              fontFamily: 'var(--font-display)'
-            }}
-          >
-            Workspace Teams
-          </button>
-        </div>
 
         {errorMsg && (
           <div style={{
@@ -395,7 +283,7 @@ export default function PricingPage() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         gap: 32
       }}>
-        {currentTiers.map((tier) => (
+        {devTiers.map((tier) => (
           <div
             key={tier.id}
             style={{
@@ -452,117 +340,69 @@ export default function PricingPage() {
               onClick={() => handleCta(tier.ctaAction)}
               style={{
                 width: '100%',
-                padding: '13px 0',
+                padding: '12px 0',
+                borderRadius: 8,
+                border: tier.highlight ? 'none' : '1px solid var(--accent)',
                 background: tier.highlight ? 'var(--accent)' : 'transparent',
                 color: tier.highlight ? '#000000' : 'var(--accent)',
-                border: `1px solid var(--accent)`,
-                borderRadius: 8,
-                fontWeight: 500,
                 fontSize: 14,
+                fontWeight: 500,
                 fontFamily: 'var(--font-display)',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
                 marginBottom: 36,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8
+                gap: 8,
+                transition: 'all 0.2s ease',
+                boxShadow: tier.highlight ? '0 0 20px rgba(255, 218, 98, 0.15)' : 'none'
               }}
-              className="pricing-cta-button"
+              onMouseEnter={(e) => {
+                if (tier.highlight) {
+                  e.currentTarget.style.opacity = '0.9';
+                } else {
+                  e.currentTarget.style.background = 'var(--accent-dim)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (tier.highlight) {
+                  e.currentTarget.style.opacity = '1';
+                } else {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
             >
               <span>{tier.cta}</span>
-              <ArrowRight size={15} />
+              <span style={{ fontSize: 14 }}>&rarr;</span>
             </button>
 
-            {/* Divider */}
-            <div style={{ borderTop: '1px solid #161616', marginBottom: 28 }} />
-
-            {/* Features List */}
-            <div style={{ flexGrow: 1 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#666666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>
-                Key features include:
-              </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {tier.features.map((feat) => (
-                  <li key={feat} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <Check size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 1 }} />
-                    <span style={{ fontSize: 13, color: '#b4b4b4', lineHeight: 1.5 }}>{feat}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* Features List Header */}
+            <div style={{
+              fontSize: 11,
+              fontFamily: 'var(--font-mono)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: 'var(--muted)',
+              marginBottom: 16,
+              fontWeight: 600
+            }}>
+              Key Features Include:
             </div>
+
+            {/* Feature Checkmarks */}
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {tier.features.map((feat, idx) => (
+                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#dddddd', lineHeight: 1.4 }}>
+                  <Check size={14} color="var(--accent)" style={{ flexShrink: 0 }} />
+                  <span>{feat}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>
 
-      {/* Add-ons Section (copied from Webflow Add-on card design system) */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 80px' }}>
-        <div style={{ borderTop: '1px solid #161616', paddingTop: 60, marginBottom: 40 }}>
-          <h2 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '2.5rem',
-            fontWeight: 300,
-            color: '#ffffff',
-            marginBottom: 8,
-            letterSpacing: '-0.02em'
-          }}>
-            Add-ons
-          </h2>
-          <p style={{ fontSize: 14, color: '#888888' }}>
-            Optimize your agent isolation and logging parameters with custom enhancements.
-          </p>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap: 24
-        }}>
-          {[
-            { name: 'Audit Replay', desc: 'Inspect and replay agent console history for up to 90 days.', price: '$15/mo' },
-            { name: 'Rego Sandbox', desc: 'Run custom Open Policy Agent (OPA) guidelines in dry-run branches.', price: '$29/mo' },
-            { name: 'Dedicated Proxy', desc: 'Custom MCP gateway hostname with static outbound egress IPs.', price: '$49/mo' },
-            { name: 'DLP Shield', desc: 'Scan agent tools outputs for PII, API tokens, and credentials.', price: '$99/mo' }
-          ].map((addon) => (
-            <div key={addon.name} style={{
-              background: '#08080a',
-              border: '1px solid #161616',
-              borderRadius: 8,
-              padding: '24px 20px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
-            }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>{addon.name}</div>
-                <div style={{ fontSize: 12, color: '#888888', lineHeight: 1.5, marginBottom: 20 }}>{addon.desc}</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>{addon.price}</span>
-                <button
-                  onClick={() => setEnterpriseModalOpen(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#ffffff',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4
-                  }}
-                >
-                  <span>Add to plan</span>
-                  <ArrowRight size={12} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Symmetrical FAQ Section (copied from Webflow two-column layout) */}
+      {/* Symmetrical FAQ Section */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 80px' }}>
         <div className="pricing-faq-grid" style={{
           borderTop: '1px solid #161616',
@@ -614,7 +454,7 @@ export default function PricingPage() {
         `}</style>
       </div>
 
-      {/* Bottom Callout Banner matching Webflow's Callout */}
+      {/* Bottom Callout Banner */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
         <div style={{
           background: 'radial-gradient(circle at top right, #111111 0%, #060606 100%)',
