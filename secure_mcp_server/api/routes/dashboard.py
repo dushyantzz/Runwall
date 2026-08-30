@@ -262,6 +262,31 @@ async def generate_api_key(req: APIKeyCreateRequest, x_user_email: Optional[str]
 
     return {"success": True, "api_key": raw_key, "message": "API key generated successfully"}
 
+@router.delete("/identity/keys/{key_id}")
+async def revoke_api_key(key_id: int, x_user_email: Optional[str] = Header(None)):
+    if not x_user_email:
+        raise HTTPException(status_code=401, detail="X-User-Email header is required")
+        
+    email_clean = x_user_email.strip().lower()
+    async with get_db_manager().get_session_context() as db:
+        user_stmt = select(User).where(User.email == email_clean)
+        user_res = await db.execute(user_stmt)
+        user = user_res.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        key_stmt = select(APIKey).where(APIKey.id == key_id, APIKey.user_id == user.id)
+        key_res = await db.execute(key_stmt)
+        key = key_res.scalar_one_or_none()
+        if not key:
+            raise HTTPException(status_code=404, detail="API key not found")
+            
+        key.is_active = False
+        from datetime import datetime, timezone
+        key.revoked_at = datetime.now(timezone.utc)
+        await db.commit()
+        return {"success": True, "message": f"API key '{key.name}' revoked successfully"}
+
 # ---------------------------------------------------------------------------
 # 2. Tenant Management
 # ---------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, Key, Fingerprint, Plus, Copy } from 'lucide-react';
+import { Menu, X, LogOut, Key } from 'lucide-react';
 import { useAuth } from '../hooks/AuthContext';
-import SubscriptionCard from '../components/SubscriptionCard';
+import DeveloperKeysModal from '../components/DeveloperKeysModal';
 import PaymentModal from '../components/PaymentModal';
 
 export default function Navbar() {
@@ -11,19 +11,10 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
-  // API Key modal state
+  // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [newKeyName, setNewKeyName] = useState('');
-  const [newKeyTier, setNewKeyTier] = useState('free');
-  const [keyGenError, setKeyGenError] = useState<{ text: string, status: number } | null>(null);
-  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
-  const [apiKeys, setApiKeys] = useState<any[]>([]);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-
-  const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  const API_BASE = rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`;
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const notify = (type: 'success' | 'error', text: string) => {
     setNotification({ type, text });
@@ -39,74 +30,6 @@ export default function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
   }, [location]);
-
-  useEffect(() => {
-    if (modalOpen && user) {
-      fetchModalData();
-    }
-  }, [modalOpen, user]);
-
-  const fetchModalData = async () => {
-    setLoading(true);
-    try {
-      const headers: Record<string, string> = {};
-      if (user?.email) {
-        headers['X-User-Email'] = user.email;
-      }
-      const kRes = await fetch(`${API_BASE}/dashboard/identity/keys`, { headers });
-      if (kRes.ok) setApiKeys(await kRes.json());
-    } catch (err) {
-      notify('error', 'Failed to fetch identity data.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGenerateKey = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newKeyName) return;
-    setLoading(true);
-    setKeyGenError(null);
-    try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (user?.email) {
-        headers['X-User-Email'] = user.email;
-      }
-      const res = await fetch(`${API_BASE}/dashboard/identity/keys`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          name: newKeyName,
-          tier: newKeyTier
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setGeneratedKey(data.api_key);
-        notify('success', 'API Key generated successfully.');
-        setNewKeyName('');
-        // Re-fetch keys
-        const kRes = await fetch(`${API_BASE}/dashboard/identity/keys`, { headers });
-        if (kRes.ok) setApiKeys(await kRes.json());
-      } else {
-        setKeyGenError({
-          text: data.detail || 'Failed to generate API key.',
-          status: res.status
-        });
-        notify('error', 'Key generation blocked.');
-      }
-    } catch (err) {
-      setKeyGenError({ text: 'Network error generating API key.', status: 500 });
-      notify('error', 'Network error generating API key.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    notify('success', 'Copied to clipboard!');
-  };
 
   return (
     <nav
@@ -131,16 +54,18 @@ export default function Navbar() {
             style={{
               height: '28px',
               width: 'auto',
-              display: 'block'
+              display: 'block',
             }}
           />
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 17,
-            fontWeight: 700,
-            color: 'var(--heading)',
-            letterSpacing: '-0.02em',
-          }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 17,
+              fontWeight: 700,
+              color: 'var(--heading)',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Runwall
           </span>
         </Link>
@@ -161,10 +86,10 @@ export default function Navbar() {
               <button
                 onClick={() => setModalOpen(true)}
                 style={{
-                  background: 'rgba(0, 180, 216, 0.1)',
-                  border: '1px solid rgba(0, 180, 216, 0.3)',
+                  background: 'var(--accent-dim)',
+                  border: '1px solid var(--accent-border)',
                   borderRadius: '6px',
-                  color: '#00b4d8',
+                  color: 'var(--accent)',
                   fontSize: 13,
                   fontWeight: 600,
                   padding: '5px 12px',
@@ -175,12 +100,12 @@ export default function Navbar() {
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(0, 180, 216, 0.2)';
-                  e.currentTarget.style.borderColor = '#00b4d8';
+                  e.currentTarget.style.background = 'rgba(255, 218, 98, 0.18)';
+                  e.currentTarget.style.borderColor = 'var(--accent)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(0, 180, 216, 0.1)';
-                  e.currentTarget.style.borderColor = 'rgba(0, 180, 216, 0.3)';
+                  e.currentTarget.style.background = 'var(--accent-dim)';
+                  e.currentTarget.style.borderColor = 'var(--accent-border)';
                 }}
               >
                 <Key size={13} />
@@ -217,23 +142,29 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link to="/login" style={{
-                color: '#b4b4b4',
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: 500,
-                transition: 'color 0.2s',
-              }}
+              <Link
+                to="/login"
+                style={{
+                  color: '#b4b4b4',
+                  textDecoration: 'none',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  transition: 'color 0.2s',
+                }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = '#b4b4b4')}
               >
                 Login
               </Link>
 
-              <Link to="/signup" className="btn-trendy-primary" style={{
-                padding: '6px 16px',
-                fontSize: 13,
-              }}>
+              <Link
+                to="/signup"
+                className="btn-trendy-primary"
+                style={{
+                  padding: '6px 16px',
+                  fontSize: 13,
+                }}
+              >
                 Sign Up
               </Link>
             </>
@@ -263,7 +194,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Full-Screen Mobile Menu Overlay (InsForge style) */}
+      {/* Full-Screen Mobile Menu Overlay */}
       {mobileOpen && (
         <div className="mobile-menu-overlay">
           {/* Close button at top right */}
@@ -290,10 +221,14 @@ export default function Navbar() {
             <X size={24} />
           </button>
 
-          {/* Nav links — large, centered like InsForge */}
+          {/* Nav links */}
           <nav style={{ flex: 1 }}>
-            <Link to="/docs" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>Documentation</Link>
-            <Link to="/pricing" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>Pricing</Link>
+            <Link to="/docs" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>
+              Documentation
+            </Link>
+            <Link to="/pricing" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>
+              Pricing
+            </Link>
           </nav>
 
           {/* Action buttons at bottom */}
@@ -301,16 +236,16 @@ export default function Navbar() {
             {user ? (
               <>
                 <button
-                  onClick={() => { setModalOpen(true); setMobileOpen(false); }}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setMobileOpen(false);
+                  }}
                   className="mobile-menu-btn-primary"
                 >
                   <Key size={16} style={{ marginRight: 8 }} />
                   API Keys
                 </button>
-                <button
-                  onClick={signOut}
-                  className="mobile-menu-btn-secondary"
-                >
+                <button onClick={signOut} className="mobile-menu-btn-secondary">
                   <LogOut size={16} style={{ marginRight: 8 }} />
                   Logout
                 </button>
@@ -329,220 +264,55 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* API Key Modal */}
-      {modalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.8)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            width: '90%',
-            maxWidth: '800px',
-            background: '#050505',
-            border: '1px solid #222222',
-            borderRadius: '12px',
-            padding: '24px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.9)',
-            position: 'relative'
-          }}>
-            {/* Close Button */}
-            <button
-              onClick={() => {
-                setModalOpen(false);
-                setGeneratedKey(null);
-              }}
-              style={{
-                position: 'absolute',
-                top: 16,
-                right: 16,
-                background: 'none',
-                border: 'none',
-                color: '#888',
-                cursor: 'pointer',
-                padding: 4
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#888'}
-            >
-              <X size={18} />
-            </button>
+      {/* Developer API Keys Modal */}
+      {user && (
+        <DeveloperKeysModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          userEmail={user.email || ''}
+          onUpgradeClick={() => {
+            setModalOpen(false);
+            setPayModalOpen(true);
+          }}
+        />
+      )}
 
-            {/* Title */}
-            <h3 style={{ color: '#ffffff', margin: '0 0 4px 0', fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Key size={18} color="var(--accent)" /> Developer API Keys
-            </h3>
-            <p style={{ fontSize: '12px', color: '#666666', margin: '0 0 24px 0' }}>
-              Create and manage secure API keys linked to service accounts to connect external agents.
-            </p>
+      {/* Razorpay Upgrade Checkout Modal */}
+      {user && (
+        <PaymentModal
+          isOpen={payModalOpen}
+          onClose={() => setPayModalOpen(false)}
+          apiKeyId={1}
+          userEmail={user.email || ''}
+          userName={user.email?.split('@')[0] || ''}
+          onSuccess={() => {
+            setPayModalOpen(false);
+            notify('success', 'Upgraded to Pro tier successfully!');
+          }}
+        />
+      )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              {/* Form block */}
-              <div style={{ border: '1px solid #1a1a1a', borderRadius: '8px', padding: '16px', background: '#000000' }}>
-                <h4 style={{ color: '#ffffff', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 16px 0' }}>
-                  <Plus size={14} color="var(--accent)" /> Generate Free API Key
-                </h4>
-                <form onSubmit={(e) => { setNewKeyTier('free'); handleGenerateKey(e); }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 11, color: '#777777', marginBottom: 4 }}>Key Label Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. MyFreeAgentKey" 
-                      value={newKeyName} 
-                      onChange={e => setNewKeyName(e.target.value)}
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1c1c1c', borderRadius: 4, padding: '8px 12px', fontSize: 13, color: '#ffffff' }}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '10px 0', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} disabled={loading}>
-                    Generate Free Token
-                  </button>
-                </form>
-
-                <div style={{
-                  marginTop: 16,
-                  padding: 12,
-                  borderRadius: 6,
-                  background: 'rgba(255,218,98,0.03)',
-                  border: '1px solid rgba(255,218,98,0.1)'
-                }}>
-                  <div style={{ fontSize: 11, color: '#FFDA62', fontWeight: 600, marginBottom: 4 }}>Need more capacity?</div>
-                  <div style={{ fontSize: 10, color: '#888', lineHeight: 1.4 }}>
-                    To get a Pro API Key with 2,000 requests/month, close this modal and click <strong>Pricing</strong> in the navigation bar to complete the subscription setup.
-                  </div>
-                </div>
-
-                {keyGenError && (
-                  <div style={{
-                    marginTop: 12,
-                    padding: '10px 12px',
-                    background: 'rgba(239,68,68,0.08)',
-                    border: '1px solid rgba(239,68,68,0.2)',
-                    borderRadius: 8,
-                    color: 'var(--destructive)',
-                    fontSize: 12,
-                  }}>
-                    <div>{keyGenError.text}</div>
-                    {keyGenError.status === 402 && (
-                      <button
-                        onClick={() => {
-                          setModalOpen(false);
-                          window.location.href = '/pricing';
-                        }}
-                        style={{
-                          marginTop: 8,
-                          width: '100%',
-                          padding: '6px 0',
-                          background: 'var(--accent)',
-                          color: '#000',
-                          border: 'none',
-                          borderRadius: 6,
-                          fontWeight: 700,
-                          fontSize: 11,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Go to Pricing & Subscription Page
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {generatedKey && (
-                  <div style={{ marginTop: 16, border: '1px dashed #10b981', borderRadius: 6, padding: 12, background: 'rgba(16,185,129,0.03)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <span style={{ fontSize: 9, color: '#10b981', fontWeight: 600, textTransform: 'uppercase' }}>Secret API Key Generated</span>
-                      <button 
-                        onClick={() => copyToClipboard(generatedKey)}
-                        style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                      >
-                        <Copy size={10} /> Copy
-                      </button>
-                    </div>
-                    <code style={{ fontSize: 11, wordBreak: 'break-all', color: '#ffffff', fontFamily: 'monospace' }}>{generatedKey}</code>
-                    <p style={{ fontSize: 9, color: '#ff9f1c', margin: '6px 0 0 0' }}>Make sure to copy this token now. It will not be shown again.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* API Keys list */}
-              <div style={{ border: '1px solid #1a1a1a', borderRadius: '8px', padding: '16px', background: '#000000', display: 'flex', flexDirection: 'column' }}>
-                <h4 style={{ color: '#ffffff', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 16px 0' }}>
-                  <Fingerprint size={14} color="var(--accent)" /> Active API Keys
-                </h4>
-                <div style={{ overflowY: 'auto', maxHeight: 120, marginBottom: 12 }}>
-                  {loading && apiKeys.length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 10 }}>Loading API keys...</div>
-                  ) : apiKeys.length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#777777', textAlign: 'center', padding: 10 }}>No API Keys generated yet.</div>
-                  ) : (
-                    apiKeys.map(k => (
-                      <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #111111' }}>
-                        <div>
-                          <div style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>{k.name}</div>
-                          <div style={{ fontSize: 10, color: '#555555' }}>Prefix: <code>{k.prefix}</code> • Env: {k.environment}</div>
-                        </div>
-                        <span style={{ fontSize: 9, background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>ACTIVE</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Billing/Usage widget */}
-                {apiKeys.length > 0 && (
-                  <SubscriptionCard 
-                    apiKeyId={apiKeys[0].id} 
-                    onUpgradeClick={() => setPayModalOpen(true)} 
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Razorpay upgrade checkout modal */}
-            {user && apiKeys.length > 0 && (
-              <PaymentModal
-                isOpen={payModalOpen}
-                onClose={() => setPayModalOpen(false)}
-                apiKeyId={apiKeys[0].id}
-                userEmail={user.email}
-                userName={user.email?.split('@')[0]}
-                onSuccess={() => {
-                  setPayModalOpen(false);
-                  notify('success', 'Upgraded to Pro tier successfully!');
-                  fetchModalData();
-                }}
-              />
-            )}
-
-            {/* Notification alert inside Modal */}
-            {notification && (
-              <div style={{
-                position: 'absolute',
-                bottom: 16,
-                right: 16,
-                background: notification.type === 'success' ? '#10b981' : '#ef4444',
-                color: '#000000',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 600,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6
-              }}>
-                {notification.text}
-              </div>
-            )}
-          </div>
+      {/* Notification alert */}
+      {notification && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            background: notification.type === 'success' ? 'var(--accent)' : '#ef4444',
+            color: '#000000',
+            padding: '10px 18px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 600,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            zIndex: 1100,
+          }}
+        >
+          {notification.text}
         </div>
       )}
 
