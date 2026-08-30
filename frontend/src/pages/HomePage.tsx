@@ -641,10 +641,9 @@ function BranchingWorkflowSection() {
             Safe for Agents to Operate
           </h2>
           <p style={{
-            maxWidth: 640,
-            margin: '0 auto',
             color: 'var(--muted)',
             fontSize: 14,
+            maxWidth: 550,
             lineHeight: 1.6
           }}>
             Deploy agent policies safely. Test security policies in shadow dry-run branches and intercept high-risk actions before they hit production systems.
@@ -760,7 +759,7 @@ function UserFeedbackSection() {
           User Feedback That Motivates Us
         </h2>
         <p style={{ color: 'var(--muted)', fontSize: 14, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
-          Explore interactive demos of the 12 core governance components in the Runwall security layer.
+          Real reviews and discussions from developers and security leaders on Product Hunt.
         </p>
       </div>
 
@@ -1128,7 +1127,8 @@ function CTASection() {
           Ready to govern your <span style={{ color: 'var(--accent)' }}>AI agents</span>?
         </h2>
         <p style={{ maxWidth: 480, margin: '0 auto 32px', color: 'var(--muted)', fontSize: 13 }}>
-          Connect Runwall to your agents in minutes. Free forever tier available.
+          Deploy enterprise-grade execution governance in minutes.
+          Start free, scale to millions of agent actions.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12 }} className="cta-button-group">
           {user ? (
