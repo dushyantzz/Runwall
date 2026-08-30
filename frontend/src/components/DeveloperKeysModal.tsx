@@ -206,15 +206,16 @@ export default function DeveloperKeysModal({
         }
       }}
     >
+      {/* Outer Card with Signature Yellow Border matching Pricing Section */}
       <div
         style={{
           width: '100%',
           maxWidth: '960px',
           maxHeight: '92vh',
           background: '#08080a',
-          border: '1px solid #1c1c1c',
-          borderRadius: '16px',
-          boxShadow: '0 0 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 218, 98, 0.04)',
+          border: '1px solid var(--accent, #FFDA62)',
+          borderRadius: 12,
+          boxShadow: '0 0 50px rgba(255, 218, 98, 0.08), 0 30px 60px rgba(0, 0, 0, 0.95)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -224,12 +225,12 @@ export default function DeveloperKeysModal({
         {/* Modal Header */}
         <div
           style={{
-            padding: '24px 28px',
+            padding: '22px 28px',
             borderBottom: '1px solid #161616',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(180deg, #0d0d10 0%, #08080a 100%)',
+            background: 'linear-gradient(180deg, #0c0c0f 0%, #08080a 100%)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -237,7 +238,7 @@ export default function DeveloperKeysModal({
               style={{
                 width: '38px',
                 height: '38px',
-                borderRadius: '10px',
+                borderRadius: '8px',
                 background: 'var(--accent-dim)',
                 border: '1px solid var(--accent-border)',
                 display: 'flex',
@@ -250,8 +251,8 @@ export default function DeveloperKeysModal({
             <div>
               <h2
                 style={{
-                  fontSize: '18px',
-                  fontWeight: 500,
+                  fontSize: '20px',
+                  fontWeight: 400,
                   color: '#ffffff',
                   margin: 0,
                   fontFamily: 'var(--font-display)',
@@ -262,9 +263,9 @@ export default function DeveloperKeysModal({
               </h2>
               <p
                 style={{
-                  fontSize: '12px',
+                  fontSize: '13px',
                   color: '#888888',
-                  margin: '3px 0 0 0',
+                  margin: '2px 0 0 0',
                   fontFamily: 'var(--font-body)',
                 }}
               >
@@ -273,37 +274,58 @@ export default function DeveloperKeysModal({
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              onClose();
-              setGeneratedKey(null);
-            }}
-            style={{
-              background: '#121215',
-              border: '1px solid #222222',
-              borderRadius: '8px',
-              color: '#888888',
-              cursor: 'pointer',
-              padding: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#ffffff';
-              e.currentTarget.style.borderColor = '#444444';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#888888';
-              e.currentTarget.style.borderColor = '#222222';
-            }}
-          >
-            <X size={16} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            {/* Pricing-style POPULAR / ACTIVE badge */}
+            <div
+              style={{
+                background: 'var(--accent-dim)',
+                border: '1px solid var(--accent-border)',
+                borderRadius: 20,
+                padding: '4px 12px',
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'var(--accent)',
+                letterSpacing: '0.06em',
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+              }}
+            >
+              {usage?.tier === 'pro' ? 'PRO ACCESS' : 'DEVELOPER ACCESS'}
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                onClose();
+                setGeneratedKey(null);
+              }}
+              style={{
+                background: '#040405',
+                border: '1px solid #1c1c1c',
+                borderRadius: '8px',
+                color: '#888888',
+                cursor: 'pointer',
+                padding: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.borderColor = 'var(--accent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#888888';
+                e.currentTarget.style.borderColor = '#1c1c1c';
+              }}
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
-        {/* Modal Body - 2 Equal Balanced Cards */}
+        {/* Modal Body - 2 Balanced Cards */}
         <div
           style={{
             padding: '24px 28px',
@@ -320,9 +342,9 @@ export default function DeveloperKeysModal({
             {/* Plan Quota Card */}
             <div
               style={{
-                background: '#0c0c0e',
+                background: '#0a0a0d',
                 border: '1px solid #1c1c1c',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 padding: '20px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -334,8 +356,8 @@ export default function DeveloperKeysModal({
                   <Zap size={15} color="var(--accent)" />
                   <span
                     style={{
-                      fontSize: '13px',
-                      fontWeight: 600,
+                      fontSize: '14px',
+                      fontWeight: 500,
                       color: '#ffffff',
                       fontFamily: 'var(--font-display)',
                     }}
@@ -345,9 +367,9 @@ export default function DeveloperKeysModal({
                 </div>
                 <span
                   style={{
-                    background: usage?.tier === 'pro' ? 'var(--accent-dim)' : '#161618',
+                    background: usage?.tier === 'pro' ? 'var(--accent-dim)' : '#121215',
                     color: usage?.tier === 'pro' ? 'var(--accent)' : '#aaaaaa',
-                    border: usage?.tier === 'pro' ? '1px solid var(--accent-border)' : '1px solid #282828',
+                    border: usage?.tier === 'pro' ? '1px solid var(--accent-border)' : '1px solid #222222',
                     borderRadius: '20px',
                     padding: '2px 10px',
                     fontSize: '10px',
@@ -369,7 +391,7 @@ export default function DeveloperKeysModal({
                       ? `${usage.used.toLocaleString()} / ${usage.limit?.toLocaleString() ?? '15'} requests`
                       : '0 / 15 requests'}
                   </span>
-                  <span style={{ fontSize: '11px', color: '#888888' }}>
+                  <span style={{ fontSize: '12px', color: '#888888' }}>
                     {usage ? `${usage.remaining.toLocaleString()} left` : '15 left'}
                   </span>
                 </div>
@@ -428,13 +450,13 @@ export default function DeveloperKeysModal({
                   onClick={onUpgradeClick}
                   style={{
                     width: '100%',
-                    padding: '10px 0',
+                    padding: '11px 0',
                     background: 'var(--accent)',
                     color: '#000000',
                     border: '1px solid var(--accent)',
                     borderRadius: '8px',
                     fontWeight: 600,
-                    fontSize: '12px',
+                    fontSize: '13px',
                     fontFamily: 'var(--font-display)',
                     cursor: 'pointer',
                     display: 'flex',
@@ -444,7 +466,7 @@ export default function DeveloperKeysModal({
                     transition: 'all 0.2s',
                     marginTop: '4px',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.92')}
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                 >
                   <Crown size={14} />
@@ -456,16 +478,16 @@ export default function DeveloperKeysModal({
             {/* Key Generation Card */}
             <div
               style={{
-                background: '#0c0c0e',
+                background: '#0a0a0d',
                 border: '1px solid #1c1c1c',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 padding: '20px',
               }}
             >
               <h3
                 style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
+                  fontSize: '14px',
+                  fontWeight: 500,
                   color: '#ffffff',
                   margin: '0 0 14px 0',
                   display: 'flex',
@@ -484,7 +506,7 @@ export default function DeveloperKeysModal({
                     htmlFor="keyName"
                     style={{
                       display: 'block',
-                      fontSize: '10px',
+                      fontSize: '11px',
                       fontWeight: 700,
                       color: '#888888',
                       textTransform: 'uppercase',
@@ -504,7 +526,7 @@ export default function DeveloperKeysModal({
                     required
                     style={{
                       width: '100%',
-                      background: '#040405',
+                      background: '#030304',
                       border: '1px solid #1c1c1c',
                       borderRadius: '8px',
                       padding: '10px 12px',
@@ -516,7 +538,7 @@ export default function DeveloperKeysModal({
                     }}
                     onFocus={(e) => {
                       e.target.style.borderColor = 'var(--accent)';
-                      e.target.style.boxShadow = '0 0 10px rgba(255,218,98,0.1)';
+                      e.target.style.boxShadow = '0 0 10px rgba(255,218,98,0.12)';
                     }}
                     onBlur={(e) => {
                       e.target.style.borderColor = '#1c1c1c';
@@ -693,9 +715,9 @@ export default function DeveloperKeysModal({
           {/* RIGHT COLUMN: Active Keys List Card */}
           <div
             style={{
-              background: '#0c0c0e',
-              border: '1px solid var(--accent-border)',
-              borderRadius: '12px',
+              background: '#0a0a0d',
+              border: '1px solid #1c1c1c',
+              borderRadius: '10px',
               padding: '20px',
               display: 'flex',
               flexDirection: 'column',
@@ -718,7 +740,7 @@ export default function DeveloperKeysModal({
                 <span
                   style={{
                     fontSize: '14px',
-                    fontWeight: 600,
+                    fontWeight: 500,
                     color: '#ffffff',
                     fontFamily: 'var(--font-display)',
                   }}
@@ -770,6 +792,8 @@ export default function DeveloperKeysModal({
                       fontFamily: 'var(--font-body)',
                       outline: 'none',
                     }}
+                    onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                    onBlur={(e) => (e.target.style.borderColor = '#1c1c1c')}
                   />
                 </div>
               )}
@@ -829,17 +853,21 @@ export default function DeveloperKeysModal({
                   <div
                     key={key.id}
                     style={{
-                      background: '#060608',
-                      border: '1px solid #1c1c1c',
-                      borderRadius: '10px',
+                      background: '#040405',
+                      border: '1px solid #18181b',
+                      borderRadius: '8px',
                       padding: '14px 16px',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '10px',
-                      transition: 'border-color 0.2s',
+                      transition: 'all 0.2s',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2c2c2c')}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1c1c1c')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#2c2c2c';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#18181b';
+                    }}
                   >
                     {/* Top Row: Name + Badges + Revoke */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -918,7 +946,7 @@ export default function DeveloperKeysModal({
                         <span>Prefix:</span>
                         <span
                           style={{
-                            background: '#0f0f12',
+                            background: '#0c0c0f',
                             border: '1px solid #1c1c1c',
                             borderRadius: '4px',
                             padding: '2px 6px',
@@ -956,18 +984,29 @@ export default function DeveloperKeysModal({
                           : 'Active'}
                       </span>
 
+                      {/* Pricing outline style CTA */}
                       <button
                         onClick={() => copyToClipboard(`https://mcp.runwall.in/mcp`, `mcp-${key.id}`)}
                         style={{
-                          background: 'none',
-                          border: 'none',
+                          background: 'transparent',
+                          border: '1px solid var(--accent)',
+                          borderRadius: '6px',
                           color: 'var(--accent)',
+                          padding: '3px 8px',
                           cursor: 'pointer',
                           fontSize: '10px',
+                          fontFamily: 'var(--font-display)',
+                          fontWeight: 500,
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
-                          fontWeight: 500,
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--accent-dim)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
                         }}
                       >
                         {copiedKey === `mcp-${key.id}` ? <Check size={10} /> : <Copy size={10} />}
@@ -988,7 +1027,7 @@ export default function DeveloperKeysModal({
               position: 'absolute',
               bottom: '20px',
               right: '28px',
-              background: toast.type === 'success' ? '#10b981' : '#ef4444',
+              background: toast.type === 'success' ? 'var(--accent)' : '#ef4444',
               color: '#000000',
               padding: '8px 16px',
               borderRadius: '8px',
