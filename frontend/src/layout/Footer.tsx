@@ -118,9 +118,11 @@ export default function Footer() {
             <img
               src="/logo.svg"
               alt="Runwall Logo"
+              width={26}
+              height={26}
               style={{
                 height: '26px',
-                width: 'auto',
+                width: '26px',
                 display: 'block'
               }}
             />

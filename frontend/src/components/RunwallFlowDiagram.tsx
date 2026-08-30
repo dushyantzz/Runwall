@@ -59,6 +59,8 @@ const AgentNode = ({ data }: { data: { label: string; iconSrc: string; status: s
         <img 
           src={data.iconSrc} 
           alt={data.label} 
+          width={24}
+          height={24}
           style={{ width: 24, height: 24, display: 'block', objectFit: 'contain' }} 
         />
       </div>
@@ -134,6 +136,8 @@ const RunwallCoreNode = () => {
           <img 
             src="/logo.svg" 
             alt="Runwall Shield" 
+            width={26}
+            height={26}
             style={{ width: 26, height: 26, objectFit: 'contain' }} 
           />
         </div>
@@ -615,7 +619,7 @@ export default function RunwallFlowDiagram() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/logo.svg" alt="Runwall" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+              <img src="/logo.svg" alt="Runwall" width={20} height={20} style={{ width: 20, height: 20, objectFit: 'contain' }} />
             </div>
             <div>
               <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-display)', letterSpacing: '0.01em' }}>Runwall</div>

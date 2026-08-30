@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, Key } from 'lucide-react';
 import { useAuth } from '../hooks/AuthContext';
-import DeveloperKeysModal from '../components/DeveloperKeysModal';
-import PaymentModal from '../components/PaymentModal';
+
+// Lazy-load modals — only loaded when user opens them
+const DeveloperKeysModal = lazy(() => import('../components/DeveloperKeysModal'));
+const PaymentModal = lazy(() => import('../components/PaymentModal'));
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -51,9 +53,11 @@ export default function Navbar() {
           <img
             src="/logo.svg"
             alt="Runwall Logo"
+            width={28}
+            height={28}
             style={{
               height: '28px',
-              width: 'auto',
+              width: '28px',
               display: 'block',
             }}
           />
@@ -265,31 +269,35 @@ export default function Navbar() {
       )}
 
       {/* Developer API Keys Modal */}
-      {user && (
-        <DeveloperKeysModal
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          userEmail={user.email || ''}
-          onUpgradeClick={() => {
-            setModalOpen(false);
-            setPayModalOpen(true);
-          }}
-        />
+      {user && modalOpen && (
+        <Suspense fallback={null}>
+          <DeveloperKeysModal
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            userEmail={user.email || ''}
+            onUpgradeClick={() => {
+              setModalOpen(false);
+              setPayModalOpen(true);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Razorpay Upgrade Checkout Modal */}
-      {user && (
-        <PaymentModal
-          isOpen={payModalOpen}
-          onClose={() => setPayModalOpen(false)}
-          apiKeyId={1}
-          userEmail={user.email || ''}
-          userName={user.email?.split('@')[0] || ''}
-          onSuccess={() => {
-            setPayModalOpen(false);
-            notify('success', 'Upgraded to Pro tier successfully!');
-          }}
-        />
+      {user && payModalOpen && (
+        <Suspense fallback={null}>
+          <PaymentModal
+            isOpen={payModalOpen}
+            onClose={() => setPayModalOpen(false)}
+            apiKeyId={1}
+            userEmail={user.email || ''}
+            userName={user.email?.split('@')[0] || ''}
+            onSuccess={() => {
+              setPayModalOpen(false);
+              notify('success', 'Upgraded to Pro tier successfully!');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Notification alert */}

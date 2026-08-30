@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
@@ -7,7 +7,9 @@ import {
 } from 'lucide-react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { useAuth } from '../hooks/AuthContext';
-import RunwallFlowDiagram from '../components/RunwallFlowDiagram';
+
+// Lazy-load: @xyflow/react is ~350KiB, only needed below-the-fold
+const RunwallFlowDiagram = lazy(() => import('../components/RunwallFlowDiagram'));
 
 // Platform Logo Assets
 import kiroLogo from '../assets/kiro.svg';
@@ -180,6 +182,8 @@ function CompatibilityTicker() {
               <img
                 src={item.logo}
                 alt={item.name}
+                width={26}
+                height={26}
                 style={{
                   width: '26px',
                   height: '26px',
@@ -653,7 +657,9 @@ function BranchingWorkflowSection() {
           maxWidth: 1280,
           zIndex: 5
         }}>
-          <RunwallFlowDiagram />
+          <Suspense fallback={<div style={{ minHeight: 500, background: 'transparent' }} />}>
+            <RunwallFlowDiagram />
+          </Suspense>
         </div>
 
       </div>
