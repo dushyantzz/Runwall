@@ -5,6 +5,7 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import DocsPage from '@/pages/DocsPage';
 import PricingPage from '@/pages/PricingPage';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 function FeaturesRedirect() {
   const { pageId } = useParams<{ pageId: string }>();
@@ -19,18 +20,37 @@ export function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
-        {/* Home */}
+        {/* Public Home & Pricing */}
         <Route path="/" element={<HomePage />} />
-
-        {/* Pricing */}
         <Route path="/pricing" element={<PricingPage />} />
 
-        {/* Unified Documentation Routes (Public) */}
-        <Route path="/docs" element={<DocsPage />} />
-        <Route path="/docs/:pageId" element={<DocsPage />} />
+        {/* Documentation Routes — Strictly Authenticated */}
+        <Route
+          path="/docs"
+          element={
+            <ProtectedRoute>
+              <DocsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/docs/:pageId"
+          element={
+            <ProtectedRoute>
+              <DocsPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Legacy Features Redirects */}
-        <Route path="/features/:pageId" element={<FeaturesRedirect />} />
+        {/* Legacy Features Redirects (Protected) */}
+        <Route
+          path="/features/:pageId"
+          element={
+            <ProtectedRoute>
+              <FeaturesRedirect />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

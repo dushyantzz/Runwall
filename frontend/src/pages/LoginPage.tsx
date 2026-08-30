@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../hooks/supabaseClient';
-import { Lock, Mail, AlertTriangle, ArrowRight } from 'lucide-react';
+import { useAuth } from '../hooks/AuthContext';
+import { Lock, Mail, AlertTriangle, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // Extract redirect URL from query string or router state, default to /docs
+  const searchParams = new URLSearchParams(location.search);
+  const redirectTarget = searchParams.get('redirect') || (location.state as any)?.from?.pathname || '/docs';
+
+  // If already logged in, redirect immediately
+  useEffect(() => {
+    if (user) {
+      navigate(redirectTarget, { replace: true });
+    }
+  }, [user, navigate, redirectTarget]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,14 +33,14 @@ export default function LoginPage() {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
         setError(error.message);
       } else {
-        navigate('/');
+        navigate(redirectTarget, { replace: true });
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -36,10 +52,11 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setError(null);
     try {
+      const cleanRedirect = redirectTarget.startsWith('/') ? redirectTarget : `/${redirectTarget}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}${cleanRedirect}`,
         }
       });
       if (error) {
@@ -84,6 +101,25 @@ export default function LoginPage() {
         zIndex: 1,
         boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
       }}>
+        {/* Notice for docs access */}
+        {redirectTarget.startsWith('/docs') && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(99, 102, 241, 0.1)',
+            border: '1px solid rgba(99, 102, 241, 0.25)',
+            borderRadius: '6px',
+            padding: '10px 12px',
+            marginBottom: '20px',
+            color: '#a5b4fc',
+            fontSize: '12px',
+          }}>
+            <ShieldCheck size={16} style={{ flexShrink: 0, color: '#818cf8' }} />
+            <span>Sign in to access Runwall Documentation & API guides.</span>
+          </div>
+        )}
+
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <h2 style={{
@@ -101,7 +137,7 @@ export default function LoginPage() {
             color: 'var(--muted, #777777)',
             fontFamily: 'var(--font-body)',
           }}>
-            Access your secure execution dashboard
+            Access your secure execution dashboard & docs
           </p>
         </div>
 
@@ -193,7 +229,7 @@ export default function LoginPage() {
               }} />
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -203,7 +239,7 @@ export default function LoginPage() {
                   background: '#0a0a0a',
                   border: '1px solid var(--border, #262626)',
                   borderRadius: '6px',
-                  padding: '10px 12px 10px 38px',
+                  padding: '10px 38px 10px 38px',
                   color: 'var(--heading, #ffffff)',
                   fontSize: '14px',
                   fontFamily: 'var(--font-body)',
@@ -213,6 +249,25 @@ export default function LoginPage() {
                 onFocus={(e) => (e.target.style.borderColor = 'var(--accent, #FFDA62)')}
                 onBlur={(e) => (e.target.style.borderColor = 'var(--border, #262626)')}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--muted, #777777)',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </div>
 
@@ -309,11 +364,14 @@ export default function LoginPage() {
           fontFamily: 'var(--font-body)',
         }}>
           Don't have an account?{' '}
-          <Link to="/signup" style={{
-            color: 'var(--accent, #FFDA62)',
-            textDecoration: 'none',
-            fontWeight: 500,
-          }}>
+          <Link
+            to={redirectTarget ? `/signup?redirect=${encodeURIComponent(redirectTarget)}` : '/signup'}
+            style={{
+              color: 'var(--accent, #FFDA62)',
+              textDecoration: 'none',
+              fontWeight: 500,
+            }}
+          >
             Create an Account
           </Link>
         </div>
