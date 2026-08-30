@@ -217,14 +217,22 @@ def create_app() -> FastAPI:
     app.add_middleware(MCPAuthASGIMiddleware)
 
     # Add CORS middleware for UI access
-    # Prevent CORS vulnerability: do not allow '*' when allow_credentials=True
     allowed_origins = [origin for origin in get_settings().allowed_origins if origin != "*"]
     if not allowed_origins:
-        allowed_origins = ["http://localhost:3000"]
+        allowed_origins = [
+            "http://localhost:5173",
+            "http://localhost:4173",
+            "http://localhost:3000",
+            "https://runwall.in",
+            "https://www.runwall.in",
+            "https://runwall.vercel.app",
+            "https://mcp.runwall.in"
+        ]
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
+        allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.runwall\.in|http://localhost:\d+",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

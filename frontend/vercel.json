@@ -1,9 +1,10 @@
 {
   "rewrites": [
-    { "source": "/mcp", "destination": "http://54.234.174.237:8000/mcp" },
-    { "source": "/sse", "destination": "http://54.234.174.237:8000/sse" },
-    { "source": "/messages", "destination": "http://54.234.174.237:8000/messages" },
-    { "source": "/health", "destination": "http://54.234.174.237:8000/health" },
+    { "source": "/mcp", "destination": "https://runwall.onrender.com/mcp" },
+    { "source": "/sse", "destination": "https://runwall.onrender.com/sse" },
+    { "source": "/messages", "destination": "https://runwall.onrender.com/messages" },
+    { "source": "/health", "destination": "https://runwall.onrender.com/health" },
+    { "source": "/api/(.*)", "destination": "https://runwall.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

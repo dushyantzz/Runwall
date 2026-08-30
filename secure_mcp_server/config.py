@@ -21,7 +21,19 @@ class Settings(BaseSettings):
     server_name: str = Field(default="Secure MCP Server", description="Server name")
     debug: bool = Field(default=False, validation_alias="DEBUG")
     environment: str = Field(default="production", validation_alias="ENVIRONMENT")
-    allowed_origins: List[str] = Field(default=["http://localhost:3000", "http://localhost:8000"], validation_alias="ALLOWED_ORIGINS")
+    allowed_origins: List[str] = Field(
+        default=[
+            "http://localhost:5173",
+            "http://localhost:4173",
+            "http://localhost:3000",
+            "http://localhost:8000",
+            "https://runwall.in",
+            "https://www.runwall.in",
+            "https://runwall.vercel.app",
+            "https://mcp.runwall.in"
+        ],
+        validation_alias="ALLOWED_ORIGINS"
+    )
     
     secret_key: str = Field(default_factory=lambda: secrets.token_urlsafe(32), description="Secret key for JWT tokens", validation_alias="SECRET_KEY")
     access_token_expire_minutes: int = Field(default=30, validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES")

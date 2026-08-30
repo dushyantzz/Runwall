@@ -68,16 +68,17 @@ export default function DeveloperKeysModal({
   const fetchKeysAndUsage = async () => {
     setLoading(true);
     try {
-      const headers = { 'X-User-Email': userEmail };
+      const headers: Record<string, string> = { 'X-User-Email': userEmail.trim().toLowerCase() };
       const res = await fetch(`${API_BASE}/dashboard/identity/keys`, { headers });
       if (res.ok) {
         const data = await res.json();
-        setApiKeys(data);
+        const keysList = Array.isArray(data) ? data : [];
+        setApiKeys(keysList);
 
         // Fetch usage for primary key if available
-        if (data.length > 0) {
+        if (keysList.length > 0) {
           try {
-            const uRes = await fetch(`${API_BASE}/subscription/usage?api_key_id=${data[0].id}`);
+            const uRes = await fetch(`${API_BASE}/subscription/usage?api_key_id=${keysList[0].id}`);
             if (uRes.ok) {
               const uData = await uRes.json();
               setUsage(uData);
@@ -86,8 +87,13 @@ export default function DeveloperKeysModal({
             console.error('Failed to load usage data', err);
           }
         }
+      } else {
+        const errText = await res.text();
+        console.error('Failed to load API keys:', res.status, errText);
+        showToast(`Failed to load keys (${res.status})`, 'error');
       }
     } catch (err) {
+      console.error('Network error fetching keys:', err);
       showToast('Failed to load API keys', 'error');
     } finally {
       setLoading(false);
