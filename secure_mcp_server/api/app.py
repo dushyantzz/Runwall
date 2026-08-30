@@ -82,6 +82,9 @@ async def _send_asgi_json(send, status_code: int, payload: dict, extra_headers: 
     })
 
 
+# In-memory store for active authenticated SSE sessions (session_id -> context, expiry)
+_authenticated_sse_sessions: Dict[str, Any] = {}
+
 class MCPAuthASGIMiddleware:
     """
     ASGI Middleware to strictly enforce API Key authentication and plan-tier limits
@@ -117,6 +120,7 @@ class MCPAuthASGIMiddleware:
             query_string = scope.get("query_string", b"").decode("utf-8")
             from urllib.parse import parse_qs
             params = parse_qs(query_string)
+            session_id = params.get("session_id", [None])[0]
             
             # Extract headers
             headers = scope.get("headers", [])
@@ -136,6 +140,15 @@ class MCPAuthASGIMiddleware:
                     if q_token.startswith("Bearer "):
                         q_token = q_token[7:].strip()
                     token = q_token
+
+            # If this is a /messages call for an active SSE session that was already authenticated during /sse handshake
+            if not token and path.startswith("/messages") and session_id:
+                cached = _authenticated_sse_sessions.get(session_id)
+                if cached and cached.get("expires_at", 0) > time.time():
+                    scope["user_context"] = cached.get("user_context")
+                    scope["plan_context"] = cached.get("plan_context")
+                    await self.app(scope, receive, send)
+                    return
 
             # Hard Rule: Missing / empty token -> 401 missing_api_key immediately
             if not token:
@@ -199,6 +212,13 @@ class MCPAuthASGIMiddleware:
                     "is_admin": plan_ctx.tier == "enterprise",
                 }
                 scope["plan_context"] = plan_ctx
+
+                if session_id:
+                    _authenticated_sse_sessions[session_id] = {
+                        "user_context": scope["user_context"],
+                        "plan_context": plan_ctx,
+                        "expires_at": time.time() + 3600,
+                    }
 
         await self.app(scope, receive, send)
 

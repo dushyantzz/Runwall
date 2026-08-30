@@ -685,11 +685,11 @@ export default function DeveloperKeysModal({
                     }}
                   >
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px' }}>
-                      https://mcp.runwall.in/mcp?token={generatedKey.slice(0, 16)}...
+                      https://mcp.runwall.in/sse?token={generatedKey.slice(0, 16)}...
                     </span>
                     <button
                       onClick={() => {
-                        copyToClipboard(`https://mcp.runwall.in/mcp?token=${generatedKey}`);
+                        copyToClipboard(`https://mcp.runwall.in/sse?token=${generatedKey}`);
                         setCopiedUrl(true);
                         setTimeout(() => setCopiedUrl(false), 2000);
                       }}
@@ -706,7 +706,7 @@ export default function DeveloperKeysModal({
                       }}
                     >
                       {copiedUrl ? <Check size={10} /> : <Copy size={10} />}
-                      {copiedUrl ? 'Copied' : 'Copy URL'}
+                      {copiedUrl ? 'Copied' : 'Copy Connector URL'}
                     </button>
                   </div>
 

@@ -588,6 +588,47 @@ export default function PricingPage() {
               </button>
             </div>
 
+            {/* Claude Custom Connector URL Box */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 14px',
+              background: '#0e0e11',
+              border: '1px solid #222',
+              borderRadius: 8,
+              marginBottom: 24,
+              fontSize: 12,
+              fontFamily: 'var(--font-mono)',
+              color: '#888'
+            }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '280px', textAlign: 'left' }}>
+                https://mcp.runwall.in/sse?token={generatedKey.slice(0, 16)}...
+              </span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://mcp.runwall.in/sse?token=${generatedKey}`);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent)',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  flexShrink: 0
+                }}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                <span>Copy Connector URL</span>
+              </button>
+            </div>
+
             <button
               onClick={() => {
                 setGeneratedKey(null);
