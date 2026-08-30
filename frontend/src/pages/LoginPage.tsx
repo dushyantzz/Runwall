@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../hooks/supabaseClient';
 import { useAuth } from '../hooks/AuthContext';
-import { Lock, Mail, AlertTriangle, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, AlertTriangle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -101,25 +101,6 @@ export default function LoginPage() {
         zIndex: 1,
         boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
       }}>
-        {/* Notice for docs access */}
-        {redirectTarget.startsWith('/docs') && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(99, 102, 241, 0.1)',
-            border: '1px solid rgba(99, 102, 241, 0.25)',
-            borderRadius: '6px',
-            padding: '10px 12px',
-            marginBottom: '20px',
-            color: '#a5b4fc',
-            fontSize: '12px',
-          }}>
-            <ShieldCheck size={16} style={{ flexShrink: 0, color: '#818cf8' }} />
-            <span>Sign in to access Runwall Documentation & API guides.</span>
-          </div>
-        )}
-
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <h2 style={{
