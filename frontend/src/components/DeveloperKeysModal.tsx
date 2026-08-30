@@ -669,7 +669,7 @@ export default function DeveloperKeysModal({
                     {generatedKey}
                   </div>
 
-                  {/* Claude Desktop URL snippet */}
+                  {/* Claude Custom Connector URL snippet (Streamable HTTP) */}
                   <div
                     style={{
                       display: 'flex',
@@ -685,11 +685,11 @@ export default function DeveloperKeysModal({
                     }}
                   >
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px' }}>
-                      https://mcp.runwall.in/sse?token={generatedKey.slice(0, 16)}...
+                      https://mcp.runwall.in/mcp?token={generatedKey.slice(0, 16)}...
                     </span>
                     <button
                       onClick={() => {
-                        copyToClipboard(`https://mcp.runwall.in/sse?token=${generatedKey}`);
+                        copyToClipboard(`https://mcp.runwall.in/mcp?token=${generatedKey}`);
                         setCopiedUrl(true);
                         setTimeout(() => setCopiedUrl(false), 2000);
                       }}

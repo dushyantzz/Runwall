@@ -603,11 +603,11 @@ export default function PricingPage() {
               color: '#888'
             }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '280px', textAlign: 'left' }}>
-                https://mcp.runwall.in/sse?token={generatedKey.slice(0, 16)}...
+                https://mcp.runwall.in/mcp?token={generatedKey.slice(0, 16)}...
               </span>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`https://mcp.runwall.in/sse?token=${generatedKey}`);
+                  navigator.clipboard.writeText(`https://mcp.runwall.in/mcp?token=${generatedKey}`);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
