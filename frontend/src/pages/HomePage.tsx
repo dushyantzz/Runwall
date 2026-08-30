@@ -105,7 +105,7 @@ function HeroSection() {
             marginTop: 4,
             maxWidth: '100%',
           }}>
-            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Backed by</span>
+            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Backed by</span>
             <span style={{ 
               fontFamily: 'var(--font-display)', 
               fontWeight: 800, 
@@ -116,9 +116,9 @@ function HeroSection() {
               lineHeight: 1,
               whiteSpace: 'nowrap',
             }}>
-              sarvam<span style={{ color: '#7c8ba1' }}>.ai</span>
+              sarvam<span style={{ color: '#94a3b8' }}>.ai</span>
             </span>
-            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Startup Program</span>
+            <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Startup Program</span>
           </div>
         </div>
 
@@ -224,7 +224,7 @@ function FeatureBentoGrid() {
               Everything You Need for Governance
             </h2>
             <p style={{
-              color: '#777777',
+              color: 'var(--muted)',
               fontSize: 13,
               maxWidth: 320,
               lineHeight: 1.5
@@ -641,9 +641,10 @@ function BranchingWorkflowSection() {
             Safe for Agents to Operate
           </h2>
           <p style={{
-            color: '#777777',
+            maxWidth: 640,
+            margin: '0 auto',
+            color: 'var(--muted)',
             fontSize: 14,
-            maxWidth: 550,
             lineHeight: 1.6
           }}>
             Deploy agent policies safely. Test security policies in shadow dry-run branches and intercept high-risk actions before they hit production systems.
@@ -758,8 +759,8 @@ function UserFeedbackSection() {
         <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', fontWeight: 300, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 16 }}>
           User Feedback That Motivates Us
         </h2>
-        <p style={{ color: '#777777', fontSize: 14, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
-          Real reviews and discussions from developers and security leaders on Product Hunt.
+        <p style={{ color: 'var(--muted)', fontSize: 14, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
+          Explore interactive demos of the 12 core governance components in the Runwall security layer.
         </p>
       </div>
 
@@ -954,7 +955,7 @@ function UserFeedbackSection() {
 
         .feedback-handle {
           font-size: 11px;
-          color: #777777;
+          color: var(--muted);
           font-family: var(--font-mono);
           margin-top: 2px;
         }
@@ -998,7 +999,7 @@ function UserFeedbackSection() {
 
         .feedback-time {
           font-size: 11px;
-          color: #666666;
+          color: var(--muted);
           font-family: var(--font-mono);
         }
 
@@ -1067,7 +1068,7 @@ function FAQSection() {
           }}>
             Frequently Asked Questions
           </h2>
-          <p style={{ color: '#777777', fontSize: 14, maxWidth: 520, lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--muted)', fontSize: 14, maxWidth: 520, lineHeight: 1.6 }}>
             Everything you need to know about Runwall and AI agent governance.
           </p>
         </div>
@@ -1126,9 +1127,8 @@ function CTASection() {
         <h2 style={{ fontSize: '2rem', fontWeight: 300, color: '#ffffff', marginBottom: 16 }}>
           Ready to govern your <span style={{ color: 'var(--accent)' }}>AI agents</span>?
         </h2>
-        <p style={{ maxWidth: 480, margin: '0 auto 32px', color: '#777777', fontSize: 13 }}>
-          Deploy enterprise-grade execution governance in minutes.
-          Start free, scale to millions of agent actions.
+        <p style={{ maxWidth: 480, margin: '0 auto 32px', color: 'var(--muted)', fontSize: 13 }}>
+          Connect Runwall to your agents in minutes. Free forever tier available.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 12 }} className="cta-button-group">
           {user ? (

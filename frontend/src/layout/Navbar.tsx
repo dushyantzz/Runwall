@@ -49,7 +49,7 @@ export default function Navbar() {
     >
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
         {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+        <Link to="/" aria-label="Runwall Home" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
           <img
             src="/logo.svg"
             alt="Runwall Logo"
@@ -89,6 +89,7 @@ export default function Navbar() {
               </span>
               <button
                 onClick={() => setModalOpen(true)}
+                aria-label="Open API Keys Modal"
                 style={{
                   background: 'var(--accent-dim)',
                   border: '1px solid var(--accent-border)',
@@ -117,6 +118,7 @@ export default function Navbar() {
               </button>
               <button
                 onClick={signOut}
+                aria-label="Sign out of account"
                 style={{
                   background: 'none',
                   border: '1px solid var(--border)',

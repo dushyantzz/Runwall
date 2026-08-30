@@ -149,6 +149,7 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`Visit Runwall on ${label}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
