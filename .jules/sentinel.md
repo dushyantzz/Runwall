@@ -1,8 +1,4 @@
-## 2024-11-20 - [Hardcoded Database Credentials]
-**Vulnerability:** Found a hardcoded `database_url` with plaintext credentials in `secure_mcp_server/config.py`.
-**Learning:** Hardcoded database URLs with real credentials in default fields for Pydantic Settings lead to credential leakage.
-**Prevention:** Do not hardcode production database connection strings with plaintext credentials (e.g., Supabase URLs) in code or Pydantic default fields. Use safe local placeholders (e.g., `postgresql+asyncpg://postgres:postgres@localhost:5432/mcp_db`) and rely on environment variables for production connections.
-## 2026-08-31 - Overly Permissive CORS Regex Vulnerability
-**Vulnerability:** The CORS configuration in FastAPI's `CORSMiddleware` used an `allow_origin_regex` lacking strict beginning (`^`) and end (`$`) anchors (e.g., `allow_origin_regex=r"https://.*\.vercel\.app"`).
-**Learning:** In Python's `re.match` (which FastAPI uses for CORS regex matching), the pattern matches from the beginning but doesn't require matching to the end unless `$` is specified. This allows attackers to bypass CORS by registering a malicious domain that incorporates the allowed domain as a subdomain (e.g., `https://legit.vercel.app.attacker.com`) or by appending unexpected suffixes.
-**Prevention:** Always use strict `^` and `$` anchors in CORS regex patterns, and be precise with wildcards (e.g., `([a-zA-Z0-9-]+\.)*` instead of `.*`) to ensure exact origin matching.
+## 2025-02-23 - Bounds Checking in AST Pow Evaluation
+**Vulnerability:** A Denial of Service (DoS) vulnerability existed in `secure_mcp_server/tools.py` because the custom AST evaluator for math operations (`ast.Pow`) only validated the magnitude of the exponent (right-hand side) and failed to validate the base (left-hand side). This allowed for potentially evaluating extremely large base expressions.
+**Learning:** Checking only the exponent for powers is insufficient to prevent DoS attacks. Very large bases can also cause the python interpreter to consume large amounts of CPU and memory, crashing the application.
+**Prevention:** Always perform strict bounds-checking on both the base and exponent for mathematical power evaluations in custom AST walkers.
