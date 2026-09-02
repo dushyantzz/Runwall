@@ -774,6 +774,7 @@ export default function RunwallFlowDiagram() {
 
         .flowing-dash-mobile {
           animation: flow-down-dash 1.2s linear infinite;
+          will-change: stroke-dashoffset;
         }
         @keyframes flow-down-dash {
           from {

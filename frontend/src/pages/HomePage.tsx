@@ -88,7 +88,7 @@ function HeroSection() {
         {/* Product Hunt Badge + Sarvam Badge */}
         <div className="animate-fade-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24, gap: 12 }}>
           <a href="https://www.producthunt.com/products/runwall?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-runwall" target="_blank" rel="noopener noreferrer">
-            <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1193799&amp;theme=light&amp;t=1783834347535" alt="Runwall - The firewall and execution governance gateway for AI agents | Product Hunt" style={{ width: 200, height: 43 }} width="200" height="43" loading="lazy" />
+            <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1193799&amp;theme=light&amp;t=1783834347535" alt="Runwall - The firewall and execution governance gateway for AI agents | Product Hunt" style={{ width: 200, height: 43 }} width="200" height="43" fetchPriority="high" />
           </a>
 
           {/* Backed By Sarvam.ai */}
