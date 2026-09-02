@@ -128,10 +128,10 @@ export default function DocsPage() {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={`https://runwall.vercel.app/docs/${activeDoc.id === 'introduction' ? '' : activeDoc.id}`} />
+        <link rel="canonical" href={`https://runwall.in/docs/${activeDoc.id === 'introduction' ? '' : activeDoc.id}`} />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
-        <meta property="og:url" content={`https://runwall.vercel.app/docs/${activeDoc.id}`} />
+        <meta property="og:url" content={`https://runwall.in/docs/${activeDoc.id}`} />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
       </Helmet>

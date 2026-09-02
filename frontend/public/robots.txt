@@ -32,4 +32,4 @@ Allow: /
 User-agent: AdsBot-Google
 Allow: /
 
-Sitemap: https://runwall.vercel.app/sitemap.xml
+Sitemap: https://runwall.in/sitemap.xml

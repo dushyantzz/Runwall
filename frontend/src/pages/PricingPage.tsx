@@ -77,9 +77,9 @@ export default function PricingPage() {
     <Helmet>
       <title>Pricing — Runwall AI Agent Governance</title>
       <meta name="description" content="Runwall pricing plans for AI agent governance. Start free with the developer plan or upgrade to Pro for advanced policy enforcement, risk scoring, taint tracking, and audit trails." />
-      <link rel="canonical" href="https://runwall.vercel.app/pricing" />
+      <link rel="canonical" href="https://runwall.in/pricing" />
       <meta property="og:type" content="website" />
-      <meta property="og:url" content="https://runwall.vercel.app/pricing" />
+      <meta property="og:url" content="https://runwall.in/pricing" />
       <meta property="og:title" content="Pricing — Runwall AI Agent Governance" />
       <meta property="og:description" content="Runwall pricing plans for AI agent governance. Start free with the developer plan or upgrade to Pro for advanced policy enforcement, risk scoring, taint tracking, and audit trails." />
       <meta name="twitter:card" content="summary_large_image" />

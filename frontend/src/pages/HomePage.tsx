@@ -49,9 +49,9 @@ export default function HomePage() {
       <Helmet>
         <title>Runwall — Execution Governance for AI Agents</title>
         <meta name="description" content="Runwall is an agent-native execution governance platform. Policy enforcement, identity gateway, risk scoring, taint tracking, approval workflows, and audit trails for AI agents on MCP servers." />
-        <link rel="canonical" href="https://runwall.vercel.app/" />
+        <link rel="canonical" href="https://runwall.in/" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://runwall.vercel.app/" />
+        <meta property="og:url" content="https://runwall.in/" />
         <meta property="og:title" content="Runwall — Execution Governance for AI Agents" />
         <meta property="og:description" content="Agent-native execution governance. Policy engine, risk scoring, taint tracking, approval workflows, and audit trails for AI agents on MCP servers." />
         <meta name="twitter:card" content="summary_large_image" />
