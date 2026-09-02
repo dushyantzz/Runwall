@@ -25,7 +25,20 @@ class DatabaseManager:
     
     async def initialize(self):
         """Initialize database connection and create tables."""
-        logger.info("Initializing database connection", url=self.database_url)
+        # Mask password in connection string for safe logging
+        from urllib.parse import urlsplit, urlunsplit
+        try:
+            parts = urlsplit(self.database_url)
+            if parts.password:
+                netloc = f"{parts.username or ''}:***@{parts.hostname or ''}"
+                if parts.port:
+                    netloc += f":{parts.port}"
+                masked_url = urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+            else:
+                masked_url = self.database_url
+        except Exception:
+            masked_url = "database_configured"
+        logger.info("Initializing database connection", url=masked_url)
         
         # Create async engine
         self.engine = create_async_engine(
