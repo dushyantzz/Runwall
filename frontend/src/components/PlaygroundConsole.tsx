@@ -20,20 +20,17 @@ export default function PlaygroundConsole({ title }: { title: string }) {
   };
 
   // -------------------------------------------------------------------------
-  // 1. Identity & Access Control State
+  // 1. Identity & Access Control State (Simulated Agent Service Principals)
   // -------------------------------------------------------------------------
-  const [users, setUsers] = useState<any[]>([]);
+  const [identities] = useState([
+    { id: 'sa-agent-01', name: 'claude-code-worker', principal: 'agent_principal:claude-code', scope: 'fs:read, git:diff, mcp:exec', policy: 'OPA-Developer-Strict', status: 'Active' },
+    { id: 'sa-agent-02', name: 'data-pipeline-bot', principal: 'agent_principal:data-lake', scope: 'sql:read-only, s3:export', policy: 'Data-Governance-v2', status: 'Active' },
+    { id: 'sa-agent-03', name: 'devops-deployer-ai', principal: 'agent_principal:k8s-runner', scope: 'k8s:deploy, aws:describe', policy: 'Human-Approval-Req', status: 'Active' },
+    { id: 'sa-agent-04', name: 'support-triage-agent', principal: 'agent_principal:zendesk-api', scope: 'crm:read, ticket:draft', policy: 'PII-Redaction-v1', status: 'Active' },
+  ]);
 
   const fetchIdentityData = async () => {
-    setLoading(true);
-    try {
-      const uRes = await fetch(`${API_BASE}/dashboard/identity/users`);
-      if (uRes.ok) setUsers(await uRes.json());
-    } catch (err: any) {
-      setError('Could not connect to FastAPI server. Please ensure the backend is running.');
-    } finally {
-      setLoading(false);
-    }
+    notify('success', 'Agent identity manifests refreshed.');
   };
 
   // -------------------------------------------------------------------------
@@ -492,34 +489,39 @@ allow if {
             ------------------------------------------------------------------- */}
         {title === 'Identity & Access Control' && (
           <div>
-
-            {/* Users / Identities list */}
+            {/* Agent Identities / Service Principals list */}
             <div style={{ border: '1px solid #333333', borderRadius: 8, padding: 20, background: '#000000' }}>
               <h4 style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                <Users size={14} color="var(--accent)" /> Registered Identities
+                <Users size={14} color="var(--accent)" /> Agent Service Principals & Scopes
               </h4>
               <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ color: '#777777', textAlign: 'left', borderBottom: '1px solid #333333' }}>
-                    <th style={{ padding: '8px 0' }}>Username</th>
-                    <th>Email</th>
-                    <th>Role</th>
+                    <th style={{ padding: '8px 0' }}>Agent Name</th>
+                    <th>Principal Identifier</th>
+                    <th>Granted MCP Scopes</th>
+                    <th>Enforced Policy</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map(u => (
+                  {identities.map(u => (
                     <tr key={u.id} style={{ color: '#ffffff', borderBottom: '1px solid #111' }}>
-                      <td style={{ padding: '10px 0', fontWeight: 500 }}>{u.username}</td>
-                      <td style={{ color: '#777777' }}>{u.email}</td>
+                      <td style={{ padding: '10px 0', fontWeight: 500 }}>{u.name}</td>
+                      <td style={{ color: '#777777', fontFamily: 'var(--font-mono)', fontSize: 11 }}>{u.principal}</td>
                       <td>
-                        <span style={{ fontSize: 10, background: u.is_admin ? 'rgba(139,92,246,0.1)' : 'rgba(255,255,255,0.05)', color: u.is_admin ? '#a78bfa' : '#b4b4b4', padding: '2px 6px', borderRadius: 4 }}>
-                          {u.is_admin ? 'Administrator' : 'Developer'}
+                        <code style={{ fontSize: 10, background: 'rgba(255,255,255,0.05)', color: '#b4b4b4', padding: '2px 6px', borderRadius: 4 }}>
+                          {u.scope}
+                        </code>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 10, background: 'rgba(139,92,246,0.1)', color: '#a78bfa', padding: '2px 6px', borderRadius: 4 }}>
+                          {u.policy}
                         </span>
                       </td>
                       <td>
                         <span style={{ color: '#10b981', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <span style={{ width: 6, height: 6, background: '#10b981', borderRadius: '50%' }} /> Active
+                          <span style={{ width: 6, height: 6, background: '#10b981', borderRadius: '50%' }} /> {u.status}
                         </span>
                       </td>
                     </tr>

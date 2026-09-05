@@ -5,33 +5,33 @@ const footerLinks = {
   Product: [
     { label: 'Features', to: '/#features' },
     { label: 'Pricing', to: '/pricing' },
-    { label: 'Changelog', to: '/changelog' },
-    { label: 'Roadmap', to: '/roadmap' },
+    { label: 'Use Cases', to: '/use-cases/coding-agents' },
+    { label: 'Integrations', to: '/integrations/claude-code' },
   ],
   Platform: [
-    { label: 'Identity & Access', to: '/features/identity-access-control' },
-    { label: 'Policy Engine', to: '/features/policy-engine' },
-    { label: 'Risk Scoring', to: '/features/risk-scoring-engine' },
-    { label: 'Audit & Replay', to: '/features/audit-evidence-replay' },
-    { label: 'Approval Workflows', to: '/features/approval-workflow-engine' },
-    { label: 'Sandboxing', to: '/features/sandboxing-execution-profiles' },
+    { label: 'Policy Engine', to: '/docs/policies' },
+    { label: 'Risk Scoring', to: '/docs/risk' },
+    { label: 'Taint Tracking', to: '/docs/taint' },
+    { label: 'Approval Workflows', to: '/docs/approvals' },
+    { label: 'Audit & Replay', to: '/docs/audit' },
+    { label: 'MCP Protocol', to: '/docs/mcp' },
   ],
   Developers: [
     { label: 'Documentation', to: '/docs' },
-    { label: 'API Reference', to: '/docs/api' },
-    { label: 'SDKs', to: '/docs/sdks' },
+    { label: 'Getting Started', to: '/docs/getting-started' },
     { label: 'GitHub', to: 'https://github.com/dushyantzz/Runwall', external: true },
   ],
-  Company: [
-    { label: 'About', to: '/about' },
-    { label: 'Blog', to: '/blog' },
-    { label: 'Careers', to: '/careers' },
+  Research: [
+    { label: 'AI Agent Security', to: '/ai-agent-security' },
+    { label: 'AI Agent Governance', to: '/ai-agent-governance' },
+    { label: 'MCP Gateway', to: '/mcp-gateway' },
     { label: 'Contact', to: 'mailto:dushyantkv508@gmail.com', external: true },
   ],
-  Legal: [
-    { label: 'Privacy', to: '/privacy' },
-    { label: 'Terms', to: '/terms' },
-    { label: 'Security', to: '/security' },
+  Security: [
+    { label: 'Security Overview', to: '/security' },
+    { label: 'Threat Model', to: '/security/threat-model' },
+    { label: 'Security Audit', to: '/security/testing' },
+    { label: 'Responsible Disclosure', to: '/security/responsible-disclosure' },
   ],
 };
 

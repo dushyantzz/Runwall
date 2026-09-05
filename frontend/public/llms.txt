@@ -4,11 +4,54 @@
 
 Runwall sits as a proxy between AI agents (Claude Code, Cursor, Codex, etc.) and the tools they call, applying OPA/Rego policy rules, taint tracking, and semantic risk scoring in real time.
 
+## Getting Started
+- [Getting Started](https://runwall.in/docs/getting-started): How to connect Runwall to an existing MCP-based agent stack
+- [Documentation Hub](https://runwall.in/docs): Full documentation with sidebar navigation
+
 ## Docs
-- [Getting Started](https://runwall.in/docs): How to connect Runwall to an existing MCP-based agent stack
-- [Policy Engine](https://runwall.in/docs/policy-engine): OPA/Rego rule authoring reference
-- [Identity & Access Control](https://runwall.in/docs/identity-access): OAuth and API key gateway management for agent sessions
-- [Risk Scoring Engine](https://runwall.in/docs/risk-scoring): Real-time risk assessment for agent tool invocations
+- [MCP Protocol Broker](https://runwall.in/docs/mcp): How Runwall proxies MCP and manages the tool registry
+- [Policy Engine](https://runwall.in/docs/policies): OPA/Rego policy authoring for per-tool-call governance
+- [Risk Scoring Engine](https://runwall.in/docs/risk): Real-time risk assessment for agent tool invocations
+- [Taint Tracking & DLP](https://runwall.in/docs/taint): Session-level taint tracking to prevent data exfiltration
+- [Approval Workflows](https://runwall.in/docs/approvals): Human-in-the-loop, log-and-allow, and hard block modes
+- [Audit Log & Evidence Replay](https://runwall.in/docs/audit): Immutable audit trail with forensic session replay
+
+## Security
+- [Security Overview](https://runwall.in/security): Zero-trust security model and defense-in-depth architecture
+- [Security Architecture](https://runwall.in/security/architecture): System diagram and governance pipeline
+- [Threat Model](https://runwall.in/security/threat-model): Prompt injection, tool poisoning, data exfiltration, runaway loops
+- [Security Testing](https://runwall.in/security/testing): Adversarial audit case study (2.1→9.1 score progression)
+- [Responsible Disclosure](https://runwall.in/security/responsible-disclosure): How to report security vulnerabilities
+
+## Use Cases
+- [Coding Agents](https://runwall.in/use-cases/coding-agents): Governance for Claude Code, Cursor, Copilot with terminal/file access
+- [Enterprise MCP](https://runwall.in/use-cases/enterprise-mcp): Multi-tenant governance, per-tenant policies, SLA enforcement
+- [Autonomous Agents](https://runwall.in/use-cases/autonomous-agents): Runaway loop protection, rate limits, quotas, rollback
+- [Sensitive Data](https://runwall.in/use-cases/sensitive-data): Taint tracking and DLP for data exfiltration prevention
+
+## Integrations
+- [Claude Code](https://runwall.in/integrations/claude-code): Setup guide for Claude Code and Claude Desktop
+- [OpenAI Codex](https://runwall.in/integrations/codex): Setup guide for Codex agents
+- [Cursor](https://runwall.in/integrations/cursor): Setup guide for Cursor AI
+- [Cline](https://runwall.in/integrations/cline): Setup guide for Cline (VS Code)
+- [Custom Agents](https://runwall.in/integrations/custom-agents): Integration guide for any MCP-compliant agent
+
+## Compare
+- [vs. MCP Gateways](https://runwall.in/compare/mcp-gateway): Governance vs. basic routing
+- [vs. API Gateways](https://runwall.in/compare/api-gateway): Intent-aware policy vs. HTTP-level rules
+- [vs. Agent Observability](https://runwall.in/compare/agent-observability): Enforcement vs. monitoring
+
+## Research
+- [MCP Security](https://runwall.in/research/mcp-security): Securing the Model Context Protocol
+- [Agent Security](https://runwall.in/research/agent-security): Threats and defenses for AI agent systems
+- [Agent Governance](https://runwall.in/research/agent-governance): Policy, compliance, and audit frameworks
+- [Tool Security](https://runwall.in/research/tool-security): Tool poisoning and MCP tool integrity
+
+## Pillar Pages
+- [AI Agent Security](https://runwall.in/ai-agent-security): Comprehensive guide to securing AI agents
+- [AI Agent Governance](https://runwall.in/ai-agent-governance): Policy enforcement, approvals, and compliance
+- [MCP Gateway](https://runwall.in/mcp-gateway): Runwall as a governance-aware MCP proxy
+- [AI Agent Firewall](https://runwall.in/ai-agent-firewall): The security layer between AI and critical systems
 
 ## Product
 - [Pricing](https://runwall.in/pricing): Plans and billing details

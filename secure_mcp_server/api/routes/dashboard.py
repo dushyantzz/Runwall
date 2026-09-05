@@ -58,22 +58,8 @@ class SimulationRequest(BaseModel):
 # ---------------------------------------------------------------------------
 @router.get("/identity/users")
 async def get_users():
-    async with get_db_manager().get_session_context() as db:
-        stmt = select(User)
-        res = await db.execute(stmt)
-        users = res.scalars().all()
-        return [
-            {
-                "id": u.id,
-                "username": u.username,
-                "email": u.email,
-                "full_name": u.full_name,
-                "is_active": u.is_active,
-                "is_admin": u.is_admin,
-                "created_at": u.created_at
-            }
-            for u in users
-        ]
+    # Security: Do not expose real user records. Return empty list or sample agent identities.
+    return []
 
 @router.get("/identity/service-accounts")
 async def get_service_accounts():

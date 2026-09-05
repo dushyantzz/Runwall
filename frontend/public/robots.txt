@@ -32,4 +32,5 @@ Allow: /
 User-agent: AdsBot-Google
 Allow: /
 
+Host: https://runwall.in
 Sitemap: https://runwall.in/sitemap.xml
