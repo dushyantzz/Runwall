@@ -1,36 +1,82 @@
 {
   "rewrites": [
-    { "source": "/mcp", "destination": "https://runwall.onrender.com/mcp" },
-    { "source": "/sse", "destination": "https://runwall.onrender.com/sse" },
-    { "source": "/messages", "destination": "https://runwall.onrender.com/messages" },
-    { "source": "/health", "destination": "https://runwall.onrender.com/health" },
-    { "source": "/api/(.*)", "destination": "https://runwall.onrender.com/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/mcp",
+      "destination": "https://runwall.onrender.com/mcp"
+    },
+    {
+      "source": "/sse",
+      "destination": "https://runwall.onrender.com/sse"
+    },
+    {
+      "source": "/messages",
+      "destination": "https://runwall.onrender.com/messages"
+    },
+    {
+      "source": "/health",
+      "destination": "https://runwall.onrender.com/health"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://runwall.onrender.com/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/(.*\\.svg)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/llms.txt",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" },
-        { "key": "Content-Type", "value": "text/plain; charset=utf-8" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
       ]
     },
     {
       "source": "/robots.txt",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        }
       ]
     }
   ]
