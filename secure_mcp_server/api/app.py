@@ -288,6 +288,78 @@ def create_app() -> FastAPI:
             title=app.title + " - ReDoc"
         )
 
+    @app.get("/.well-known/openid-configuration", tags=["Discovery"])
+    @app.get("/api/v1/.well-known/openid-configuration", tags=["Discovery"])
+    async def openid_configuration():
+        return {
+            "issuer": "https://runwall.in",
+            "authorization_endpoint": "https://runwall.in/oauth/authorize",
+            "token_endpoint": "https://runwall.in/api/v1/keys/token",
+            "userinfo_endpoint": "https://runwall.in/oauth/userinfo",
+            "jwks_uri": "https://runwall.in/.well-known/jwks.json",
+            "registration_endpoint": "https://runwall.in/signup",
+            "scopes_supported": [
+                "openid", "profile", "email",
+                "mcp:tools", "mcp:read", "mcp:write", "mcp:admin"
+            ],
+            "response_types_supported": [
+                "code", "token", "id_token",
+                "code token", "code id_token", "id_token token", "code id_token token"
+            ],
+            "response_modes_supported": ["query", "fragment"],
+            "grant_types_supported": [
+                "authorization_code", "client_credentials",
+                "refresh_token", "urn:ietf:params:oauth:grant-type:token-exchange"
+            ],
+            "subject_types_supported": ["public", "pairwise"],
+            "id_token_signing_alg_values_supported": ["RS256", "HS256"],
+            "token_endpoint_auth_methods_supported": [
+                "client_secret_basic", "client_secret_post", "bearer", "none"
+            ],
+            "claims_supported": [
+                "sub", "iss", "aud", "exp", "iat", "auth_time",
+                "email", "email_verified", "name", "preferred_username",
+                "role", "tenant_id"
+            ],
+            "code_challenge_methods_supported": ["S256", "plain"],
+            "revocation_endpoint": "https://runwall.in/oauth/revoke",
+            "introspection_endpoint": "https://runwall.in/oauth/introspect",
+            "service_documentation": "https://runwall.in/docs"
+        }
+
+    @app.get("/.well-known/oauth-authorization-server", tags=["Discovery"])
+    @app.get("/api/v1/.well-known/oauth-authorization-server", tags=["Discovery"])
+    async def oauth_authorization_server():
+        return {
+            "issuer": "https://runwall.in",
+            "authorization_endpoint": "https://runwall.in/oauth/authorize",
+            "token_endpoint": "https://runwall.in/api/v1/keys/token",
+            "jwks_uri": "https://runwall.in/.well-known/jwks.json",
+            "registration_endpoint": "https://runwall.in/signup",
+            "scopes_supported": [
+                "openid", "profile", "email",
+                "mcp:tools", "mcp:read", "mcp:write", "mcp:admin"
+            ],
+            "response_types_supported": ["code", "token"],
+            "response_modes_supported": ["query", "fragment"],
+            "grant_types_supported": [
+                "authorization_code", "client_credentials",
+                "refresh_token", "urn:ietf:params:oauth:grant-type:token-exchange"
+            ],
+            "token_endpoint_auth_methods_supported": [
+                "client_secret_basic", "client_secret_post", "bearer", "none"
+            ],
+            "code_challenge_methods_supported": ["S256", "plain"],
+            "revocation_endpoint": "https://runwall.in/oauth/revoke",
+            "introspection_endpoint": "https://runwall.in/oauth/introspect",
+            "service_documentation": "https://runwall.in/docs"
+        }
+
+    @app.get("/.well-known/jwks.json", tags=["Discovery"])
+    @app.get("/api/v1/.well-known/jwks.json", tags=["Discovery"])
+    async def jwks_json():
+        return {"keys": []}
+
     @app.get("/health")
     async def health_check():
         return {"status": "healthy"}

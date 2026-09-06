@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/.well-known/openid-configuration", "destination": "/.well-known/openid-configuration.json" },
+    { "source": "/.well-known/oauth-authorization-server", "destination": "/.well-known/oauth-authorization-server.json" },
+    { "source": "/.well-known/jwks.json", "destination": "/.well-known/jwks.json" },
     { "source": "/mcp", "destination": "https://runwall.onrender.com/mcp" },
     { "source": "/sse", "destination": "https://runwall.onrender.com/sse" },
     { "source": "/messages", "destination": "https://runwall.onrender.com/messages" },
@@ -8,6 +11,16 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
+    {
+      "source": "/.well-known/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" },
+        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [
