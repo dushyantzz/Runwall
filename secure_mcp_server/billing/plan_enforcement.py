@@ -245,25 +245,7 @@ async def resolve_plan(
     subscription = result.scalars().first()
 
     if subscription is None:
-        tier = (api_key.tier or "free").lower()
-        try:
-            new_sub = UserSubscription(
-                user_id=api_key.user_id,
-                tier=tier,
-                status="active"
-            )
-            db.add(new_sub)
-            await db.flush()
-        except Exception as e:
-            logger.warning("Could not auto-insert default subscription", error=str(e))
-        return PlanContext(
-            user_id=api_key.user_id,
-            api_key_id=api_key.id,
-            tier=tier,
-            status="active",
-            limits=get_plan_limits(tier),
-            key_name=api_key.name
-        )
+        raise SubscriptionRecordMissingError()
 
     if subscription.status != "active":
         logger.warning(
