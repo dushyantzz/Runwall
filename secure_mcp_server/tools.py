@@ -938,8 +938,11 @@ class ToolRegistry:
                 elif isinstance(node, ast.BinOp):
                     left = _eval_node(node.left)
                     right = _eval_node(node.right)
-                    if isinstance(node.op, ast.Pow) and (not isinstance(right, (int, float)) or right > 100):
-                        raise ValueError("Power too large")
+                    if isinstance(node.op, ast.Pow):
+                        if not isinstance(right, (int, float)) or right > 100:
+                            raise ValueError("Power too large")
+                        if not isinstance(left, (int, float)) or abs(left) > 100000:
+                            raise ValueError("Base too large")
                     if type(node.op) not in allowed_operators:
                         raise ValueError(f"Operator {type(node.op).__name__} not allowed")
                     return allowed_operators[type(node.op)](left, right)
