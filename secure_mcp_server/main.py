@@ -180,12 +180,93 @@ class SecureMCPServer:
             if not await self.security_manager.check_rate_limit(client_id):
                 self.metrics_collector.record_rate_limit_hit()
                 raise Exception("Rate limit exceeded")
-            
-            # Input sanitization: Only sanitize parameters for tool executions
+
+            # Input sanitization: Only sanitize parameters for tool executions.
+            # DangerousInputError is caught here and returned as a structured MCP
+            # DENY result (never an HTTP 401/403 that looks like an auth failure).
             method = getattr(request, 'method', '')
             if method == 'tools/call' and hasattr(request, 'params'):
-                request.params = self.security_manager.sanitize_input(request.params)
-            
+                from secure_mcp_server.security import DangerousInputError
+                try:
+                    request.params = self.security_manager.sanitize_input(request.params)
+                except DangerousInputError as die:
+                    import uuid as _uuid
+                    import json as _json
+
+                    # Build a synthetic user_context for logging
+                    _user_ctx = {}
+                    if hasattr(request, 'user_context') and request.user_context:
+                        _user_ctx = request.user_context
+                    elif hasattr(request, 'scope') and isinstance(getattr(request, 'scope', None), dict):
+                        _user_ctx = request.scope.get('user_context', {})
+
+                    _tool_name = getattr(getattr(request, 'params', None), 'name', 'unknown')
+                    _session_id = _user_ctx.get('session_id') or str(_uuid.uuid4())
+                    _explanation = (
+                        f"Transport-layer rejection: dangerous pattern detected "
+                        f"in parameter '{die.param_path}'"
+                    )
+
+                    # Write a decision log entry (transport-layer rejection)
+                    try:
+                        from secure_mcp_server.database import PolicyDecisionLog, get_db_manager
+                        from secure_mcp_server.governance.opa_evaluator import (
+                            _safe_user_id, _extract_client_ip, _decision_log_failure_count
+                        )
+                        import secure_mcp_server.governance.opa_evaluator as _opa_mod
+
+                        raw_uid = _user_ctx.get('user_id')
+                        async with get_db_manager().get_session_context() as _db:
+                            _log = PolicyDecisionLog(
+                                tenant_id=_user_ctx.get('tenant_id', 'default'),
+                                user_id=_safe_user_id(raw_uid),
+                                principal=str(raw_uid) if raw_uid is not None else None,
+                                session_id=_session_id,
+                                client_ip=_extract_client_ip(_user_ctx),
+                                tool_name=_tool_name,
+                                intent_category='unknown',
+                                risk_score=1.0,
+                                risk_level='critical',
+                                decision='deny',
+                                explanation=_explanation,
+                                evaluation_engine='transport',
+                                taint_labels=[],
+                                evaluation_chain={
+                                    'pattern': die.pattern,
+                                    'param_path': die.param_path,
+                                },
+                            )
+                            _db.add(_log)
+                            await _db.commit()
+                    except Exception as _log_err:
+                        import secure_mcp_server.governance.opa_evaluator as _opa_mod
+                        _opa_mod._decision_log_failure_count += 1
+                        logger.error(
+                            "Failed to log transport-layer DENY decision",
+                            error=str(_log_err),
+                            failure_count=_opa_mod._decision_log_failure_count,
+                        )
+
+                    logger.warning(
+                        "Transport-layer DENY: dangerous input pattern detected",
+                        param_path=die.param_path,
+                        pattern=die.pattern,
+                        tool=_tool_name,
+                        session_id=_session_id,
+                    )
+
+                    # Return a structured MCP tool result — NEVER an HTTP 401/403
+                    from mcp.types import CallToolResult, TextContent
+                    deny_payload = _json.dumps({
+                        "decision": "DENY",
+                        "explanation": _explanation,
+                        "evaluation_engine": "transport",
+                    })
+                    return CallToolResult(
+                        content=[TextContent(type="text", text=deny_payload)],
+                        isError=True,
+                    )
+
             response = await call_next(request)
             return response
         

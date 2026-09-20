@@ -13,6 +13,25 @@ from .config import Settings
 logger = structlog.get_logger()
 
 
+class DangerousInputError(ValueError):
+    """
+    Raised when a dangerous pattern is detected in input during sanitization.
+
+    Attributes:
+        pattern: The regex pattern that matched.
+        param_path: Dotted path of the parameter where the match was found.
+        matched_text: The substring that triggered the match (truncated for safety).
+    """
+    def __init__(self, pattern: str, param_path: str, matched_text: str = ""):
+        self.pattern = pattern
+        self.param_path = param_path
+        # Truncate to avoid logging the full payload in exception messages
+        self.matched_text = matched_text[:80] if matched_text else ""
+        super().__init__(
+            f"Dangerous pattern '{pattern}' detected in parameter '{param_path}'"
+        )
+
+
 class SecurityManager:
     """Manages security policies, input validation, and threat detection."""
     
@@ -39,38 +58,50 @@ class SecurityManager:
         
         self.compiled_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in self.dangerous_patterns]
     
-    def sanitize_input(self, data: Any) -> Any:
-        """Sanitize user input to prevent injection attacks."""
+    def sanitize_input(self, data: Any, _path: str = "<root>") -> Any:
+        """
+        Sanitize user input to prevent injection attacks.
+
+        Raises DangerousInputError if a dangerous pattern is detected.
+        The caller (middleware) is responsible for catching this and returning
+        a structured DENY response — never silently strip or swallow.
+        """
         if not self.settings.enable_input_sanitization:
             return data
-        
+
         if isinstance(data, str):
-            return self._sanitize_string(data)
+            return self._sanitize_string(data, _path)
         elif isinstance(data, dict):
-            return {k: self.sanitize_input(v) for k, v in data.items()}
+            return {k: self.sanitize_input(v, f"{_path}.{k}") for k, v in data.items()}
         elif isinstance(data, list):
-            return [self.sanitize_input(item) for item in data]
+            return [self.sanitize_input(item, f"{_path}[{i}]") for i, item in enumerate(data)]
         else:
             return data
-    
-    def _sanitize_string(self, text: str) -> str:
-        """Sanitize a string input."""
-        # Check for dangerous patterns
+
+    def _sanitize_string(self, text: str, param_path: str = "<unknown>") -> str:
+        """Check a string for dangerous patterns. Raises DangerousInputError on match."""
         for pattern in self.compiled_patterns:
-            if pattern.search(text):
-                logger.warning("Dangerous pattern detected in input", pattern=pattern.pattern)
-                # Remove or escape the dangerous content
-                text = pattern.sub('', text)
-        
-        # HTML entity encoding removed to prevent data mangling in API responses.
-        # Sanitization is kept to dangerous pattern filtering and length limiting.
-        
+            match = pattern.search(text)
+            if match:
+                logger.warning(
+                    "Dangerous pattern detected in input",
+                    pattern=pattern.pattern,
+                    param_path=param_path,
+                )
+                # Raise — do NOT silently strip. The middleware must handle this
+                # by returning a structured MCP DENY result and writing a decision log.
+                raise DangerousInputError(
+                    pattern=pattern.pattern,
+                    param_path=param_path,
+                    matched_text=text,
+                )
+
         # Limit length to prevent DoS
         max_length = 10000
         if len(text) > max_length:
             text = text[:max_length]
             logger.warning("Input truncated due to length limit", original_length=len(text))
-        
+
         return text.strip()
     
     async def check_rate_limit(
