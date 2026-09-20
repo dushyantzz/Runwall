@@ -5,7 +5,9 @@ from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from typing import Dict, Any, Optional, List, Set, Tuple
 import json
+import re
 import time
+import urllib.parse
 
 from secure_mcp_server.api.routes import policies, approvals, audit, dashboard, keys
 from secure_mcp_server.api.routes.payment import router as payment_router
@@ -133,17 +135,35 @@ class MCPAuthASGIMiddleware:
                     break
 
             token = None
+            token_from_query = False
+
             if auth_header_val and auth_header_val.startswith("Bearer "):
+                # Accept any Bearer token (not just mcp_ prefix)
                 token = auth_header_val[7:].strip()
             else:
-                q_token_list = params.get("token") or params.get("api_key") or params.get("apiKey") or params.get("authorization")
+                q_token_list = (
+                    params.get("token")
+                    or params.get("api_key")
+                    or params.get("apiKey")
+                    or params.get("authorization")
+                )
                 if q_token_list:
                     q_token = q_token_list[0].strip()
                     if q_token.startswith("Bearer "):
                         q_token = q_token[7:].strip()
                     token = q_token
+                    token_from_query = True
 
-            # If this is a /messages call for an active SSE session that was already authenticated during /sse handshake
+            # ── Mask token in query_string so uvicorn access logs never see it ──
+            if token_from_query and query_string:
+                masked_qs = re.sub(
+                    r'((?:^|&)(?:token|api_key|apiKey|authorization)=)[^&]*',
+                    r'\1***',
+                    query_string,
+                )
+                scope["query_string"] = masked_qs.encode("utf-8")
+
+            # If this is a /messages call for an active SSE session already authenticated during /sse handshake
             if not token and path.startswith("/messages") and session_id:
                 cached = _authenticated_sse_sessions.get(session_id)
                 if cached and cached.get("expires_at", 0) > time.time():
@@ -160,10 +180,16 @@ class MCPAuthASGIMiddleware:
             settings = get_settings()
             client = scope.get("client")
             request_ip = client[0] if client else None
+
+            # Collect IP headers for governance layer
+            cf_ip = None
+            xff_ip = None
             for key, val in headers:
-                if key == b"x-forwarded-for":
-                    request_ip = val.decode("utf-8").split(",")[0].strip()
-                    break
+                if key == b"cf-connecting-ip":
+                    cf_ip = val.decode("utf-8").strip()
+                elif key == b"x-forwarded-for":
+                    xff_ip = val.decode("utf-8").split(",")[0].strip()
+            effective_ip = cf_ip or xff_ip or request_ip
 
             db_manager = get_db_manager()
             async with db_manager.get_session_context() as db_session:
@@ -171,7 +197,7 @@ class MCPAuthASGIMiddleware:
                 api_key_record = await resolve_api_key(
                     raw_key=token,
                     db=db_session,
-                    request_ip=request_ip,
+                    request_ip=effective_ip,
                     environment=settings.environment,
                 )
 
@@ -194,10 +220,10 @@ class MCPAuthASGIMiddleware:
                     await enforce_rate_limit(plan=plan_ctx, key_id=api_key_record.id)
                 except RateLimitExceededError as rle:
                     await _send_asgi_json(
-                        send, 
-                        429, 
+                        send,
+                        429,
                         {"error": "rate_limit_exceeded", "retry_after": rle.retry_after},
-                        extra_headers=[(b"retry-after", str(rle.retry_after).encode("ascii"))]
+                        extra_headers=[(b"retry-after", str(rle.retry_after).encode("ascii"))],
                     )
                     return
                 except DailyLimitExceededError:
@@ -205,6 +231,7 @@ class MCPAuthASGIMiddleware:
                     return
 
                 # Attach resolved context to ASGI scope
+                # Include IP headers so opa_evaluator can populate client_ip
                 scope["user_context"] = {
                     "user_id": plan_ctx.user_id,
                     "tier": plan_ctx.tier,
@@ -212,8 +239,21 @@ class MCPAuthASGIMiddleware:
                     "tenant_id": api_key_record.tenant_id,
                     "permissions": api_key_record.permissions or ["*"],
                     "is_admin": plan_ctx.tier == "enterprise",
+                    # IP provenance for governance logging
+                    "client_ip": effective_ip,
+                    "cf_connecting_ip": cf_ip,
+                    "x_forwarded_for": xff_ip,
                 }
                 scope["plan_context"] = plan_ctx
+
+                # Deprecation warning: token should come from Authorization header
+                if token_from_query:
+                    import structlog as _sl
+                    _sl.get_logger(__name__).warning(
+                        "DEPRECATION: token passed as query parameter — use 'Authorization: Bearer <token>' instead",
+                        key_prefix=token[:8] + "..." if len(token) > 8 else "***",
+                        path=path,
+                    )
 
                 if session_id:
                     _authenticated_sse_sessions[session_id] = {
@@ -362,7 +402,11 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     async def health_check():
-        return {"status": "healthy"}
+        from secure_mcp_server.governance import opa_evaluator as _opa_mod
+        return {
+            "status": "healthy",
+            "decision_log_failures": _opa_mod._decision_log_failure_count,
+        }
 
     return app
 

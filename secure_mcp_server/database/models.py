@@ -340,7 +340,16 @@ class PolicyDecisionLog(Base):
     )
     session_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
     user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    # principal stores the raw caller identity when user_id is not an integer (e.g. 'local_admin')
+    principal: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        comment="Raw principal string (e.g. 'local_admin') when user_id is not an integer FK",
+    )
     tenant_id: Mapped[Optional[str]] = mapped_column(String(50), index=True)
+    client_ip: Mapped[Optional[str]] = mapped_column(
+        String(45),
+        comment="Client IP address resolved from CF-Connecting-IP / X-Forwarded-For / socket",
+    )
 
     tool_name: Mapped[str] = mapped_column(String(100), index=True)
     intent_category: Mapped[str] = mapped_column(String(50), index=True)
@@ -348,6 +357,12 @@ class PolicyDecisionLog(Base):
     risk_level: Mapped[str] = mapped_column(String(20), index=True)
     decision: Mapped[str] = mapped_column(String(50), index=True)
     taint_labels: Mapped[list] = mapped_column(JSON, default=list, comment="Taint labels present during evaluation")
+
+    # Which engine produced the decision: 'opa', 'fallback', or 'transport'
+    evaluation_engine: Mapped[Optional[str]] = mapped_column(
+        String(20),
+        comment="Engine that produced the decision: 'opa', 'fallback', or 'transport'",
+    )
 
     matched_rule_id: Mapped[Optional[str]] = mapped_column(
         String(255), ForeignKey("policy_rules.id"), index=True,
