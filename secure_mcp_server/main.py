@@ -452,7 +452,15 @@ async def amain():
         # Load settings
         logger.info("Loading settings")
         settings = get_settings()
-        
+
+        # ── OPA startup check ─────────────────────────────────────────────────
+        from secure_mcp_server.governance.opa_evaluator import startup_opa_check
+        await startup_opa_check(
+            opa_bin=settings.opa_bin,
+            environment=settings.environment,
+        )
+        # ─────────────────────────────────────────────────────────────────────
+
         # Use global server
         logger.info("Using global MCP server instance")
         server = _global_server

@@ -138,6 +138,16 @@ class Settings(BaseSettings):
         validation_alias="ENABLE_SEMANTIC_RISK_LAYER",
     )
 
+    # ── OPA Binary ────────────────────────────────────────────────────────
+    opa_bin: str = Field(
+        default="opa",
+        description=(
+            "Path to the OPA binary. Defaults to 'opa' (resolved via PATH). "
+            "In Docker, /usr/local/bin/opa is set via the OPA_BIN env var."
+        ),
+        validation_alias="OPA_BIN",
+    )
+
 
 # Global settings instance
 _settings: Optional[Settings] = None
