@@ -400,35 +400,46 @@ async def get_dashboard_events(
     # Fetch limit + 1 to know if there is a next page
     fetch_limit = limit + 1
 
-    stmt = text("""
+    clauses = [
+        "tenant_id = :tenant_id",
+        "(user_id = :user_id OR user_id IS NULL)",
+    ]
+    params: Dict[str, Any] = {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "fetch_limit": fetch_limit,
+    }
+    if decision:
+        clauses.append("decision = :decision")
+        params["decision"] = decision
+    if stage:
+        clauses.append("stage = :stage")
+        params["stage"] = stage
+    if tool_name:
+        clauses.append("tool_name = :tool_name")
+        params["tool_name"] = tool_name
+    if search_pat:
+        clauses.append("(lower(tool_name) LIKE lower(:search_pat) OR lower(reason) LIKE lower(:search_pat) OR lower(principal) LIKE lower(:search_pat))")
+        params["search_pat"] = search_pat
+    if cursor_ts and cursor_id:
+        clauses.append("(ts < :cursor_ts OR (ts = :cursor_ts AND id < :cursor_id))")
+        params["cursor_ts"] = cursor_ts
+        params["cursor_id"] = cursor_id
+
+    where_sql = " AND ".join(clauses)
+    stmt = text(f"""
         SELECT
             id, request_id, ts, tenant_id, user_id, api_key_id, principal, agent_name,
             cast(client_ip as text) AS client_ip, user_agent, session_id, event_type, action, stage,
             tool_name, intent_category, risk_score, risk_level, decision, rule_id,
             engine, mode, reason, args_hash, taint_labels, latency_ms
         FROM security_events
-        WHERE tenant_id = :tenant_id
-          AND (user_id = :user_id OR user_id IS NULL)
-          AND (:decision IS NULL OR decision = :decision)
-          AND (:stage IS NULL OR stage = :stage)
-          AND (:tool_name IS NULL OR tool_name = :tool_name)
-          AND (:search_pat IS NULL OR (lower(tool_name) LIKE lower(:search_pat) OR lower(reason) LIKE lower(:search_pat) OR lower(principal) LIKE lower(:search_pat)))
-          AND (:cursor_ts IS NULL OR (ts < :cursor_ts OR (ts = :cursor_ts AND id < :cursor_id)))
+        WHERE {where_sql}
         ORDER BY ts DESC, id DESC
         LIMIT :fetch_limit
     """)
 
-    res = await db.execute(stmt, {
-        "tenant_id": tenant_id,
-        "user_id": user.id,
-        "decision": decision,
-        "stage": stage,
-        "tool_name": tool_name,
-        "search_pat": search_pat,
-        "cursor_ts": cursor_ts,
-        "cursor_id": cursor_id,
-        "fetch_limit": fetch_limit,
-    })
+    res = await db.execute(stmt, params)
     raw_rows = res.mappings().all()
 
     has_more = len(raw_rows) > limit
@@ -609,29 +620,37 @@ async def export_dashboard_csv(
     await _set_rls_context(db, tenant_id, user.id)
     curr_start, curr_end, _ = _parse_range(range)
 
-    stmt = text("""
+    clauses = [
+        "tenant_id = :tenant_id",
+        "(user_id = :user_id OR user_id IS NULL)",
+        "ts >= :start_time AND ts <= :end_time",
+    ]
+    params: Dict[str, Any] = {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "start_time": curr_start,
+        "end_time": curr_end,
+    }
+    if decision:
+        clauses.append("decision = :decision")
+        params["decision"] = decision
+    if tool_name:
+        clauses.append("tool_name = :tool_name")
+        params["tool_name"] = tool_name
+
+    where_sql = " AND ".join(clauses)
+    stmt = text(f"""
         SELECT
             ts, request_id, decision, stage, coalesce(tool_name, '') AS tool_name,
             coalesce(cast(risk_score as text), '') AS risk_score, coalesce(risk_level, '') AS risk_level,
             coalesce(rule_id, '') AS rule_id, coalesce(reason, '') AS reason,
             coalesce(cast(client_ip as text), '') AS client_ip, coalesce(cast(latency_ms as text), '') AS latency_ms
         FROM security_events
-        WHERE tenant_id = :tenant_id
-          AND (user_id = :user_id OR user_id IS NULL)
-          AND ts >= :start_time AND ts <= :end_time
-          AND (:decision IS NULL OR decision = :decision)
-          AND (:tool_name IS NULL OR tool_name = :tool_name)
+        WHERE {where_sql}
         ORDER BY ts DESC
         LIMIT 5000
     """)
-    res = await db.execute(stmt, {
-        "tenant_id": tenant_id,
-        "user_id": user.id,
-        "start_time": curr_start,
-        "end_time": curr_end,
-        "decision": decision,
-        "tool_name": tool_name,
-    })
+    res = await db.execute(stmt, params)
     rows = res.mappings().all()
 
     def sanitize_cell(val: Any) -> str:

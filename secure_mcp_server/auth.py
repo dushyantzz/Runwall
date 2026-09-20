@@ -129,7 +129,7 @@ class AuthManager:
         except jwt.ExpiredSignatureError:
             logger.debug("Token has expired")
             return None
-        except jwt.JWTError as e:
+        except (jwt.PyJWTError, Exception) as e:
             logger.warning("Token validation failed", error=str(e))
             return None
             

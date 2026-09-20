@@ -76,14 +76,28 @@ async def get_current_user(
         token = authorization[7:].strip()
         # Avoid treating raw mcp_ api keys as JWTs on management endpoints
         if not token.startswith("mcp_"):
-            payload = await auth_manager.verify_token(token, token_type="access")
-            if payload and payload.get("sub"):
-                user_id = payload["sub"]
-                stmt = select(User).where(User.id == int(user_id) if str(user_id).isdigit() else User.username == str(user_id))
-                res = await db.execute(stmt)
-                user = res.scalar_one_or_none()
-                if user and user.is_active:
-                    return user
+            try:
+                payload = await auth_manager.verify_token(token, token_type="access")
+                if payload and payload.get("sub"):
+                    user_id = payload["sub"]
+                    stmt = select(User).where(User.id == int(user_id) if str(user_id).isdigit() else User.username == str(user_id))
+                    res = await db.execute(stmt)
+                    user = res.scalar_one_or_none()
+                    if user and user.is_active:
+                        return user
+            except Exception as e:
+                logger.debug("Local JWT verification failed", error=str(e))
+
+            # Also check if it is a Supabase JWT containing an email claim
+            if not x_user_email:
+                try:
+                    import jwt as pyjwt
+                    unverified = pyjwt.decode(token, options={"verify_signature": False})
+                    supa_email = unverified.get("email")
+                    if supa_email and isinstance(supa_email, str) and "@" in supa_email:
+                        x_user_email = supa_email
+                except Exception:
+                    pass
 
     # 2. Check X-User-Email header
     if x_user_email:
