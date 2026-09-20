@@ -52,7 +52,10 @@ class DatabaseManager:
                 else {
                     "statement_cache_size": 0,
                     "prepared_statement_cache_size": 0,
-                    "prepared_statement_name_func": lambda: ""
+                    "prepared_statement_name_func": lambda: "",
+                    "server_settings": {
+                        "search_path": "public, extensions"
+                    }
                 }
             )
         )
@@ -67,8 +70,11 @@ class DatabaseManager:
         # Always create tables — create_all is idempotent (IF NOT EXISTS).
         # Skipping in production causes missing-table errors on ephemeral
         # storage (e.g. Render free tier where the DB is recreated on cold start).
-        async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+        try:
+            async with self.engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+        except Exception as e:
+            logger.warning("Database schema create_all warning", error=str(e))
         
         from secure_mcp_server.config import get_settings
         settings = get_settings()
