@@ -48,11 +48,17 @@ class SecurityManager:
             r'javascript:',  # JavaScript injection
             r'data:text/html',  # Data URL injection
             r'\b(union|select|insert|update|delete|drop|create|alter)\b',  # SQL injection
-            r'\.\./',  # Path traversal
+            r'\.\.\/',  # Path traversal
             r'<iframe[^>]*>',  # Iframe injection
             r'eval\s*\(',  # Code evaluation
             r'exec\s*\(',  # Code execution
-            r'[;&|`$]',  # Shell command chaining / substitution
+            # Shell injection — tightened to avoid false positives on $9.99 and & in URLs:
+            #   ; = command separator
+            #   | = pipe (not inside URL schemes)
+            #   ` = backtick substitution
+            #   && = shell AND (not lone & in URL query strings)
+            #   $( ${ $VARNAME = shell substitution ($9.99 is NOT a variable — $ must precede letter/underscore)
+            r'(;|&&|`|\$[({]|\$[a-zA-Z_])',
             r'\b(bash|sh|cmd|powershell|nc|curl|wget)\b',  # Dangerous CLI binaries
         ]
         

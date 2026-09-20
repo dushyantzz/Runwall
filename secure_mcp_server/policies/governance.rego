@@ -55,10 +55,20 @@ deny contains msg if {
 }
 
 # 4. Deny shell injection — scan ALL string values recursively
+# Patterns: ; (cmd separator), | (pipe, not inside URL), ` (backtick), && (shell AND),
+#           $( ${ $VARNAME (shell substitution — $ followed by letter/underscore, NOT digit)
 deny contains msg if {
     some val in all_arg_strings
-    regex.match("[;&|`$]", val)
+    regex.match("(;|`|&&|\\$[({]|\\$[a-zA-Z_])", val)
     msg := "Shell injection pattern detected in arguments: contains dangerous characters"
+}
+
+deny contains msg if {
+    some val in all_arg_strings
+    # | is a pipe only when not part of a URL scheme (http:// etc.)
+    regex.match("\\|", val)
+    not regex.match("https?://|ftp://", val)
+    msg := "Shell pipe character detected in arguments"
 }
 
 # 5. Deny sensitive system path / file access — recursive + normalised

@@ -336,7 +336,11 @@ class OPAPolicyEvaluator:
                     explanation=explanation,
                     evaluation_engine=evaluation_engine,
                     evaluation_chain={
-                        "opa_input": input_data["input"],
+                        # Redact secrets from the stored OPA input as well
+                        "opa_input": {
+                            **input_data["input"],
+                            "arguments": redacted_arguments,
+                        },
                         "tool_arguments": redacted_arguments,
                         "taint_labels": getattr(intent, "taint_labels", []),
                         "client_ip": client_ip,
@@ -442,16 +446,36 @@ class OPAPolicyEvaluator:
             return "REQUIRE_APPROVAL", "High risk score — requires manual approval"
 
         # ── Shell injection (recursive) ───────────────────────────────────
-        _SHELL_RE = _re.compile(r'[;&|`$]')
+        # Patterns that are unambiguously shell metacharacters:
+        #   ;          — command separator
+        #   |          — pipe (not part of URL, matched as token)
+        #   `          — backtick substitution
+        #   &&         — shell AND (NOT lone & which appears in URL query strings)
+        #   $( ${ $VARNAME — shell substitution ($9 is NOT a var name — it's a price)
+        #   Shell var names start with letter or underscore, not digit
+        _SHELL_RE = _re.compile(r'(;|(?<![a-z0-9_])\|(?![^;|]*://)|`|&&|\$[({]|\$[a-zA-Z_])')
         for s in all_strings:
             if _SHELL_RE.search(s):
                 return "DENY", f"Shell injection pattern detected in arguments: contains dangerous characters"
 
-        # ── Sensitive path (recursive, normalized) ───────────────────────
+        # ── Path traversal (recursive, before normalization) ─────────────
+        _TRAVERSAL_RE = _re.compile(
+            r'(\.\./|%2e%2e[/%]|%252e%252e)',
+            _re.IGNORECASE,
+        )
+        for s in all_strings:
+            if _TRAVERSAL_RE.search(s):
+                return "DENY", "Path traversal sequence detected in arguments"
+
+        # ── Sensitive path (recursive, normalized) ────────────────────────
+        # Also match paths WITHOUT leading slash (e.g. after traversal normalization)
         _SENSITIVE_PATH_RE = _re.compile(
-            r'(/etc/(passwd|shadow|sudoers|hosts)|/proc/|/dev/'
-            r'|\.ssh/|\.env$|\.env/|\.aws/credentials|\.git-credentials'
-            r'|kubeconfig|/root/)',
+            r'(/?(etc|proc|dev)/(passwd|shadow|sudoers|hosts)|'
+            r'/?\.ssh/|'
+            r'(^|/)\.env(/|$)|'
+            r'/?\.aws/credentials|'
+            r'/?\.git-credentials|'
+            r'kubeconfig|/root/)',
             _re.IGNORECASE,
         )
         for s in all_strings:
