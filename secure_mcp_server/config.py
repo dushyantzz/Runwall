@@ -148,6 +148,28 @@ class Settings(BaseSettings):
         validation_alias="OPA_BIN",
     )
 
+    # ── Security Event Logging & Tamper-Evidence ─────────────────────────
+    event_hash_key: str = Field(
+        default="runwall_default_event_hash_key_2026",
+        description="Server secret key used for HMAC-SHA256 of arguments",
+        validation_alias="EVENT_HASH_KEY",
+    )
+    audit_fail_mode: str = Field(
+        default="closed",
+        description="Behavior when audit write fails ('closed' forces approval for risk >= 0.7; 'open' allows)",
+        validation_alias="AUDIT_FAIL_MODE",
+    )
+    event_writer_database_url: Optional[str] = Field(
+        default=None,
+        description="Dedicated database URL for event_writer role (INSERT only)",
+        validation_alias="EVENT_WRITER_DATABASE_URL",
+    )
+    dashboard_reader_database_url: Optional[str] = Field(
+        default=None,
+        description="Dedicated database URL for dashboard_reader role (SELECT only, RLS-scoped)",
+        validation_alias="DASHBOARD_READER_DATABASE_URL",
+    )
+
 
 # Global settings instance
 _settings: Optional[Settings] = None

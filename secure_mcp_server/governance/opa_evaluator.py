@@ -168,6 +168,8 @@ class OPAPolicyEvaluator:
     ) -> OPAPolicyResult:
         """Evaluate the execution against OPA policies."""
         global _decision_log_failure_count
+        import time as _time
+        eval_start_time = _time.time()
 
         # 1. Resolve tenant and check database for active PolicyBundle
         tenant_id = user_context.get("tenant_id") or "default"
@@ -362,6 +364,68 @@ class OPAPolicyEvaluator:
                 session_id=session_id,
                 error=str(e),
             )
+
+        # 11. Record into security_events via EventRecorder
+        try:
+            from secure_mcp_server.governance.event_recorder import get_event_recorder, SecurityEventPayload
+            from secure_mcp_server.governance.redaction import redact, compute_args_hash
+
+            event_req_id = user_context.get("request_id")
+            if not event_req_id and asgi_scope:
+                event_req_id = asgi_scope.get("request_id") or (asgi_scope.get("state") or {}).get("request_id")
+            if not event_req_id:
+                event_req_id = str(uuid.uuid4())
+
+            redacted_payload = redact(arguments or {})
+            args_hash_val = compute_args_hash(redacted_payload)
+            eval_latency_ms = int((_time.time() - eval_start_time) * 1000)
+
+            sec_event = SecurityEventPayload(
+                request_id=event_req_id,
+                tenant_id=user_context.get("tenant_id", "default"),
+                user_id=safe_uid,
+                api_key_id=user_context.get("api_key_id"),
+                principal=principal_str,
+                agent_name=user_context.get("agent_name"),
+                client_ip=client_ip,
+                user_agent=user_context.get("user_agent"),
+                session_id=session_id,
+                event_type="tool_call",
+                action="call_tool",
+                stage="policy",
+                tool_name=intent.tool_name,
+                intent_category=intent.intent_category.value,
+                risk_score=risk.score,
+                risk_level=risk.level.value,
+                decision=decision.value,
+                rule_id=None,
+                rule_snapshot=None,
+                bundle_version=None,
+                engine=evaluation_engine,
+                mode="simulate" if simulation_mode else "enforce",
+                reason=explanation,
+                args_redacted=redacted_payload,
+                args_hash=args_hash_val,
+                taint_labels=list(getattr(intent, "taint_labels", []) or []),
+                latency_ms=eval_latency_ms,
+            )
+            event_recorded = await get_event_recorder().record_event(sec_event)
+
+            # Fail-closed enforcement if audit write fails and risk >= 0.7 for an ALLOW decision
+            if not event_recorded and decision == PolicyDecisionType.ALLOW:
+                from secure_mcp_server.config import get_settings
+                if get_settings().audit_fail_mode == "closed" and risk.score >= 0.7:
+                    logger.critical(
+                        "Audit write failed for elevated risk action in fail-closed mode — forcing REQUIRE_APPROVAL",
+                        tool=intent.tool_name,
+                        risk_score=risk.score,
+                        request_id=event_req_id,
+                    )
+                    decision = PolicyDecisionType.REQUIRE_APPROVAL
+                    explanation = f"[FAIL-CLOSED AUDIT] {explanation} (Audit record persistence failed)"
+                    req_approvers = ["admin"]
+        except Exception as _ev_err:
+            logger.error("Failed to record security event in EventRecorder", error=str(_ev_err))
 
         res = OPAPolicyResult(decision=decision, explanation=explanation)
         res.requires_approval_from = req_approvers

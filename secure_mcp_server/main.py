@@ -238,6 +238,31 @@ class SecureMCPServer:
                             )
                             _db.add(_log)
                             await _db.commit()
+
+                        # Also record into security_events via EventRecorder
+                        from secure_mcp_server.governance.event_recorder import get_event_recorder, SecurityEventPayload
+                        event_req_id = _user_ctx.get("request_id") or str(_uuid.uuid4())
+                        await get_event_recorder().record_event(SecurityEventPayload(
+                            request_id=event_req_id,
+                            tenant_id=_user_ctx.get("tenant_id", "default"),
+                            user_id=_safe_user_id(raw_uid),
+                            api_key_id=_user_ctx.get("api_key_id"),
+                            principal=str(raw_uid) if raw_uid is not None else None,
+                            client_ip=_extract_client_ip(_user_ctx),
+                            session_id=_session_id,
+                            event_type="tool_call",
+                            action="call_tool",
+                            stage="transport",
+                            tool_name=_tool_name,
+                            intent_category="unknown",
+                            risk_score=1.0,
+                            risk_level="critical",
+                            decision="deny",
+                            engine="transport",
+                            mode="enforce",
+                            reason=_explanation,
+                            args_redacted={"dangerous_pattern": die.pattern, "param_path": die.param_path},
+                        ))
                     except Exception as _log_err:
                         import secure_mcp_server.governance.opa_evaluator as _opa_mod
                         _opa_mod._decision_log_failure_count += 1

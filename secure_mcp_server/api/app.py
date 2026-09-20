@@ -129,10 +129,30 @@ class MCPAuthASGIMiddleware:
             # Extract headers
             headers = scope.get("headers", [])
             auth_header_val = None
+            user_agent = None
+            cf_ip = None
+            xff_ip = None
             for key, val in headers:
                 if key == b"authorization":
                     auth_header_val = val.decode("utf-8")
-                    break
+                elif key == b"user-agent":
+                    user_agent = val.decode("utf-8", errors="ignore")
+                elif key == b"cf-connecting-ip":
+                    cf_ip = val.decode("utf-8").strip()
+                elif key == b"x-forwarded-for":
+                    xff_ip = val.decode("utf-8").split(",")[0].strip()
+
+            client = scope.get("client")
+            request_ip = client[0] if client else None
+            effective_ip = cf_ip or xff_ip or request_ip
+
+            # Generate unique request_id
+            import uuid
+            request_id = str(uuid.uuid4())
+            scope["request_id"] = request_id
+            if "state" not in scope or not isinstance(scope["state"], dict):
+                scope["state"] = {}
+            scope["state"]["request_id"] = request_id
 
             token = None
             token_from_query = False
@@ -172,24 +192,26 @@ class MCPAuthASGIMiddleware:
                     await self.app(scope, receive, send)
                     return
 
+            from secure_mcp_server.governance.event_recorder import get_event_recorder, SecurityEventPayload
+
             # Hard Rule: Missing / empty token -> 401 missing_api_key immediately
             if not token:
+                await get_event_recorder().record_event(SecurityEventPayload(
+                    request_id=request_id,
+                    tenant_id="_unauthenticated",
+                    event_type="auth",
+                    stage="auth",
+                    decision="deny",
+                    reason="missing_api_key",
+                    client_ip=effective_ip,
+                    user_agent=user_agent,
+                    session_id=session_id,
+                    action="authenticate",
+                ))
                 await _send_asgi_json(send, 401, {"error": "missing_api_key"})
                 return
 
             settings = get_settings()
-            client = scope.get("client")
-            request_ip = client[0] if client else None
-
-            # Collect IP headers for governance layer
-            cf_ip = None
-            xff_ip = None
-            for key, val in headers:
-                if key == b"cf-connecting-ip":
-                    cf_ip = val.decode("utf-8").strip()
-                elif key == b"x-forwarded-for":
-                    xff_ip = val.decode("utf-8").split(",")[0].strip()
-            effective_ip = cf_ip or xff_ip or request_ip
 
             db_manager = get_db_manager()
             async with db_manager.get_session_context() as db_session:
@@ -202,6 +224,18 @@ class MCPAuthASGIMiddleware:
                 )
 
                 if not api_key_record:
+                    await get_event_recorder().record_event(SecurityEventPayload(
+                        request_id=request_id,
+                        tenant_id="_unauthenticated",
+                        event_type="auth",
+                        stage="auth",
+                        decision="deny",
+                        reason="invalid_api_key",
+                        client_ip=effective_ip,
+                        user_agent=user_agent,
+                        session_id=session_id,
+                        action="authenticate",
+                    ))
                     await _send_asgi_json(send, 401, {"error": "invalid_api_key"})
                     return
 
@@ -209,9 +243,37 @@ class MCPAuthASGIMiddleware:
                 try:
                     plan_ctx = await resolve_plan(api_key=api_key_record, db=db_session)
                 except SubscriptionRecordMissingError:
+                    await get_event_recorder().record_event(SecurityEventPayload(
+                        request_id=request_id,
+                        tenant_id=api_key_record.tenant_id,
+                        user_id=api_key_record.user_id,
+                        api_key_id=api_key_record.id,
+                        event_type="auth",
+                        stage="tenant",
+                        decision="deny",
+                        reason="subscription_record_missing",
+                        client_ip=effective_ip,
+                        user_agent=user_agent,
+                        session_id=session_id,
+                        action="authenticate",
+                    ))
                     await _send_asgi_json(send, 500, {"error": "subscription_record_missing"})
                     return
                 except SubscriptionInactiveError:
+                    await get_event_recorder().record_event(SecurityEventPayload(
+                        request_id=request_id,
+                        tenant_id=api_key_record.tenant_id,
+                        user_id=api_key_record.user_id,
+                        api_key_id=api_key_record.id,
+                        event_type="auth",
+                        stage="tenant",
+                        decision="deny",
+                        reason="subscription_inactive",
+                        client_ip=effective_ip,
+                        user_agent=user_agent,
+                        session_id=session_id,
+                        action="authenticate",
+                    ))
                     await _send_asgi_json(send, 402, {"error": "subscription_inactive"})
                     return
 
@@ -219,6 +281,20 @@ class MCPAuthASGIMiddleware:
                 try:
                     await enforce_rate_limit(plan=plan_ctx, key_id=api_key_record.id)
                 except RateLimitExceededError as rle:
+                    await get_event_recorder().record_event(SecurityEventPayload(
+                        request_id=request_id,
+                        tenant_id=api_key_record.tenant_id,
+                        user_id=api_key_record.user_id,
+                        api_key_id=api_key_record.id,
+                        event_type="auth",
+                        stage="rate_limit",
+                        decision="deny",
+                        reason=f"rate_limit_exceeded (retry after {rle.retry_after}s)",
+                        client_ip=effective_ip,
+                        user_agent=user_agent,
+                        session_id=session_id,
+                        action="authenticate",
+                    ))
                     await _send_asgi_json(
                         send,
                         429,
@@ -227,12 +303,27 @@ class MCPAuthASGIMiddleware:
                     )
                     return
                 except DailyLimitExceededError:
+                    await get_event_recorder().record_event(SecurityEventPayload(
+                        request_id=request_id,
+                        tenant_id=api_key_record.tenant_id,
+                        user_id=api_key_record.user_id,
+                        api_key_id=api_key_record.id,
+                        event_type="auth",
+                        stage="rate_limit",
+                        decision="deny",
+                        reason="daily_limit_exceeded",
+                        client_ip=effective_ip,
+                        user_agent=user_agent,
+                        session_id=session_id,
+                        action="authenticate",
+                    ))
                     await _send_asgi_json(send, 429, {"error": "daily_limit_exceeded"})
                     return
 
                 # Attach resolved context to ASGI scope
                 # Include IP headers so opa_evaluator can populate client_ip
                 scope["user_context"] = {
+                    "request_id": request_id,
                     "user_id": plan_ctx.user_id,
                     "tier": plan_ctx.tier,
                     "api_key_id": api_key_record.id,
@@ -243,6 +334,8 @@ class MCPAuthASGIMiddleware:
                     "client_ip": effective_ip,
                     "cf_connecting_ip": cf_ip,
                     "x_forwarded_for": xff_ip,
+                    "user_agent": user_agent,
+                    "session_id": session_id,
                 }
                 scope["plan_context"] = plan_ctx
 
@@ -403,9 +496,11 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health_check():
         from secure_mcp_server.governance import opa_evaluator as _opa_mod
+        from secure_mcp_server.governance import event_recorder as _rec_mod
         return {
             "status": "healthy",
             "decision_log_failures": _opa_mod._decision_log_failure_count,
+            "event_log_failures": _rec_mod._event_log_failures,
         }
 
     return app

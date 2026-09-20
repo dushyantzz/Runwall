@@ -366,9 +366,31 @@ class ToolRegistry:
             
             # Check permissions
             if not self.security_manager.validate_tool_access(user_context, tool_name):
-                if tool_name == "system_info":
-                    raise PermissionError("Admin privileges required for this operation.")
-                raise PermissionError(f"Access denied to tool '{tool_name}'")
+                err_msg = "Admin privileges required for this operation." if tool_name == "system_info" else f"Access denied to tool '{tool_name}'"
+                try:
+                    from secure_mcp_server.governance.event_recorder import get_event_recorder, SecurityEventPayload
+                    from secure_mcp_server.governance.redaction import redact, compute_args_hash
+                    redacted = redact(arguments or {})
+                    await get_event_recorder().record_event(SecurityEventPayload(
+                        request_id=user_context.get("request_id") or str(uuid.uuid4()),
+                        tenant_id=user_context.get("tenant_id", "default"),
+                        user_id=user_context.get("user_id") if isinstance(user_context.get("user_id"), int) else None,
+                        api_key_id=user_context.get("api_key_id"),
+                        client_ip=user_context.get("client_ip"),
+                        user_agent=user_context.get("user_agent"),
+                        session_id=user_context.get("session_id"),
+                        event_type="tool_call",
+                        action="call_tool",
+                        stage="policy",
+                        tool_name=tool_name,
+                        decision="deny",
+                        reason=err_msg,
+                        args_redacted=redacted,
+                        args_hash=compute_args_hash(redacted),
+                    ))
+                except Exception:
+                    pass
+                raise PermissionError(err_msg)
             
             # Check rate limiting / quotas
             tenant_id = user_context.get('tenant_id', 'default')
@@ -434,6 +456,29 @@ class ToolRegistry:
                 if trust_result.get("status") == "QUARANTINED":
                     logger.critical("Execution blocked due to tool quarantine", tool=tool_name, reason=trust_result.get("reason"))
                     err_msg = f"Tool '{tool_name}' is QUARANTINED. {trust_result.get('reason')}"
+                    try:
+                        from secure_mcp_server.governance.event_recorder import get_event_recorder, SecurityEventPayload
+                        from secure_mcp_server.governance.redaction import redact, compute_args_hash
+                        redacted = redact(clean_arguments)
+                        await get_event_recorder().record_event(SecurityEventPayload(
+                            request_id=user_context.get("request_id") or str(uuid.uuid4()),
+                            tenant_id=tenant_id,
+                            user_id=real_user_id,
+                            api_key_id=user_context.get("api_key_id"),
+                            client_ip=user_context.get("client_ip"),
+                            user_agent=user_context.get("user_agent"),
+                            session_id=session_id,
+                            event_type="tool_call",
+                            action="verify_trust",
+                            stage="trust",
+                            tool_name=tool_name,
+                            decision="quarantine",
+                            reason=err_msg,
+                            args_redacted=redacted,
+                            args_hash=compute_args_hash(redacted),
+                        ))
+                    except Exception:
+                        pass
                     card = self._generate_markdown_process_card(
                         tool_name=tool_name,
                         user_context=user_context,
@@ -588,6 +633,33 @@ class ToolRegistry:
                         user_id=user_id,
                         approvers=policy_result.requires_approval_from,
                     )
+                    try:
+                        from secure_mcp_server.governance.event_recorder import get_event_recorder, SecurityEventPayload
+                        from secure_mcp_server.governance.redaction import redact, compute_args_hash
+                        redacted = redact(clean_arguments)
+                        await get_event_recorder().record_event(SecurityEventPayload(
+                            request_id=user_context.get("request_id") or str(uuid.uuid4()),
+                            tenant_id=tenant_id,
+                            user_id=real_user_id,
+                            api_key_id=user_context.get("api_key_id"),
+                            client_ip=user_context.get("client_ip"),
+                            user_agent=user_context.get("user_agent"),
+                            session_id=session_id,
+                            event_type="approval",
+                            action="request_approval",
+                            stage="approval",
+                            tool_name=tool_name,
+                            intent_category=intent.intent_category.value,
+                            risk_score=risk.score,
+                            risk_level=risk.level.value,
+                            decision="require_approval",
+                            reason=f"Manual approval required (ID: {approval_id})",
+                            args_redacted=redacted,
+                            args_hash=compute_args_hash(redacted),
+                            taint_labels=list(getattr(intent, "taint_labels", []) or []),
+                        ))
+                    except Exception:
+                        pass
                     
                     card = self._generate_markdown_process_card(
                         tool_name=tool_name,
@@ -657,6 +729,38 @@ class ToolRegistry:
                 taint_label = self.taint_manager.check_tool_taint_source(tool_name, t_meta)
                 if taint_label and user_context.get("session_id"):
                     await self.taint_manager.add_taint(user_context["session_id"], taint_label)
+                    try:
+                        from secure_mcp_server.governance.event_recorder import get_event_recorder, TaintEventPayload, SecurityEventPayload
+                        label_str = taint_label.value if hasattr(taint_label, 'value') else str(taint_label)
+                        await get_event_recorder().record_taint(TaintEventPayload(
+                            tenant_id=tenant_id,
+                            user_id=real_user_id,
+                            api_key_id=user_context.get("api_key_id"),
+                            session_id=user_context["session_id"],
+                            request_id=user_context.get("request_id"),
+                            label=label_str,
+                            source_type="tool",
+                            source_ref=tool_name,
+                            tool_name=tool_name,
+                        ))
+                        await get_event_recorder().record_event(SecurityEventPayload(
+                            request_id=user_context.get("request_id") or str(uuid.uuid4()),
+                            tenant_id=tenant_id,
+                            user_id=real_user_id,
+                            api_key_id=user_context.get("api_key_id"),
+                            client_ip=user_context.get("client_ip"),
+                            user_agent=user_context.get("user_agent"),
+                            session_id=user_context["session_id"],
+                            event_type="taint",
+                            action="add_taint",
+                            stage="taint",
+                            tool_name=tool_name,
+                            decision="allow",
+                            reason=f"Session tainted with {label_str}",
+                            taint_labels=[label_str],
+                        ))
+                    except Exception:
+                        pass
                     
                 # Post-execution Reversibility tracking: log compensation details
                 if t_meta.get("is_reversible") and "compensation_handler" in t_meta:

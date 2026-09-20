@@ -170,6 +170,16 @@ def _make_mock_db(captured_rows: list):
 # Fixtures
 # ─────────────────────────────────────────────────────────────────────────────
 
+from secure_mcp_server.governance.event_recorder import InMemoryEventRecorder, set_event_recorder
+
+@pytest.fixture(autouse=True)
+def setup_test_event_recorder():
+    """Ensure tests run with fast in-memory event recording and zero DB dependency."""
+    mem_recorder = InMemoryEventRecorder()
+    set_event_recorder(mem_recorder)
+    yield mem_recorder
+    set_event_recorder(None)
+
 @pytest.fixture()
 def evaluator():
     return OPAPolicyEvaluator(policy_dir=str(POLICY_DIR))
