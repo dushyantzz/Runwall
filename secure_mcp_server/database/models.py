@@ -610,3 +610,55 @@ class PaymentTransaction(Base):
         Index("idx_payment_user_status", "user_id", "status"),
         Index("idx_payment_created", "created_at"),
     )
+
+
+class SecurityEvent(Base):
+    """Security event audit log model for zero-trust governance."""
+    __tablename__ = "security_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    request_id: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True, nullable=False)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    api_key_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("api_keys.id"), index=True)
+    principal: Mapped[Optional[str]] = mapped_column(String(255))
+    agent_name: Mapped[Optional[str]] = mapped_column(String(255))
+    client_ip: Mapped[Optional[str]] = mapped_column(String(45))
+    user_agent: Mapped[Optional[str]] = mapped_column(Text)
+    session_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    event_type: Mapped[str] = mapped_column(String(50), default="tool_call", nullable=False)
+    action: Mapped[Optional[str]] = mapped_column(String(100))
+    stage: Mapped[str] = mapped_column(String(50), default="policy", nullable=False)
+    tool_name: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    intent_category: Mapped[Optional[str]] = mapped_column(String(100))
+    risk_score: Mapped[Optional[float]] = mapped_column(Float)
+    risk_level: Mapped[Optional[str]] = mapped_column(String(50))
+    decision: Mapped[str] = mapped_column(String(50), default="allow", nullable=False)
+    rule_id: Mapped[Optional[str]] = mapped_column(String(255))
+    rule_snapshot: Mapped[Optional[dict]] = mapped_column(JSON)
+    bundle_version: Mapped[Optional[str]] = mapped_column(String(50))
+    engine: Mapped[Optional[str]] = mapped_column(String(50))
+    mode: Mapped[str] = mapped_column(String(50), default="enforce")
+    reason: Mapped[Optional[str]] = mapped_column(Text)
+    args_redacted: Mapped[Optional[dict]] = mapped_column(JSON)
+    args_hash: Mapped[Optional[str]] = mapped_column(String(64))
+    taint_labels: Mapped[Optional[list]] = mapped_column(JSON, default=list)
+    latency_ms: Mapped[Optional[int]] = mapped_column(Integer)
+
+
+class TaintEvent(Base):
+    """Taint tracking audit model."""
+    __tablename__ = "taint_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    tenant_id: Mapped[str] = mapped_column(String(50), default="default", index=True, nullable=False)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    api_key_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("api_keys.id"), index=True)
+    session_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    request_id: Mapped[Optional[str]] = mapped_column(String(36))
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    source_type: Mapped[Optional[str]] = mapped_column(String(50))
+    source_ref: Mapped[Optional[str]] = mapped_column(Text)
+    tool_name: Mapped[Optional[str]] = mapped_column(String(255))

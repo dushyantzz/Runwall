@@ -54,7 +54,625 @@ class SimulationRequest(BaseModel):
     session_id: Optional[str] = None
 
 # ---------------------------------------------------------------------------
-# 1. Identity & Access Control
+# Security Dashboard API (Phase 3)
+# ---------------------------------------------------------------------------
+import base64
+import csv
+import io
+import json
+from datetime import timedelta
+from fastapi import Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+from secure_mcp_server.api.routes.keys import get_current_user
+from secure_mcp_server.database import get_db_session
+from secure_mcp_server.api.schemas import ApprovalReviewRequest
+
+
+async def _set_rls_context(db: AsyncSession, tenant_id: str, user_id: Optional[int]) -> None:
+    """Set transaction-local PostgreSQL session settings for RLS policy enforcement."""
+    uid_str = str(user_id) if user_id is not None else ""
+    try:
+        await db.execute(
+            text("SELECT set_config('app.tenant_id', :t, true), set_config('app.user_id', :u, true)"),
+            {"t": tenant_id, "u": uid_str}
+        )
+    except Exception as e:
+        logger.debug("Failed to set app.tenant_id/app.user_id session config (e.g. SQLite test mode)", error=str(e))
+
+
+def _parse_range(range_str: str) -> tuple[datetime, datetime, datetime]:
+    now = datetime.now(timezone.utc)
+    if range_str == "7d":
+        delta = timedelta(days=7)
+    elif range_str == "30d":
+        delta = timedelta(days=30)
+    else:
+        delta = timedelta(hours=24)
+    curr_start = now - delta
+    prior_start = curr_start - delta
+    return curr_start, now, prior_start
+
+
+@router.get("/summary")
+async def get_dashboard_summary(
+    range: str = Query("24h", pattern=r"^(24h|7d|30d)$"),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    await _set_rls_context(db, tenant_id, user.id)
+    curr_start, curr_end, prior_start = _parse_range(range)
+
+    # Current period stats
+    stmt_curr = text("""
+        SELECT
+            count(*) AS total,
+            coalesce(sum(CASE WHEN decision IN ('deny', 'quarantine') THEN 1 ELSE 0 END), 0) AS blocked,
+            coalesce(sum(CASE WHEN decision IN ('allow', 'log_only', 'simulate') THEN 1 ELSE 0 END), 0) AS allowed
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts <= :end_time
+    """)
+    res_curr = await db.execute(stmt_curr, {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "start_time": curr_start,
+        "end_time": curr_end,
+    })
+    curr_row = res_curr.mappings().first() or {"total": 0, "blocked": 0, "allowed": 0}
+
+    # Prior period stats (for deltas)
+    stmt_prior = text("""
+        SELECT
+            count(*) AS total,
+            coalesce(sum(CASE WHEN decision IN ('deny', 'quarantine') THEN 1 ELSE 0 END), 0) AS blocked,
+            coalesce(sum(CASE WHEN decision IN ('allow', 'log_only', 'simulate') THEN 1 ELSE 0 END), 0) AS allowed
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts < :end_time
+    """)
+    res_prior = await db.execute(stmt_prior, {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "start_time": prior_start,
+        "end_time": curr_start,
+    })
+    prior_row = res_prior.mappings().first() or {"total": 0, "blocked": 0, "allowed": 0}
+
+    def _calc_delta(c: int, p: int) -> float:
+        if p == 0:
+            return 100.0 if c > 0 else 0.0
+        return round(((c - p) / p) * 100.0, 1)
+
+    # Pending approvals for this tenant
+    stmt_approvals = text("""
+        SELECT count(*) AS pending
+        FROM approval_requests
+        WHERE tenant_id = :tenant_id AND status = 'PENDING'
+    """)
+    res_app = await db.execute(stmt_approvals, {"tenant_id": tenant_id})
+    pending_approvals = (res_app.mappings().first() or {}).get("pending", 0)
+
+    # Active API keys for this user
+    stmt_keys = text("""
+        SELECT count(*) AS active
+        FROM api_keys
+        WHERE user_id = :user_id AND is_active = true
+    """)
+    res_keys = await db.execute(stmt_keys, {"user_id": user.id})
+    active_keys = (res_keys.mappings().first() or {}).get("active", 0)
+
+    return {
+        "range": range,
+        "total_requests": curr_row["total"],
+        "blocked_count": curr_row["blocked"],
+        "allowed_count": curr_row["allowed"],
+        "pending_approvals": pending_approvals,
+        "active_keys": active_keys,
+        "deltas": {
+            "total_pct": _calc_delta(curr_row["total"], prior_row["total"]),
+            "blocked_pct": _calc_delta(curr_row["blocked"], prior_row["blocked"]),
+            "allowed_pct": _calc_delta(curr_row["allowed"], prior_row["allowed"]),
+        }
+    }
+
+
+@router.get("/timeseries")
+async def get_dashboard_timeseries(
+    range: str = Query("24h", pattern=r"^(24h|7d|30d)$"),
+    bucket: Optional[str] = Query(None, pattern=r"^(1h|1d)$"),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    await _set_rls_context(db, tenant_id, user.id)
+    curr_start, curr_end, _ = _parse_range(range)
+
+    # Default bucket: 1h for 24h & 7d, 1d for 30d
+    if not bucket:
+        bucket = "1d" if range == "30d" else "1h"
+
+    pg_bucket = "day" if bucket == "1d" else "hour"
+
+    is_sqlite = False
+    try:
+        bind = db.get_bind()
+        if bind and "sqlite" in str(bind.url):
+            is_sqlite = True
+    except Exception:
+        pass
+
+    if is_sqlite:
+        trunc_expr = "strftime('%Y-%m-%d 00:00:00', ts)" if bucket == "1d" else "strftime('%Y-%m-%d %H:00:00', ts)"
+    else:
+        trunc_expr = f"date_trunc('{pg_bucket}', ts)"
+
+    stmt = text(f"""
+        SELECT
+            {trunc_expr} AS bucket_ts,
+            coalesce(sum(CASE WHEN decision IN ('allow', 'log_only', 'simulate') THEN 1 ELSE 0 END), 0) AS allowed,
+            coalesce(sum(CASE WHEN decision IN ('deny', 'quarantine') THEN 1 ELSE 0 END), 0) AS blocked,
+            coalesce(sum(CASE WHEN decision = 'require_approval' THEN 1 ELSE 0 END), 0) AS approvals
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts <= :end_time
+        GROUP BY bucket_ts
+        ORDER BY bucket_ts ASC
+    """)
+    res = await db.execute(stmt, {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "start_time": curr_start,
+        "end_time": curr_end,
+    })
+    rows = res.mappings().all()
+
+    # Build continuous buckets so chart has zero-filled gaps
+    data_points = []
+    def _normalize_bucket_key(val: Any, b: str) -> str:
+        if hasattr(val, "strftime"):
+            return val.strftime("%Y-%m-%d") if b == "1d" else val.strftime("%Y-%m-%d %H")
+        s = str(val).replace("T", " ")
+        return s[:10] if b == "1d" else s[:13]
+
+    lookup: dict[str, dict[str, int]] = {}
+    for r in rows:
+        b_key = _normalize_bucket_key(r["bucket_ts"], bucket)
+        if b_key not in lookup:
+            lookup[b_key] = {"allowed": int(r["allowed"]), "blocked": int(r["blocked"]), "approvals": int(r["approvals"])}
+        else:
+            lookup[b_key]["allowed"] += int(r["allowed"])
+            lookup[b_key]["blocked"] += int(r["blocked"])
+            lookup[b_key]["approvals"] += int(r["approvals"])
+
+    step = timedelta(days=1) if bucket == "1d" else timedelta(hours=1)
+    # Align step start
+    cursor = curr_start.replace(minute=0, second=0, microsecond=0)
+    while cursor <= curr_end:
+        b_key = _normalize_bucket_key(cursor, bucket)
+        matched = lookup.get(b_key)
+        if matched:
+            data_points.append({
+                "timestamp": cursor.isoformat(),
+                "allowed": matched["allowed"],
+                "blocked": matched["blocked"],
+                "approvals": matched["approvals"],
+            })
+        else:
+            data_points.append({
+                "timestamp": cursor.isoformat(),
+                "allowed": 0,
+                "blocked": 0,
+                "approvals": 0,
+            })
+        cursor += step
+
+    return {
+        "range": range,
+        "bucket": bucket,
+        "points": data_points,
+    }
+
+
+@router.get("/breakdown")
+async def get_dashboard_breakdown(
+    range: str = Query("24h", pattern=r"^(24h|7d|30d)$"),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    await _set_rls_context(db, tenant_id, user.id)
+    curr_start, curr_end, _ = _parse_range(range)
+
+    params = {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "start_time": curr_start,
+        "end_time": curr_end,
+    }
+
+    # Top rules
+    stmt_rules = text("""
+        SELECT
+            coalesce(rule_id, 'default_policy') AS rule,
+            decision,
+            count(*) AS count
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts <= :end_time
+        GROUP BY rule, decision
+        ORDER BY count DESC
+        LIMIT 6
+    """)
+    res_rules = await db.execute(stmt_rules, params)
+    top_rules = [dict(r) for r in res_rules.mappings().all()]
+
+    # Top tools
+    stmt_tools = text("""
+        SELECT
+            coalesce(tool_name, 'unknown') AS tool,
+            count(*) AS total,
+            coalesce(sum(CASE WHEN decision IN ('deny', 'quarantine') THEN 1 ELSE 0 END), 0) AS blocked
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts <= :end_time
+        GROUP BY tool
+        ORDER BY total DESC
+        LIMIT 6
+    """)
+    res_tools = await db.execute(stmt_tools, params)
+    top_tools = [dict(r) for r in res_tools.mappings().all()]
+
+    # Pipeline stages
+    stmt_stages = text("""
+        SELECT
+            coalesce(stage, 'policy') AS stage,
+            count(*) AS count
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts <= :end_time
+        GROUP BY stage
+        ORDER BY count DESC
+    """)
+    res_stages = await db.execute(stmt_stages, params)
+    stage_breakdown = [dict(r) for r in res_stages.mappings().all()]
+
+    # Taints
+    stmt_taints = text("""
+        SELECT
+            label,
+            count(*) AS count
+        FROM taint_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts <= :end_time
+        GROUP BY label
+        ORDER BY count DESC
+        LIMIT 6
+    """)
+    res_taints = await db.execute(stmt_taints, params)
+    taint_breakdown = [dict(r) for r in res_taints.mappings().all()]
+
+    return {
+        "range": range,
+        "top_rules": top_rules,
+        "top_tools": top_tools,
+        "stages": stage_breakdown,
+        "taints": taint_breakdown,
+    }
+
+
+@router.get("/events")
+async def get_dashboard_events(
+    limit: int = Query(25, ge=1, le=100),
+    cursor: Optional[str] = Query(None),
+    decision: Optional[str] = Query(None),
+    stage: Optional[str] = Query(None),
+    tool_name: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    await _set_rls_context(db, tenant_id, user.id)
+
+    cursor_ts = None
+    cursor_id = None
+    if cursor:
+        try:
+            decoded = base64.urlsafe_b64decode(cursor.encode("ascii")).decode("utf-8")
+            parts = decoded.split("|")
+            cursor_ts = datetime.fromisoformat(parts[0])
+            cursor_id = int(parts[1])
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid pagination cursor")
+
+    search_pat = f"%{search.strip()}%" if search and search.strip() else None
+
+    # Fetch limit + 1 to know if there is a next page
+    fetch_limit = limit + 1
+
+    stmt = text("""
+        SELECT
+            id, request_id, ts, tenant_id, user_id, api_key_id, principal, agent_name,
+            cast(client_ip as text) AS client_ip, user_agent, session_id, event_type, action, stage,
+            tool_name, intent_category, risk_score, risk_level, decision, rule_id,
+            engine, mode, reason, args_hash, taint_labels, latency_ms
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND (:decision IS NULL OR decision = :decision)
+          AND (:stage IS NULL OR stage = :stage)
+          AND (:tool_name IS NULL OR tool_name = :tool_name)
+          AND (:search_pat IS NULL OR (lower(tool_name) LIKE lower(:search_pat) OR lower(reason) LIKE lower(:search_pat) OR lower(principal) LIKE lower(:search_pat)))
+          AND (:cursor_ts IS NULL OR (ts < :cursor_ts OR (ts = :cursor_ts AND id < :cursor_id)))
+        ORDER BY ts DESC, id DESC
+        LIMIT :fetch_limit
+    """)
+
+    res = await db.execute(stmt, {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "decision": decision,
+        "stage": stage,
+        "tool_name": tool_name,
+        "search_pat": search_pat,
+        "cursor_ts": cursor_ts,
+        "cursor_id": cursor_id,
+        "fetch_limit": fetch_limit,
+    })
+    raw_rows = res.mappings().all()
+
+    has_more = len(raw_rows) > limit
+    rows = list(raw_rows[:limit])
+
+    next_cursor = None
+    if has_more and rows:
+        last_item = rows[-1]
+        raw_ts = last_item["ts"]
+        ts_str = raw_ts.isoformat() if hasattr(raw_ts, "isoformat") else str(raw_ts)
+        next_cursor = base64.urlsafe_b64encode(f"{ts_str}|{last_item['id']}".encode("utf-8")).decode("ascii")
+
+    # Format events cleanly
+    events = []
+    for r in rows:
+        item = dict(r)
+        if hasattr(item.get("ts"), "isoformat"):
+            item["ts"] = item["ts"].isoformat()
+        if hasattr(item.get("request_id"), "__str__"):
+            item["request_id"] = str(item["request_id"])
+        if isinstance(item.get("taint_labels"), str):
+            try:
+                item["taint_labels"] = json.loads(item["taint_labels"])
+            except Exception:
+                pass
+        events.append(item)
+
+    return {
+        "events": events,
+        "has_more": has_more,
+        "next_cursor": next_cursor,
+    }
+
+
+@router.get("/events/{event_id}")
+async def get_dashboard_event_detail(
+    event_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    await _set_rls_context(db, tenant_id, user.id)
+
+    stmt = text("""
+        SELECT
+            id, request_id, ts, tenant_id, user_id, api_key_id, principal, agent_name,
+            cast(client_ip as text) AS client_ip, user_agent, session_id, event_type, action, stage,
+            tool_name, intent_category, risk_score, risk_level, decision, rule_id,
+            rule_snapshot, bundle_version, engine, mode, reason, args_redacted,
+            args_hash, taint_labels, latency_ms
+        FROM security_events
+        WHERE id = :event_id
+          AND tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+    """)
+    res = await db.execute(stmt, {
+        "event_id": event_id,
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+    })
+    row = res.mappings().first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Security event not found")
+
+    item = dict(row)
+    if hasattr(item.get("ts"), "isoformat"):
+        item["ts"] = item["ts"].isoformat()
+    if hasattr(item.get("request_id"), "__str__"):
+        item["request_id"] = str(item["request_id"])
+    for json_col in ("rule_snapshot", "args_redacted", "taint_labels"):
+        val = item.get(json_col)
+        if isinstance(val, str):
+            try:
+                item[json_col] = json.loads(val)
+            except Exception:
+                pass
+
+    return item
+
+
+@router.get("/approvals")
+async def get_dashboard_approvals(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    stmt = text("""
+        SELECT id, tool_name, requester_id, context_snapshot, status, required_role, created_at
+        FROM approval_requests
+        WHERE tenant_id = :tenant_id AND status = 'PENDING'
+        ORDER BY created_at DESC
+    """)
+    res = await db.execute(stmt, {"tenant_id": tenant_id})
+    rows = res.mappings().all()
+    out = []
+    for r in rows:
+        d = dict(r)
+        if hasattr(d.get("created_at"), "isoformat"):
+            d["created_at"] = d["created_at"].isoformat()
+        if isinstance(d.get("context_snapshot"), str):
+            try:
+                d["context_snapshot"] = json.loads(d["context_snapshot"])
+            except Exception:
+                pass
+        out.append(d)
+    return out
+
+
+@router.post("/approvals/{approval_id}/review")
+async def review_dashboard_approval(
+    approval_id: str,
+    req: ApprovalReviewRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    from secure_mcp_server.governance import approval_manager
+    reviewer = f"user_{user.id}_{user.username}"
+    result = await approval_manager.review_request(
+        request_id=approval_id,
+        decision=req.decision,
+        reviewer_id=user.id,
+        reason=req.reason,
+    )
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error"))
+
+    # Also log to EventRecorder
+    from secure_mcp_server.governance.event_recorder import get_event_recorder, SecurityEventPayload
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    await get_event_recorder().record_event(SecurityEventPayload(
+        request_id=str(uuid.uuid4()),
+        tenant_id=tenant_id,
+        user_id=user.id,
+        principal=reviewer,
+        event_type="approval",
+        action="review_approval",
+        stage="approval",
+        decision="allow" if req.decision == "APPROVED" else "deny",
+        reason=f"Approval request {approval_id} {req.decision}: {req.reason or 'No reason provided'}",
+    ))
+
+    return result
+
+
+@router.get("/keys")
+async def get_dashboard_keys(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    stmt = text("""
+        SELECT id, name, prefix, environment, allowed_ips, is_active, created_at, last_used
+        FROM api_keys
+        WHERE user_id = :user_id
+        ORDER BY created_at DESC
+    """)
+    res = await db.execute(stmt, {"user_id": user.id})
+    rows = res.mappings().all()
+    keys = []
+    for r in rows:
+        d = dict(r)
+        if hasattr(d["created_at"], "isoformat"):
+            d["created_at"] = d["created_at"].isoformat()
+        if hasattr(d["last_used"], "isoformat") and d["last_used"]:
+            d["last_used"] = d["last_used"].isoformat()
+        keys.append(d)
+    return keys
+
+
+@router.get("/export.csv")
+async def export_dashboard_csv(
+    range: str = Query("24h", pattern=r"^(24h|7d|30d)$"),
+    decision: Optional[str] = Query(None),
+    tool_name: Optional[str] = Query(None),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    tenant_id = getattr(user, "tenant_id", "default") or "default"
+    await _set_rls_context(db, tenant_id, user.id)
+    curr_start, curr_end, _ = _parse_range(range)
+
+    stmt = text("""
+        SELECT
+            ts, request_id, decision, stage, coalesce(tool_name, '') AS tool_name,
+            coalesce(cast(risk_score as text), '') AS risk_score, coalesce(risk_level, '') AS risk_level,
+            coalesce(rule_id, '') AS rule_id, coalesce(reason, '') AS reason,
+            coalesce(cast(client_ip as text), '') AS client_ip, coalesce(cast(latency_ms as text), '') AS latency_ms
+        FROM security_events
+        WHERE tenant_id = :tenant_id
+          AND (user_id = :user_id OR user_id IS NULL)
+          AND ts >= :start_time AND ts <= :end_time
+          AND (:decision IS NULL OR decision = :decision)
+          AND (:tool_name IS NULL OR tool_name = :tool_name)
+        ORDER BY ts DESC
+        LIMIT 5000
+    """)
+    res = await db.execute(stmt, {
+        "tenant_id": tenant_id,
+        "user_id": user.id,
+        "start_time": curr_start,
+        "end_time": curr_end,
+        "decision": decision,
+        "tool_name": tool_name,
+    })
+    rows = res.mappings().all()
+
+    def sanitize_cell(val: Any) -> str:
+        s = str(val) if val is not None else ""
+        if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+            return "'" + s
+        return s
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Timestamp", "Request ID", "Decision", "Stage", "Tool Name",
+        "Risk Score", "Risk Level", "Rule ID", "Reason", "Client IP", "Latency (ms)"
+    ])
+
+    for r in rows:
+        writer.writerow([
+            sanitize_cell(r["ts"].isoformat() if hasattr(r["ts"], "isoformat") else r["ts"]),
+            sanitize_cell(str(r["request_id"])),
+            sanitize_cell(r["decision"]),
+            sanitize_cell(r["stage"]),
+            sanitize_cell(r["tool_name"]),
+            sanitize_cell(r["risk_score"]),
+            sanitize_cell(r["risk_level"]),
+            sanitize_cell(r["rule_id"]),
+            sanitize_cell(r["reason"]),
+            sanitize_cell(r["client_ip"]),
+            sanitize_cell(r["latency_ms"]),
+        ])
+
+    output.seek(0)
+    filename = f"runwall_security_audit_{range}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+# ---------------------------------------------------------------------------
+# 1. Identity & Access Control (Legacy Demos)
 # ---------------------------------------------------------------------------
 @router.get("/identity/users")
 async def get_users():

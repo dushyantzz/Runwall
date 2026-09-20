@@ -7,6 +7,7 @@ from .models import (
     ServiceAccount, PolicyBundle, ToolManifest,
     ApprovalRequest, TaskContract, ReversibleExecutionLog,
     UserSubscription, RateLimitUsage, PaymentTransaction,
+    SecurityEvent, TaintEvent,
 )
 
 __all__ = [
@@ -33,4 +34,7 @@ __all__ = [
     'UserSubscription',
     'RateLimitUsage',
     'PaymentTransaction',
+    # Security events
+    'SecurityEvent',
+    'TaintEvent',
 ]
