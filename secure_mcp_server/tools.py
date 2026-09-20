@@ -955,12 +955,24 @@ class ToolRegistry:
                         func_name = node.func.id
                         if func_name in allowed_names:
                             args = [_eval_node(arg) for arg in node.args]
+                            if func_name == "pow" and len(args) >= 2:
+                                base, exp = args[0], args[1]
+                                if not isinstance(exp, (int, float)) or exp > 100:
+                                    raise ValueError("Power too large")
+                                if not isinstance(base, (int, float)) or abs(base) > 100000:
+                                    raise ValueError("Base too large")
                             return allowed_names[func_name](*args)
                     elif isinstance(node.func, ast.Attribute):
                         if isinstance(node.func.value, ast.Name) and node.func.value.id == "math":
                             func_name = node.func.attr
                             if func_name in allowed_names:
                                 args = [_eval_node(arg) for arg in node.args]
+                                if func_name == "pow" and len(args) >= 2:
+                                    base, exp = args[0], args[1]
+                                    if not isinstance(exp, (int, float)) or exp > 100:
+                                        raise ValueError("Power too large")
+                                    if not isinstance(base, (int, float)) or abs(base) > 100000:
+                                        raise ValueError("Base too large")
                                 return allowed_names[func_name](*args)
                     raise ValueError("Function call not allowed")
                 else:
