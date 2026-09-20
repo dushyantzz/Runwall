@@ -78,6 +78,7 @@ export default function Navbar() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} className="desktop-nav">
           <NavLink to="/docs">Documentation</NavLink>
           <NavLink to="/pricing">Pricing</NavLink>
+          {user && <NavLink to="/dashboard">Dashboard</NavLink>}
         </div>
 
         {/* Right actions */}
@@ -235,6 +236,11 @@ export default function Navbar() {
             <Link to="/pricing" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>
               Pricing
             </Link>
+            {user && (
+              <Link to="/dashboard" className="mobile-menu-nav-link" onClick={() => setMobileOpen(false)}>
+                Dashboard
+              </Link>
+            )}
           </nav>
 
           {/* Action buttons at bottom */}

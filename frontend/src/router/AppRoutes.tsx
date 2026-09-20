@@ -3,11 +3,14 @@ import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import AppLayout from '@/layout/AppLayout';
 import HomePage from '@/pages/HomePage';
 
+import ProtectedRoute from '@/components/ProtectedRoute';
+
 // Lazy-loaded routes — only fetched when navigated to
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/pages/SignupPage'));
 const DocsPage = lazy(() => import('@/pages/DocsPage'));
 const PricingPage = lazy(() => import('@/pages/PricingPage'));
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 
 // ── GEO Pages: Security ──
 const SecurityIndex = lazy(() => import('@/pages/geo/security/SecurityIndex'));
@@ -79,6 +82,16 @@ export function AppRoutes() {
           {/* Public Home & Pricing */}
           <Route path="/" element={<HomePage />} />
           <Route path="/pricing" element={<PricingPage />} />
+
+          {/* Protected Dashboard */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* ── GEO: Security Section ── */}
           <Route path="/security" element={<SecurityIndex />} />

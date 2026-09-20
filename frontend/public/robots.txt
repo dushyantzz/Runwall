@@ -1,4 +1,5 @@
 User-agent: *
+Disallow: /dashboard
 Allow: /
 
 # Explicitly allow major AI crawlers
