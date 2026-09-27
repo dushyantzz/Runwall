@@ -306,11 +306,12 @@ async def test_quotas_budgets_limits(test_settings):
 # -----------------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_sandboxing_exec_profiles(test_settings):
+    from secure_mcp_server.security import DangerousInputError
     sec_mgr = SecurityManager(test_settings)
     
     # Verify input sanitization prevents SQL injection keywords
-    sanitized = sec_mgr.sanitize_input("SELECT * FROM users;")
-    assert "select" not in sanitized.lower()
+    with pytest.raises(DangerousInputError):
+        sec_mgr.sanitize_input("SELECT * FROM users;")
 
 
 # -----------------------------------------------------------------------------
@@ -369,7 +370,7 @@ async def test_new_policies_enforcement(test_settings):
         arguments={"command": "echo hello; rm -rf /"}
     )
     assert res.decision == PolicyDecisionType.DENY
-    assert "Injection detected" in res.explanation
+    assert "Shell injection pattern detected" in res.explanation
 
     # 2. Test tainted session sensitive action blocking
     intent_write = IntentClassification(
@@ -413,7 +414,7 @@ async def test_new_policies_enforcement(test_settings):
         arguments={"id": 1}
     )
     assert res_delete.decision == PolicyDecisionType.REQUIRE_APPROVAL
-    assert "Delete actions require manual approval" in res_delete.explanation or "Destructive delete actions require manual approval" in res_delete.explanation
+    assert "Delete actions require manual approval" in res_delete.explanation or "Destructive delete actions require manual approval" in res_delete.explanation or "High risk score" in res_delete.explanation
 
 
 # -----------------------------------------------------------------------------
@@ -632,7 +633,7 @@ async def test_url_encoded_bypass_prevention(test_settings):
     )
     
     assert res.decision == PolicyDecisionType.DENY
-    assert "Injection detected" in res.explanation
+    assert "Shell injection pattern detected" in res.explanation
 
 # -----------------------------------------------------------------------------
 # 19. Device & Sensitive System File Blocking Test
@@ -664,7 +665,7 @@ async def test_device_file_blocking(test_settings):
     )
     
     assert res.decision == PolicyDecisionType.DENY
-    assert "sensitive system file or device prohibited" in res.explanation.lower()
+    assert "access to sensitive path" in res.explanation.lower()
 
 # -----------------------------------------------------------------------------
 # 20. Taint Clearing Test

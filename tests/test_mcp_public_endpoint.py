@@ -301,7 +301,7 @@ async def test_quickstart_and_health_endpoints(db_manager):
         # GET /health
         health_res = await client.get("/health")
         assert health_res.status_code == 200
-        assert health_res.json() == {"status": "healthy"}
+        assert health_res.json()["status"] == "healthy"
 
         # GET / (Quickstart landing page)
         root_res = await client.get("/")

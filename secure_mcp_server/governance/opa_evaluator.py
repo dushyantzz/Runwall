@@ -534,12 +534,14 @@ class OPAPolicyEvaluator:
         # ── Sensitive path (recursive, normalized) ────────────────────────
         # Also match paths WITHOUT leading slash (e.g. after traversal normalization)
         _SENSITIVE_PATH_RE = _re.compile(
-            r'(/?(etc|proc|dev)/(passwd|shadow|sudoers|hosts)|'
-            r'/?\.ssh/|'
-            r'(^|/)\.env(/|$)|'
-            r'/?\.aws/credentials|'
-            r'/?\.git-credentials|'
-            r'kubeconfig|/root/)',
+            r'(^|/)(etc/(passwd|shadow|sudoers|hosts)|'
+            r'(proc|dev|sys)/|'
+            r'\.ssh/|'
+            r'\.env(/|$)|'
+            r'\.aws/credentials|'
+            r'\.git-credentials|'
+            r'root/)|'
+            r'kubeconfig',
             _re.IGNORECASE,
         )
         for s in all_strings:
