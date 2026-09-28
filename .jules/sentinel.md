@@ -15,3 +15,8 @@
 **Vulnerability:** A Denial of Service (DoS) vulnerability existed in `secure_mcp_server/tools.py` because the custom AST evaluator for math operations evaluated `ast.Call` nodes for the built-in `pow()` and `math.pow()` functions without validating the magnitudes of the base and exponent.
 **Learning:** Even if `ast.Pow` is bounded, attackers can bypass it if `pow()` function calls via `ast.Call` are not also strictly bounds-checked. Large base or exponent evaluations can lead to CPU/memory exhaustion and crash the application.
 **Prevention:** Always enforce strict bounds-checking on both the base and exponent for all mathematical power evaluation pathways in custom AST walkers, including `ast.Call` nodes.
+
+## 2023-10-15 - [Regex Path Boundaries for Security]
+**Vulnerability:** Path blocking regexes that lack strict bounds (like `/?(proc|dev|sys)/` or `/?etc/passwd`) fail to block absolute sensitive device file access (e.g. `/dev/sda`) properly, while simultaneously risking false positives on legitimate directories like `/home/mydev/` if `/?` matches anywhere.
+**Learning:** `/?` matches zero or one slashes *anywhere* in the string during a `re.search()`, making it practically useless as an anchor, creating both bypasses and false positives simultaneously.
+**Prevention:** Always use strict path boundary anchors `(^|/)` to explicitly match directories either at the root or directly inside a subfolder, instead of loose substring patterns.
