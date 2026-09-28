@@ -20,3 +20,7 @@
 **Vulnerability:** Path blocking regexes that lack strict bounds (like `/?(proc|dev|sys)/` or `/?etc/passwd`) fail to block absolute sensitive device file access (e.g. `/dev/sda`) properly, while simultaneously risking false positives on legitimate directories like `/home/mydev/` if `/?` matches anywhere.
 **Learning:** `/?` matches zero or one slashes *anywhere* in the string during a `re.search()`, making it practically useless as an anchor, creating both bypasses and false positives simultaneously.
 **Prevention:** Always use strict path boundary anchors `(^|/)` to explicitly match directories either at the root or directly inside a subfolder, instead of loose substring patterns.
+## 2025-02-27 - Overly Permissive CORS with Credentials
+**Vulnerability:** The CORS configuration in FastAPI used `allow_origin_regex` to match `*.vercel.app` while simultaneously setting `allow_credentials=True`. This permitted any third-party Vercel application to bypass CORS policies and potentially make authenticated cross-origin requests.
+**Learning:** Shared application hosting domains like `vercel.app`, `herokuapp.com`, or `github.io` should never be allowed via wildcard regex when credentials are enabled, as attackers can easily register subdomains on these platforms.
+**Prevention:** Explicitly list required third-party subdomains (e.g., `runwall.vercel.app`) in the `allow_origins` array instead of using a wildcard regex, and only use wildcard matching for organizational root domains that you strictly control.
