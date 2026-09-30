@@ -211,8 +211,8 @@ async def resolve_plan(
     Returns tier + status.
     Auto-provisions active free tier if no prior subscription record exists.
     """
-    # Service accounts / machine accounts or explicit enterprise keys
-    if api_key.service_account_id is not None or api_key.tier == "enterprise":
+    # Service accounts / machine accounts
+    if api_key.service_account_id is not None:
         tier = "enterprise"
         return PlanContext(
             user_id=api_key.user_id or f"sa_{api_key.service_account_id}",
@@ -225,7 +225,7 @@ async def resolve_plan(
 
     if not api_key.user_id:
         # Standalone key with no user_id and no service_account_id
-        tier = (api_key.tier or "free").lower()
+        tier = "free"
         return PlanContext(
             user_id=None,
             api_key_id=api_key.id,
@@ -259,7 +259,7 @@ async def resolve_plan(
             f"Subscription is currently '{subscription.status}'. An active plan is required."
         )
 
-    tier = (subscription.tier or api_key.tier or "free").lower()
+    tier = (subscription.tier or "free").lower()
     limits = get_plan_limits(tier)
 
     return PlanContext(
