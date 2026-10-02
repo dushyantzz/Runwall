@@ -76,7 +76,7 @@ deny contains msg if {
     some val in all_arg_strings
     norm := normalize_path(val)
     regex.match(
-        "(/etc/(passwd|shadow|sudoers|hosts)|/proc/|/dev/|\\.ssh/|\\.env(/|$)|\\.aws/credentials|\\.git-credentials|kubeconfig|/root/)",
+        "(^|/)(etc/(passwd|shadow|sudoers|hosts)|proc/|dev/|\\.ssh/|\\.env(/|$)|\\.aws/credentials|\\.git-credentials|kubeconfig|root/)",
         norm,
     )
     msg := "Access to sensitive path or file is prohibited"
