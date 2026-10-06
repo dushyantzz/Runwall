@@ -87,17 +87,17 @@ _TOOL_SENSITIVITY_DEFAULTS: Dict[str, float] = {
 _CONTENT_RISK_PATTERNS: Dict[str, float] = {
     # Filesystem destruction
     r"rm\s+-rf": 0.99,
-    r"/dev/sda": 0.99,
+    r"(^|/)(dev/sda)": 0.99,
     r"mkfs\.?": 0.99,
     # Database destruction
     r"DROP\s+(TABLE|DATABASE|SCHEMA)": 0.95,
     r"TRUNCATE\s+TABLE": 0.90,
     r"DELETE\s+FROM": 0.85,
     # Sensitive filesystem reads
-    r"/etc/shadow": 0.95,
-    r"/etc/sudoers": 0.90,
-    r"/etc/passwd": 0.75,
-    r"/proc/[a-z]": 0.70,
+    r"(^|/)(etc/shadow)": 0.95,
+    r"(^|/)(etc/sudoers)": 0.90,
+    r"(^|/)(etc/passwd)": 0.75,
+    r"(^|/)(proc/[a-z])": 0.70,
     # Code execution
     r"eval\s*\(": 0.90,
     r"exec\s*\(": 0.85,
