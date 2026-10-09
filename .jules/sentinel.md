@@ -37,3 +37,7 @@
 **Vulnerability:** Path blocking regexes that lack strict bounds (like `r"/dev/sda"` or `r"/etc/shadow"`) in Python files like `secure_mcp_server/governance/risk_scorer.py` and `intent_classifier.py` failed to block sensitive device file access when specified via relative paths (e.g. `etc/shadow`), while simultaneously risking false positives on legitimate directories if matched anywhere.
 **Learning:** Loose substring matches or requiring a leading slash allows trivial bypasses via relative paths and causes false positives on safe paths containing those strings as substrings. `(^|/)` is a better boundary.
 **Prevention:** Always use strict path boundary anchors `(^|/)` to explicitly match directories either at the root or directly inside a subfolder, instead of loose substring patterns. Apply this to all sensitive paths evaluated in python regexes for security checks.
+## 2025-02-27 - Privilege Escalation via Mutable Metadata in Rate Limiter
+**Vulnerability:** The rate limiter in `secure_mcp_server/billing/rate_limiter.py` relied on the mutable `api_key.tier` attribute to determine quotas and "enterprise" unlimited status.
+**Learning:** Using `api_key.tier` instead of dynamically verifying against `UserSubscription` allowed for an attacker to escalate privileges if they could modify the API key metadata directly, bypassing subscription constraints.
+**Prevention:** Instead of reading the API key's `tier`, query the active `UserSubscription` record dynamically and use `service_account_id` explicitly for enterprise exemptions.
