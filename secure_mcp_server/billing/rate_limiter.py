@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from secure_mcp_server.database.models import APIKey, RateLimitUsage
+from secure_mcp_server.billing.plan_enforcement import resolve_plan
 
 logger = structlog.get_logger(__name__)
 
@@ -69,10 +70,11 @@ def get_current_period(tier: str, now: Optional[datetime] = None) -> Tuple[datet
 async def get_or_create_usage_record(
     api_key: APIKey,
     db: AsyncSession,
+    tier: str,
 ) -> RateLimitUsage:
     """Fetch the usage row for the current period, or create a fresh one."""
-    period_start, period_end = get_current_period(api_key.tier)
-    limit = TIER_LIMITS.get(api_key.tier, api_key.rate_limit_requests)
+    period_start, period_end = get_current_period(tier)
+    limit = TIER_LIMITS.get(tier, api_key.rate_limit_requests)
 
     stmt = (
         select(RateLimitUsage)
@@ -99,7 +101,7 @@ async def get_or_create_usage_record(
         logger.info(
             "New rate-limit period created",
             api_key_id=api_key.id,
-            tier=api_key.tier,
+            tier=tier,
             period_start=period_start.isoformat(),
             period_end=period_end.isoformat(),
         )
@@ -125,13 +127,16 @@ async def check_rate_limit(api_key_id: int, db: AsyncSession) -> dict:
     if api_key is None:
         return {"allowed": False, "detail": "API key not found or inactive"}
 
+    plan = await resolve_plan(api_key, db)
+    tier = plan.tier
+
     # Enterprise is always unlimited.
-    if api_key.tier == "enterprise":
+    if tier == "enterprise":
         return {"allowed": True}
 
-    limit = TIER_LIMITS.get(api_key.tier, api_key.rate_limit_requests)
-    usage = await get_or_create_usage_record(api_key, db)
-    _, period_end = get_current_period(api_key.tier)
+    limit = TIER_LIMITS.get(tier, api_key.rate_limit_requests)
+    usage = await get_or_create_usage_record(api_key, db, tier)
+    _, period_end = get_current_period(tier)
 
     if limit is not None and usage.request_count >= limit:
         usage.is_exceeded = True
@@ -140,7 +145,7 @@ async def check_rate_limit(api_key_id: int, db: AsyncSession) -> dict:
         logger.warning(
             "Rate limit exceeded",
             api_key_id=api_key_id,
-            tier=api_key.tier,
+            tier=tier,
             used=usage.request_count,
             limit=limit,
         )
@@ -148,13 +153,13 @@ async def check_rate_limit(api_key_id: int, db: AsyncSession) -> dict:
             "allowed": False,
             "detail": (
                 f"Rate limit exceeded. You have used {usage.request_count}/{limit} "
-                f"requests this {'week' if api_key.tier == 'free' else 'month'}. "
+                f"requests this {'week' if tier == 'free' else 'month'}. "
                 f"Resets on {period_end.strftime('%B %-d, %Y') if hasattr(period_end, 'strftime') else str(period_end)}."
             ),
             "used": usage.request_count,
             "limit": limit,
             "reset_at": period_end.isoformat(),
-            "tier": api_key.tier,
+            "tier": tier,
         }
 
     return {"allowed": True}
@@ -166,11 +171,17 @@ async def record_usage(api_key_id: int, db: AsyncSession) -> None:
     result = await db.execute(stmt)
     api_key = result.scalars().first()
 
-    if api_key is None or api_key.tier == "enterprise":
+    if api_key is None:
         return
 
-    limit = TIER_LIMITS.get(api_key.tier, api_key.rate_limit_requests)
-    usage = await get_or_create_usage_record(api_key, db)
+    plan = await resolve_plan(api_key, db)
+    tier = plan.tier
+
+    if tier == "enterprise":
+        return
+
+    limit = TIER_LIMITS.get(tier, api_key.rate_limit_requests)
+    usage = await get_or_create_usage_record(api_key, db, tier)
 
     usage.request_count += 1
     if limit is not None:
@@ -181,7 +192,7 @@ async def record_usage(api_key_id: int, db: AsyncSession) -> None:
     logger.debug(
         "Usage recorded",
         api_key_id=api_key_id,
-        tier=api_key.tier,
+        tier=tier,
         count=usage.request_count,
         remaining=usage.requests_remaining,
     )
