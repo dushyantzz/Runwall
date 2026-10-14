@@ -540,8 +540,8 @@ class OPAPolicyEvaluator:
             r'\.env(/|$)|'
             r'\.aws/credentials|'
             r'\.git-credentials|'
-            r'root/)|'
-            r'kubeconfig',
+            r'root/|'
+            r'kubeconfig($|/))',
             _re.IGNORECASE,
         )
         for s in all_strings:
