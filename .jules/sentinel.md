@@ -45,3 +45,8 @@
 **Vulnerability:** The regular expression used to block sensitive paths in both `secure_mcp_server/governance/opa_evaluator.py` and `secure_mcp_server/policies/governance.rego` lacked proper anchors for the `kubeconfig` and `root/` paths. A logic flaw misplaced the closing parentheses that tied them to the `(^|/)` anchor, allowing relative bypasses or false positive matching anywhere in the string.
 **Learning:** Proper regex grouping is essential. In `(?:^|/)` type structures, all intended alternating matches must remain inside the capturing or non-capturing group. Additionally, file names like `kubeconfig` require trailing anchors like `($|/)` to prevent false positive matches on benign files like `kubeconfig_backup.txt`.
 **Prevention:** Ensure all alternations for sensitive paths are strictly encapsulated within their boundary anchors (e.g. `(^|/)` and `($|/)`) to guarantee they are evaluated as paths and not random substrings.
+
+## 2025-03-01 - Missing Regex Escape in Shell Sanitization
+**Vulnerability:** The sanitization logic in `secure_mcp_server/security.py` intended to prevent shell injection via the pipe character `|`, but failed to escape it in the regex `r'(;|&&|`|\$[({]|\$[a-zA-Z_])'`. This meant `|` was treated as an OR operator instead of a literal pipe, allowing attackers to bypass sanitization and inject pipe commands (e.g., `| ls`).
+**Learning:** When writing regular expressions to block or sanitize shell injection payloads, ensure that regex meta-characters intended to be blocked (such as the pipe character `|`) are properly escaped (e.g., `\|`).
+**Prevention:** Always test regular expressions with explicit adversarial inputs (like `| rm -rf`) rather than assuming visual representation matches behavior.
