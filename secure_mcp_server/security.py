@@ -58,7 +58,7 @@ class SecurityManager:
             #   ` = backtick substitution
             #   && = shell AND (not lone & in URL query strings)
             #   $( ${ $VARNAME = shell substitution ($9.99 is NOT a variable — $ must precede letter/underscore)
-            r'(;|&&|`|\$[({]|\$[a-zA-Z_])',
+            r'(;|\||&&|`|\$[({]|\$[a-zA-Z_])',
             r'\b(bash|sh|cmd|powershell|nc|curl|wget)\b',  # Dangerous CLI binaries
         ]
         
